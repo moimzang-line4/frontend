@@ -54,7 +54,7 @@
     0 6px 18px rgb(63 141 124 / 9%),
     inset 0 1px 2px rgb(255 255 255 / 80%);
 
-  --drop-shadow-ai: 0 4px 5px rgb(228 92 85 / 23%);
+  --drop-shadow-ai: 0 4px 5px #8aa8a2;
 
   /* 화면 너비 */
   --container-app: 390px;
@@ -69,10 +69,10 @@
   --spacing-icon-back: 24px;
 
   --spacing-footer: 83px;
-  --spacing-footer-background: 95px;
+  --spacing-footer-background: 98px;
   --spacing-footer-item: 50px;
   --spacing-footer-offset: 9px;
-  --spacing-footer-curve: 12px;
+  --spacing-footer-curve: 15px;
   --spacing-ai-button: 60px;
 
   --spacing-page-x: 20px;
@@ -127,4 +127,12 @@
     var(--spacing-header-slot)
     minmax(0, 1fr)
     var(--spacing-header-slot);
+}
+
+@utility bg-ai-gradient {
+  background-image: linear-gradient(
+    126.87deg,
+    var(--color-button-start) 10.714%,
+    var(--color-button-end) 82.143%
+  );
 }

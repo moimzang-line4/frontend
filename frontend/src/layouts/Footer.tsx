@@ -49,7 +49,7 @@ export default function Footer({
             src={background}
             alt=""
             width={390}
-            height={95}
+            height={98}
             className="absolute left-1/2 max-w-none -translate-x-1/2"
           />
         </div>
@@ -69,7 +69,7 @@ export default function Footer({
                     relative -top-footer-offset
                     flex size-ai-button flex-col
                     items-center justify-center justify-self-center
-                    gap-0.5 rounded-ai bg-primary
+                    gap-0.5 rounded-ai bg-ai-gradient
                     text-nav-ai font-bold text-white drop-shadow-ai
                   `
                   : `
