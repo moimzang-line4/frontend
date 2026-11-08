@@ -19,7 +19,7 @@ const defaultFooterItems: readonly FooterItem[] = [
   { label: '부원', to: '/members', icon: usersIcon },
   { label: 'AI', to: '/ai', icon: aiIcon, elevated: true },
   { label: '운영 공간', to: '/operations', icon: opsIcon },
-  { label: '자료실', to: '/files', icon: filesIcon },
+  { label: '문서함', to: '/files', icon: filesIcon },
 ]
 
 type FooterProps = { items?: readonly FooterItem[] }
