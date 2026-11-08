@@ -1,6 +1,6 @@
 ---
 name: 기본 이슈 템플릿
-about: ""
+about: 작업이나 문제를 등록해주세요
 title: ""
 labels: ""
 assignees: ""
