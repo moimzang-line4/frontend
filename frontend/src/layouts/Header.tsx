@@ -9,27 +9,70 @@ type HeaderProps = {
   rightAction?: ReactNode
 }
 
-export default function Header({ title, showBack = true, onBack, rightAction }: HeaderProps) {
+export default function Header({
+  title,
+  showBack = true,
+  onBack,
+  rightAction,
+}: HeaderProps) {
   const navigate = useNavigate()
 
   function handleBack() {
-    if (onBack) onBack()
-    else if (window.history.state?.idx > 0) navigate(-1)
-    else navigate('/')
+    if (onBack) {
+      onBack()
+      return
+    }
+
+    if (window.history.state?.idx > 0) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/')
   }
 
   return (
-    <header className="sticky top-0 z-20 overflow-hidden rounded-b-app-bar border border-border bg-surface pt-[env(safe-area-inset-top)] shadow-app-bar">
-      <div className="grid h-14 grid-cols-[56px_minmax(0,1fr)_56px] items-center border-b border-divider">
+    <header
+      className="
+        sticky top-0 z-20 overflow-hidden
+        rounded-b-app-bar border border-border
+        bg-surface pt-safe shadow-app-bar
+      "
+    >
+      <div
+        className="
+          grid h-header grid-cols-header items-center
+          border-b border-divider
+        "
+      >
         <div className="flex justify-center">
           {showBack && (
-            <button type="button" aria-label="뒤로가기" onClick={handleBack} className="flex size-11 cursor-pointer items-center justify-center rounded-lg">
-              <img src={backIcon} alt="" width={24} height={24} />
+            <button
+              type="button"
+              aria-label="뒤로가기"
+              onClick={handleBack}
+              className="
+                flex size-touch-target cursor-pointer
+                items-center justify-center rounded-control
+              "
+            >
+              <img
+                src={backIcon}
+                alt=""
+                width={24}
+                height={24}
+              />
             </button>
           )}
         </div>
-        <h1 className="truncate text-center text-page-title font-bold">{title}</h1>
-        <div className="flex items-center justify-center">{rightAction}</div>
+
+        <h1 className="truncate text-center text-page-title font-bold">
+          {title}
+        </h1>
+
+        <div className="flex items-center justify-center">
+          {rightAction}
+        </div>
       </div>
     </header>
   )
