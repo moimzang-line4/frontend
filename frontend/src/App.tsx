@@ -1,3 +1,4 @@
+import styled from 'styled-components'
 import { Route, Routes, useNavigate } from 'react-router'
 import MainLayout from './layouts/MainLayout'
 
@@ -70,9 +71,9 @@ export default function App() {
           <Route
             path={path}
             element={
-              <p className="text-sm text-muted">
+              <Placeholder>
                 {title} 페이지 준비 중입니다.
-              </p>
+              </Placeholder>
             }
           />
         </Route>
@@ -106,3 +107,9 @@ export default function App() {
     </Routes>
   )
 }
+
+const Placeholder = styled.p`
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-muted);
+`
