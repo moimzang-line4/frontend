@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { Route, Routes, useNavigate } from 'react-router'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/home/HomePage'
+import ScheduleCreatePage from './pages/schedules/ScheduleCreatePage'
 
 import MemberListPage from './pages/members/MemberListPage'
 import MemberCreatePage from './pages/members/MemberCreatePage'
@@ -58,6 +59,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/schedules/new" element={<ScheduleCreatePage />} />
       {/* 기존 페이지 */}
       {pages.map(({ path, title }) => (
         <Route

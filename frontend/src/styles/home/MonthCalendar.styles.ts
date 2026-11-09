@@ -66,14 +66,14 @@ export const DayButton = styled.button<{ $selected: boolean }>`
   cursor: pointer;
 `
 const categoryColors: Record<ScheduleCategory, string> = {
-  meeting: 'var(--color-calendar-meeting)', session: 'var(--color-calendar-session)', performance: 'var(--color-calendar-performance)', newcomer: 'var(--color-calendar-newcomer)',
+  meeting: 'var(--color-calendar-meeting)', session: 'var(--color-calendar-session)', performance: 'var(--color-calendar-performance)', newcomer: 'var(--color-calendar-newcomer)', afterparty: '#fff0cd', custom: '#e8f4ef',
 }
-export const EventBadge = styled.button<{ $category: ScheduleCategory }>`
+export const EventBadge = styled.button<{ $category: ScheduleCategory; $color?: string }>`
   width: 40px;
   max-width: calc(100% - 4px);
   padding-inline: 2px;
   border-radius: 5px;
-  background: ${({ $category }) => categoryColors[$category]};
+  background: ${({ $category, $color }) => $color ? `color-mix(in srgb, ${$color} 20%, white)` : categoryColors[$category]};
   color: ${({ $category }) => $category === 'performance' ? 'var(--color-primary-strong)' : 'inherit'};
   font-size: 8px;
   line-height: 1.4;
