@@ -1,3 +1,4 @@
+import styled from 'styled-components'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import backIcon from '../assets/navigation/back.svg'
@@ -34,57 +35,70 @@ export default function Header({
   }
 
   return (
-    <header
-      className="
-        sticky top-0 z-20 overflow-hidden
-        rounded-b-app-bar border border-border
-        bg-surface pt-safe shadow-app-bar
-      "
-    >
-      <div
-        className={
-          align === 'left'
-            ? 'flex h-header items-center border-b border-divider px-page-x'
-            : 'grid h-header grid-cols-header items-center border-b border-divider'
-        }
-      >
+    <HeaderRoot>
+      <HeaderContent $align={align}>
         {showBack && (
-          <div className="flex justify-center">
-            <button
-              type="button"
-              aria-label="뒤로가기"
-              onClick={handleBack}
-              className="
-                flex size-touch-target cursor-pointer
-                items-center justify-center rounded-control
-              "
-            >
-              <img
-                src={backIcon}
-                alt=""
-                width={24}
-                height={24}
-              />
-            </button>
-          </div>
+          <BackSlot>
+            <BackButton type="button" aria-label="뒤로가기" onClick={handleBack}>
+              <img src={backIcon} alt="" width={24} height={24} />
+            </BackButton>
+          </BackSlot>
         )}
-
-        <h1
-          className={
-            align === 'left'
-              ? 'truncate text-left text-page-title font-bold'
-              : 'truncate text-center text-page-title font-bold'
-          }
-        >
-          {title}
-        </h1>
-
-        {align === 'center' && (
-          <div className="flex items-center justify-center">
-            {rightAction}
-          </div>
-        )}
-      </div>
-    </header>
+        <Title $align={align}>{title}</Title>
+        {align === 'center' && <RightAction>{rightAction}</RightAction>}
+      </HeaderContent>
+    </HeaderRoot>
   )
 }
+
+const HeaderRoot = styled.header`
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-app-bar) var(--radius-app-bar);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding-top: env(safe-area-inset-top, 0px);
+  box-shadow: var(--shadow-app-bar);
+`
+
+const HeaderContent = styled.div<{ $align: 'left' | 'center' }>`
+  display: ${({ $align }) => $align === 'left' ? 'flex' : 'grid'};
+  height: var(--spacing-header);
+  align-items: center;
+  border-bottom: 1px solid var(--color-divider);
+  grid-template-columns: var(--spacing-header-slot) minmax(0, 1fr) var(--spacing-header-slot);
+  padding-inline: ${({ $align }) => $align === 'left' ? 'var(--spacing-page-x)' : '0'};
+`
+
+const BackSlot = styled.div`
+  display: flex;
+  justify-content: center;
+`
+
+const BackButton = styled.button`
+  display: flex;
+  width: var(--spacing-touch-target);
+  height: var(--spacing-touch-target);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+`
+
+const Title = styled.h1<{ $align: 'left' | 'center' }>`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: ${({ $align }) => $align};
+  font-size: var(--text-page-title);
+  line-height: var(--text-page-title--line-height);
+  font-weight: var(--font-weight-bold);
+`
+
+const RightAction = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
