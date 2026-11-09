@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import styled from 'styled-components'
 import { Outlet } from 'react-router'
 import Header from './Header'
@@ -9,6 +10,9 @@ type MainLayoutProps = {
   showBack?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
+  header?: ReactNode
+  home?: boolean
+  children?: ReactNode
 }
 
 export default function MainLayout({
@@ -16,12 +20,15 @@ export default function MainLayout({
   showBack = true,
   footerItems,
   headerAlign = 'center',
+  header,
+  home = false,
+  children,
 }: MainLayoutProps) {
   return (
     <LayoutRoot>
       <SkipLink href="#main-content">본문 바로가기</SkipLink>
-      <Header title={title} showBack={showBack} align={headerAlign} />
-      <Content id="main-content"><Outlet /></Content>
+      {header ?? <Header title={title} showBack={showBack} align={headerAlign} />}
+      <Content id="main-content" $home={home}>{children ?? <Outlet />}</Content>
       <Footer items={footerItems} />
     </LayoutRoot>
   )
@@ -59,9 +66,9 @@ const SkipLink = styled.a`
   }
 `
 
-const Content = styled.main`
+const Content = styled.main<{ $home: boolean }>`
   flex: 1;
-  padding-inline: var(--spacing-page-x);
-  padding-top: var(--spacing-page-top);
+  padding-inline: ${({ $home }) => $home ? '0' : 'var(--spacing-page-x)'};
+  padding-top: ${({ $home }) => $home ? '0' : 'var(--spacing-page-top)'};
   padding-bottom: calc(var(--spacing-content-bottom) + env(safe-area-inset-bottom, 0px));
 `

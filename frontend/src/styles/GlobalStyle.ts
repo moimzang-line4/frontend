@@ -32,6 +32,15 @@ export const GlobalStyle = createGlobalStyle`
   --color-button-disabled: #d4d4d4;
   --color-button-disabled-text: #78918c;
 
+  /* 홈 캘린더 */
+  --color-home-ink: #263e3a;
+  --color-page-background: #f7f8fa;
+  --color-home-divider: #e3eeea;
+  --color-calendar-meeting: #ddeeff;
+  --color-calendar-session: #fff0cd;
+  --color-calendar-performance: #e8f4ef;
+  --color-calendar-newcomer: #e8e1fa;
+
   /* 글자 크기 및 줄 높이 */
   --text-page-title: 18px;
   --text-page-title--line-height: 26px;

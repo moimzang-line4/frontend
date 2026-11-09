@@ -5,7 +5,7 @@ import MemberStepIndicator from "../../components/members/MemberStepIndicator";
 
 import type { MemberField, CreateMemberGroup } from "../../types/member";
 
-import * as S from "./MemberCreatePage.styles";
+import * as S from "../../styles/members/MemberCreatePage.styles";
 
 interface Props {
     onSubmit: (data: CreateMemberGroup) => void;
