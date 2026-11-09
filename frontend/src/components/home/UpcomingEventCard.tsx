@@ -7,7 +7,7 @@ type Props = { event: HomeSchedule; featured?: boolean }
 
 export default function UpcomingEventCard({ event, featured = false }: Props) {
   return (
-    <S.Card to={`/operations?event=${encodeURIComponent(event.id)}`} $featured={featured} aria-label={`${event.title} 운영 공간으로 이동`}>
+    <S.Card to={`/schedules/${encodeURIComponent(event.id)}`} $featured={featured} aria-label={`${event.title} 일정 상세로 이동`}>
       <S.Details>
         <div>
           <S.Category $featured={featured}>{event.categoryName ?? categoryLabels[event.category]} | {event.date.replaceAll('-', '.')}</S.Category>

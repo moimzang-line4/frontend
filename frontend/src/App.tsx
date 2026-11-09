@@ -1,8 +1,11 @@
 import styled from 'styled-components'
-import { Route, Routes, useNavigate } from 'react-router'
+import { Navigate, Route, Routes, useNavigate, useSearchParams } from 'react-router'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/home/HomePage'
 import ScheduleCreatePage from './pages/schedules/ScheduleCreatePage'
+import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage'
+import ScheduleEditPage from './pages/schedules/ScheduleEditPage'
+import ScheduleOperationPage from './pages/schedules/ScheduleOperationPage'
 
 import MemberListPage from './pages/members/MemberListPage'
 import MemberCreatePage from './pages/members/MemberCreatePage'
@@ -48,10 +51,16 @@ function MemberCreateRoute({
 // 기존 페이지 유지
 const pages = [
   { path: '/ai', title: 'AI' },
-  { path: '/operations', title: '운영 공간' },
   { path: '/files', title: '자료실' },
   { path: '/groups/new', title: '그룹 만들기' },
 ]
+
+function OperationsRoute() {
+  const [params] = useSearchParams()
+  const eventId = params.get('event')
+  if (eventId) return <Navigate to={`/schedules/${encodeURIComponent(eventId)}`} replace />
+  return <MainLayout title="운영 공간"><Placeholder>운영 공간 페이지 준비 중입니다.</Placeholder></MainLayout>
+}
 
 export default function App() {
   const { groups, createGroup } = useMemberGroups()
@@ -60,6 +69,10 @@ export default function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/schedules/new" element={<ScheduleCreatePage />} />
+      <Route path="/schedules/:scheduleId" element={<ScheduleDetailPage />} />
+      <Route path="/schedules/:scheduleId/edit" element={<ScheduleEditPage />} />
+      <Route path="/schedules/:scheduleId/operations/:menuId" element={<ScheduleOperationPage />} />
+      <Route path="/operations" element={<OperationsRoute />} />
       {/* 기존 페이지 */}
       {pages.map(({ path, title }) => (
         <Route

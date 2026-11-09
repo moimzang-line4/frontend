@@ -6,24 +6,30 @@ import DateTimeRow from '../../components/schedules/DateTimeRow'
 import CategorySheet from '../../components/schedules/CategorySheet'
 import useScheduleForm from '../../hooks/schedules/useScheduleForm'
 import useSchedules from '../../hooks/schedules/useSchedules'
+import type { Schedule } from '../../types/schedules/schedule'
 import * as S from '../../styles/schedules/ScheduleCreatePage.styles'
 
-export default function ScheduleCreatePage() {
+export default function ScheduleCreatePage({ initialSchedule }: { initialSchedule?: Schedule }) {
   const navigate = useNavigate()
-  const { draft, update, canSubmit, invalidRange, toSchedule } = useScheduleForm()
-  const { addSchedule } = useSchedules()
+  const { draft, update, canSubmit, invalidRange, toSchedule } = useScheduleForm(initialSchedule)
+  const { addSchedule, updateSchedule } = useSchedules()
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [error, setError] = useState('')
   return (
     <S.Page>
-      <Header title="일정 등록" />
+      <Header title={initialSchedule ? '일정 수정' : '일정 등록'} />
       <S.Form id="schedule-create-form" onSubmit={event => {
         event.preventDefault()
         const schedule = toSchedule()
         if (!schedule) return
         try {
-          addSchedule(schedule)
-          navigate(`/?date=${schedule.date}`, { replace: true })
+          if (initialSchedule) {
+            updateSchedule(initialSchedule.id, schedule)
+            navigate(`/schedules/${encodeURIComponent(initialSchedule.id)}`, { replace: true })
+          } else {
+            addSchedule(schedule)
+            navigate(`/?date=${schedule.date}`, { replace: true })
+          }
         } catch { setError('일정을 저장하지 못했어요. 브라우저 저장 공간을 확인하고 다시 시도해주세요.') }
       }}>
         <S.Field>
@@ -51,7 +57,7 @@ export default function ScheduleCreatePage() {
         </S.OperationCard>
         {error && <S.Error role="alert">{error}</S.Error>}
       </S.Form>
-      <S.ActionBar><S.SubmitButton type="submit" form="schedule-create-form" disabled={!canSubmit}>일정 등록하기</S.SubmitButton></S.ActionBar>
+      <S.ActionBar><S.SubmitButton type="submit" form="schedule-create-form" disabled={!canSubmit}>{initialSchedule ? '수정 완료' : '일정 등록하기'}</S.SubmitButton></S.ActionBar>
       {categoryOpen && <CategorySheet selectedId={draft.category?.id} onSelect={category => update('category', category)} onClose={() => setCategoryOpen(false)} />}
     </S.Page>
   )

@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import background from '../assets/navigation/tab-bar.svg'
 import homeIcon from '../assets/navigation/home.svg'
 import homeInactiveIcon from '../assets/navigation/home-inactive.svg'
@@ -36,6 +36,8 @@ type FooterProps = {
 export default function Footer({
   items = defaultFooterItems,
 }: FooterProps) {
+  const { pathname } = useLocation()
+  const scheduleSection = pathname.startsWith('/schedules/') && pathname !== '/schedules/new'
   return (
     <FooterRoot>
       <FooterContent>
@@ -44,15 +46,15 @@ export default function Footer({
         </BackgroundSlot>
         <Navigation aria-label="하단 메뉴">
           {items.map(({ label, to, icon, activeIcon, activeIconSize = 22, elevated, end }) => (
-            <MenuLink key={to} to={to} end={end} $elevated={Boolean(elevated)}>
+            <MenuLink key={to} to={to} end={end} data-section-active={to === '/operations' && scheduleSection} $elevated={Boolean(elevated)}>
               {({ isActive }) => (
                 <>
                   <IconSlot>
                     <Icon
-                      src={isActive && activeIcon ? activeIcon : icon}
+                      src={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIcon : icon}
                       alt=""
-                      width={isActive && activeIcon ? activeIconSize : 22}
-                      height={isActive && activeIcon ? activeIconSize : 22}
+                      width={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIconSize : 22}
+                      height={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIconSize : 22}
                     />
                   </IconSlot>
                   <Label>{label}</Label>
@@ -134,7 +136,7 @@ const MenuLink = styled(NavLink)<{ $elevated: boolean }>`
     line-height: var(--text-nav--line-height);
     font-weight: var(--font-weight-regular);
     color: var(--color-muted);
-    &[aria-current='page'] {
+    &[aria-current='page'], &[data-section-active='true'] {
       font-weight: var(--font-weight-bold);
       color: var(--color-primary-strong);
     }
