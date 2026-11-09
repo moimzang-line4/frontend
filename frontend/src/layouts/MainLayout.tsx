@@ -7,12 +7,14 @@ type MainLayoutProps = {
   title: string
   showBack?: boolean
   footerItems?: readonly FooterItem[]
+  headerAlign?: 'left' | 'center'
 }
 
 export default function MainLayout({
   title,
   showBack = true,
   footerItems,
+  headerAlign = 'center',
 }: MainLayoutProps) {
   return (
     <div
@@ -28,7 +30,11 @@ export default function MainLayout({
         본문 바로가기
       </a>
 
-      <Header title={title} showBack={showBack} />
+      <Header
+        title={title}
+        showBack={showBack}
+        align={headerAlign}
+      />
 
       <main
         id="main-content"
