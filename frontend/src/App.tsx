@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import { Route, Routes, useNavigate } from 'react-router'
 import MainLayout from './layouts/MainLayout'
+import HomePage from './pages/home/HomePage'
 
 import MemberListPage from './pages/members/MemberListPage'
 import MemberCreatePage from './pages/members/MemberCreatePage'
@@ -45,7 +46,6 @@ function MemberCreateRoute({
 
 // 기존 페이지 유지
 const pages = [
-  { path: '/', title: '홈' },
   { path: '/ai', title: 'AI' },
   { path: '/operations', title: '운영 공간' },
   { path: '/files', title: '자료실' },
@@ -57,6 +57,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       {/* 기존 페이지 */}
       {pages.map(({ path, title }) => (
         <Route
