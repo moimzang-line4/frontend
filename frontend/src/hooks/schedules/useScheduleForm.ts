@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import useCategories from './useCategories'
 import { scheduleColors } from '../../constants/schedules/options'
-import type { CategoryOption, NewSchedule } from '../../types/schedules/schedule'
+import type { CategoryOption, NewSchedule, Schedule } from '../../types/schedules/schedule'
 
 type Draft = {
   title: string
@@ -15,8 +16,17 @@ type Draft = {
   createOperationSpace: boolean
 }
 
-export default function useScheduleForm() {
-  const [draft, setDraft] = useState<Draft>({
+export default function useScheduleForm(initialSchedule?: Schedule) {
+  const { categories } = useCategories()
+  const [draft, setDraft] = useState<Draft>(() => initialSchedule ? {
+    title: initialSchedule.title,
+    color: initialSchedule.color ?? scheduleColors[0].value,
+    category: categories.find(item => item.label === initialSchedule.categoryName || (!initialSchedule.categoryName && item.kind === initialSchedule.category)) ?? { id: initialSchedule.category, kind: initialSchedule.category, label: initialSchedule.categoryName ?? ({ meeting: '정기회의', session: '세션', performance: '공연', newcomer: '신입공연', afterparty: '뒤풀이', custom: '일정' })[initialSchedule.category] },
+    allDay: initialSchedule.allDay ?? false,
+    date: initialSchedule.date, endDate: initialSchedule.endDate ?? initialSchedule.date,
+    startTime: initialSchedule.startTime ?? '', endTime: initialSchedule.endTime ?? '',
+    venue: initialSchedule.venue ?? '', createOperationSpace: initialSchedule.operationMenuCount !== undefined,
+  } : {
     title: '', color: scheduleColors[0].value, category: null, allDay: false,
     date: '', endDate: '', startTime: '', endTime: '', venue: '', createOperationSpace: true,
   })

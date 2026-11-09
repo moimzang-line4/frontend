@@ -66,5 +66,20 @@ export default function useSchedules() {
     window.dispatchEvent(new Event(changeEvent))
     return item
   }
-  return { schedules, addSchedule }
+  function updateSchedule(id: string, input: NewSchedule) {
+    if (!snapshot.some(item => item.id === id)) throw new Error('일정을 찾을 수 없어요.')
+    const { createOperationSpace, ...values } = input
+    const next = snapshot.map(item => {
+      if (item.id !== id) return item
+      const { operationMenuCount, ...previous } = item
+      return { ...previous, ...values, calendarLabel: input.title,
+        ...(input.allDay ? { startTime: undefined, endTime: undefined } : {}),
+        ...(createOperationSpace ? { operationMenuCount: operationMenuCount ?? 0 } : {}),
+      }
+    })
+    localStorage.setItem(storageKey, JSON.stringify(next))
+    snapshot = next
+    window.dispatchEvent(new Event(changeEvent))
+  }
+  return { schedules, addSchedule, updateSchedule }
 }

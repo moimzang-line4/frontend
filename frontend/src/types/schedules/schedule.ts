@@ -21,3 +21,5 @@ export type NewSchedule = Pick<Schedule, 'title' | 'date' | 'category' | 'catego
 }
 
 export type CategoryOption = { id: string; label: string; kind: ScheduleCategory }
+
+export type ScheduleMinute = { id: string; title: string; content: string; scheduleIds: string[] }

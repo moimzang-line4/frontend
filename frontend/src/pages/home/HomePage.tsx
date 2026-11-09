@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 import MainLayout from '../../layouts/MainLayout'
 import Button from '../../components/Button'
 import HomeHeader from '../../components/home/HomeHeader'
@@ -8,11 +8,10 @@ import UpcomingEventCard from '../../components/home/UpcomingEventCard'
 import HomeDialog from '../../components/home/HomeDialog'
 import SelectedDateSheet from '../../components/home/SelectedDateSheet'
 import useHomeCalendar from '../../hooks/home/useHomeCalendar'
-import type { HomeSchedule } from '../../types/home/schedule'
 import * as S from '../../styles/home/HomePage.styles'
 import * as D from '../../styles/home/HomeDialog.styles'
 
-type Modal = 'settings' | HomeSchedule | null
+type Modal = 'settings' | null
 
 export default function HomePage() {
   const calendar = useHomeCalendar()
@@ -26,7 +25,7 @@ export default function HomePage() {
           <S.Heading>{calendar.groupName} 일정 캘린더</S.Heading>
           <S.AddButton type="button" onClick={() => navigate('/schedules/new')}>＋ 일정 등록</S.AddButton>
         </S.SectionHeading>
-        <MonthCalendar {...calendar} onMonthChange={calendar.changeMonth} onSelectDate={date => { calendar.setSelectedDate(date); setDateSheetOpen(true) }} onSelectEvent={setModal} />
+        <MonthCalendar {...calendar} onMonthChange={calendar.changeMonth} onSelectDate={date => { calendar.setSelectedDate(date); setDateSheetOpen(true) }} onSelectEvent={event => navigate(`/schedules/${encodeURIComponent(event.id)}`)} />
         <S.Heading>다가오는 운영 일정</S.Heading>
         {calendar.upcoming.map((event, index) => <UpcomingEventCard key={event.id} event={event} featured={index === 0} />)}
         {calendar.storageError && <S.StorageNotice role="status">브라우저 저장 공간에 접근할 수 없어 변경 내용은 새로고침하면 사라질 수 있어요.</S.StorageNotice>}
@@ -43,20 +42,12 @@ export default function HomePage() {
           <Button type="submit">저장</Button>
         </D.Form>
       </HomeDialog>}
-      {modal && typeof modal === 'object' && <HomeDialog title={modal.title} onClose={() => setModal(null)}>
-        <D.Detail>
-          <p>{modal.date.replaceAll('-', '.')}{modal.startTime ? ` ${modal.startTime}` : ''}{modal.endDate ? ` ~ ${modal.endDate.replaceAll('-', '.')}${modal.endTime ? ` ${modal.endTime}` : ''}` : ''}{modal.allDay ? ' · 종일' : ''}</p>
-          {modal.categoryName && <p>{modal.categoryName}</p>}
-          {modal.venue && <p>{modal.venue}</p>}
-          {modal.operationMenuCount !== undefined && <Link to={`/operations?event=${encodeURIComponent(modal.id)}`}>운영 공간으로 이동</Link>}
-        </D.Detail>
-      </HomeDialog>}
       {dateSheetOpen && <SelectedDateSheet
         date={calendar.selectedDate}
         schedules={calendar.schedules}
         onClose={() => setDateSheetOpen(false)}
         onAdd={() => navigate('/schedules/new')}
-        onSelectEvent={setModal}
+        onSelectEvent={event => navigate(`/schedules/${encodeURIComponent(event.id)}`)}
       />}
     </MainLayout>
   )
