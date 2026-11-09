@@ -28,13 +28,13 @@ export default function MonthCalendar({ year, monthIndex, days, selectedDate, sc
       <S.Weekdays>{['일', '월', '화', '수', '목', '금', '토'].map(day => <span key={day}>{day}</span>)}</S.Weekdays>
       <S.Days>
         {days.map((cell, index) => (
-          <S.DayCell key={cell?.date ?? `empty-${index}`} $eventCount={cell ? schedules.filter(event => event.date === cell.date && event.calendarLabel).length : 0}>
+          <S.DayCell key={cell?.date ?? `empty-${index}`} $eventCount={cell ? schedules.filter(event => event.date <= cell.date && (event.endDate ?? event.date) >= cell.date && event.calendarLabel).length : 0}>
             {cell && <>
               <S.DayButton type="button" $selected={selectedDate === cell.date} aria-label={`${year}년 ${monthIndex + 1}월 ${cell.day}일`} aria-pressed={selectedDate === cell.date} onClick={() => onSelectDate(cell.date)}>
                 {cell.day}
               </S.DayButton>
-              {schedules.filter(event => event.date === cell.date && event.calendarLabel).map(event => (
-                <S.EventBadge type="button" key={event.id} $category={event.category} aria-label={`${cell.date} ${event.title} 일정 보기`} onClick={() => onSelectEvent(event)}>{event.calendarLabel}</S.EventBadge>
+              {schedules.filter(event => event.date <= cell.date && (event.endDate ?? event.date) >= cell.date && event.calendarLabel).map(event => (
+                <S.EventBadge type="button" key={event.id} $category={event.category} $color={event.color} aria-label={`${cell.date} ${event.title} 일정 보기`} onClick={() => onSelectEvent(event)}>{event.calendarLabel}</S.EventBadge>
               ))}
             </>}
           </S.DayCell>
