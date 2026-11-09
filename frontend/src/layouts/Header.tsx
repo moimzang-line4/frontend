@@ -6,6 +6,7 @@ type HeaderProps = {
   title: string
   showBack?: boolean
   onBack?: () => void
+  align?: 'left' | 'center'
   rightAction?: ReactNode
 }
 
@@ -13,6 +14,7 @@ export default function Header({
   title,
   showBack = true,
   onBack,
+  align = 'center',
   rightAction,
 }: HeaderProps) {
   const navigate = useNavigate()
@@ -40,13 +42,14 @@ export default function Header({
       "
     >
       <div
-        className="
-          grid h-header grid-cols-header items-center
-          border-b border-divider
-        "
+        className={
+          align === 'left'
+            ? 'flex h-header items-center border-b border-divider px-page-x'
+            : 'grid h-header grid-cols-header items-center border-b border-divider'
+        }
       >
-        <div className="flex justify-center">
-          {showBack && (
+        {showBack && (
+          <div className="flex justify-center">
             <button
               type="button"
               aria-label="뒤로가기"
@@ -63,16 +66,24 @@ export default function Header({
                 height={24}
               />
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        <h1 className="truncate text-center text-page-title font-bold">
+        <h1
+          className={
+            align === 'left'
+              ? 'truncate text-left text-page-title font-bold'
+              : 'truncate text-center text-page-title font-bold'
+          }
+        >
           {title}
         </h1>
 
-        <div className="flex items-center justify-center">
-          {rightAction}
-        </div>
+        {align === 'center' && (
+          <div className="flex items-center justify-center">
+            {rightAction}
+          </div>
+        )}
       </div>
     </header>
   )
