@@ -6,6 +6,7 @@ import HomeHeader from '../../components/home/HomeHeader'
 import MonthCalendar from '../../components/home/MonthCalendar'
 import UpcomingEventCard from '../../components/home/UpcomingEventCard'
 import HomeDialog from '../../components/home/HomeDialog'
+import SelectedDateSheet from '../../components/home/SelectedDateSheet'
 import useHomeCalendar from '../../hooks/home/useHomeCalendar'
 import type { HomeSchedule } from '../../types/home/schedule'
 import * as S from '../../styles/home/HomePage.styles'
@@ -17,6 +18,7 @@ export default function HomePage() {
   const calendar = useHomeCalendar()
   const navigate = useNavigate()
   const [modal, setModal] = useState<Modal>(null)
+  const [dateSheetOpen, setDateSheetOpen] = useState(false)
   return (
     <MainLayout title="moimzang" showBack={false} header={<HomeHeader onSettings={() => setModal('settings')} />} home>
       <S.Content>
@@ -24,7 +26,7 @@ export default function HomePage() {
           <S.Heading>{calendar.groupName} 일정 캘린더</S.Heading>
           <S.AddButton type="button" onClick={() => navigate('/schedules/new')}>＋ 일정 등록</S.AddButton>
         </S.SectionHeading>
-        <MonthCalendar {...calendar} onMonthChange={calendar.changeMonth} onSelectDate={calendar.setSelectedDate} onSelectEvent={setModal} />
+        <MonthCalendar {...calendar} onMonthChange={calendar.changeMonth} onSelectDate={date => { calendar.setSelectedDate(date); setDateSheetOpen(true) }} onSelectEvent={setModal} />
         <S.Heading>다가오는 운영 일정</S.Heading>
         {calendar.upcoming.map((event, index) => <UpcomingEventCard key={event.id} event={event} featured={index === 0} />)}
         {calendar.storageError && <S.StorageNotice role="status">브라우저 저장 공간에 접근할 수 없어 변경 내용은 새로고침하면 사라질 수 있어요.</S.StorageNotice>}
@@ -49,6 +51,13 @@ export default function HomePage() {
           {modal.operationMenuCount !== undefined && <Link to={`/operations?event=${encodeURIComponent(modal.id)}`}>운영 공간으로 이동</Link>}
         </D.Detail>
       </HomeDialog>}
+      {dateSheetOpen && <SelectedDateSheet
+        date={calendar.selectedDate}
+        schedules={calendar.schedules}
+        onClose={() => setDateSheetOpen(false)}
+        onAdd={() => navigate('/schedules/new')}
+        onSelectEvent={setModal}
+      />}
     </MainLayout>
   )
 }
