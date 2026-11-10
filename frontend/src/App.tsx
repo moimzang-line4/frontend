@@ -5,6 +5,9 @@ import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from
 import MainLayout from './layouts/MainLayout'
 
 import HomePage from './pages/home/HomePage'
+import SettingsPage from './pages/settings/SettingsPage'
+import GroupSelectionPage from './pages/groups/GroupSelectionPage'
+import useDemoGroup from './hooks/groups/useDemoGroup'
 import ScheduleCreatePage from './pages/schedules/ScheduleCreatePage'
 import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage'
 import ScheduleEditPage from './pages/schedules/ScheduleEditPage'
@@ -127,6 +130,11 @@ function OperationsRoute() {
   )
 }
 
+function GroupHomeRoute() {
+  const { isMember } = useDemoGroup()
+  return isMember ? <HomePage /> : <Navigate to="/groups" replace />
+}
+
 export default function App() {
   const { groups: savedGroups, createGroup, updateGroup, deleteGroup } = useMemberGroups()
   const {
@@ -154,7 +162,10 @@ export default function App() {
     <>
     <Routes>
       {/* 홈 */}
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<GroupHomeRoute />} />
+      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/groups" element={<GroupSelectionPage />} />
+      <Route path="/groups/join/:groupId" element={<GroupSelectionPage />} />
 
       {/* 일정 관리 */}
       <Route

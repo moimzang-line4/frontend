@@ -21,6 +21,11 @@ export function showAlert(
   emit()
 }
 
+export function dismissAlert() {
+  current = null
+  emit()
+}
+
 export function closeAlert() {
   const onConfirm = current?.onConfirm
   current = null
