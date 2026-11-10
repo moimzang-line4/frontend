@@ -37,11 +37,13 @@ export default function Header({
   return (
     <HeaderRoot>
       <HeaderContent $align={align}>
-        {showBack && (
+        {(showBack || align === 'center') && (
           <BackSlot>
-            <BackButton type="button" aria-label="뒤로가기" onClick={handleBack}>
-              <img src={backIcon} alt="" width={24} height={24} />
-            </BackButton>
+            {showBack && (
+              <BackButton type="button" aria-label="뒤로가기" onClick={handleBack}>
+                <img src={backIcon} alt="" width={24} height={24} />
+              </BackButton>
+            )}
           </BackSlot>
         )}
         <Title $align={align}>{title}</Title>
@@ -88,6 +90,8 @@ const BackButton = styled.button`
 `
 
 const Title = styled.h1<{ $align: 'left' | 'center' }>`
+  min-width: 0;
+  flex: ${({ $align }) => $align === 'left' ? 1 : 'initial'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

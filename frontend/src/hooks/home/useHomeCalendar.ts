@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import useSchedules from '../schedules/useSchedules'
+import useTodayDate from './useTodayDate'
 
 const groupKey = 'moimzang.home.group-name'
 
 export default function useHomeCalendar() {
+  const today = useTodayDate()
   const [searchParams] = useSearchParams()
   const dateParam = searchParams.get('date')
-  const initialDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : '2026-11-14'
+  const initialDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today
   const [month, setMonth] = useState(() => {
     const [year, month] = initialDate.split('-').map(Number)
     return new Date(year, month - 1, 1)
@@ -38,13 +40,13 @@ export default function useHomeCalendar() {
     })
   }, [year, monthIndex, prefix])
   const upcoming = useMemo(() => schedules
-    .filter(item => item.operationMenuCount !== undefined)
-    .sort((a, b) => a.date.localeCompare(b.date)), [schedules])
+    .filter(item => item.operationMenuCount !== undefined && (item.endDate ?? item.date) >= today)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.startTime ?? '').localeCompare(b.startTime ?? '') || a.id.localeCompare(b.id)), [schedules, today])
 
   function changeMonth(offset: number) {
     setMonth(current => new Date(current.getFullYear(), current.getMonth() + offset, 1))
   }
 
 
-  return { year, monthIndex, days, selectedDate, setSelectedDate, schedules, upcoming, changeMonth, groupName, setGroupName, storageError }
+  return { year, monthIndex, days, today, selectedDate, setSelectedDate, schedules, upcoming, changeMonth, groupName, setGroupName, storageError }
 }

@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { reconcileLegacyDemoSchedules } from '../../utils/schedules'
 import type { Schedule, NewSchedule, ScheduleCategory } from '../../types/schedules/schedule'
 
 const storageKey = 'moimzang.home.schedules.v1'
@@ -8,9 +9,8 @@ const sampleSchedules: Schedule[] = [
   { id: 'meeting', title: '정기회의', date: '2026-11-05', category: 'meeting', calendarLabel: '정기회의' },
   { id: 'session-1', title: '세션', date: '2026-11-08', category: 'session', calendarLabel: '세션' },
   { id: 'session-2', title: '세션', date: '2026-11-08', category: 'session', calendarLabel: '세션' },
-  { id: 'autumn-1', title: '가을  정기공연', date: '2026-11-14', category: 'performance', calendarLabel: '정기공연', venue: '얼라이브홀', operationMenuCount: 4 },
-  { id: 'autumn-2', title: '가을  정기공연', date: '2026-11-14', category: 'performance', venue: '얼라이브홀', operationMenuCount: 4 },
-  { id: 'newcomer', title: '신입공연', date: '2026-11-22', category: 'newcomer', calendarLabel: '신입공연' },
+  { id: 'autumn-1', title: '가을 정기공연', date: '2026-11-14', category: 'performance', calendarLabel: '가을 정기공연', venue: '얼라이브홀', operationMenuCount: 4 },
+  { id: 'newcomer', title: '신입공연', date: '2026-11-22', category: 'newcomer', calendarLabel: '신입공연', operationMenuCount: 4 },
 ]
 
 function isSchedule(value: unknown): value is Schedule {
@@ -27,7 +27,7 @@ function isSchedule(value: unknown): value is Schedule {
 function readSchedules(): Schedule[] {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null')
-    if (Array.isArray(saved) && saved.every(isSchedule)) return saved
+    if (Array.isArray(saved) && saved.every(isSchedule)) return reconcileLegacyDemoSchedules(saved)
   } catch { /* Storage can be unavailable or contain old data. */ }
   return sampleSchedules
 }
