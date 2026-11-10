@@ -11,7 +11,7 @@ export default function useScheduleDetail() {
   if (schedule) {
     const [year, month, day] = schedule.date.split('-').map(Number)
     const days = Math.round((Date.UTC(year, month - 1, day) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000)
-    countdown = days === 0 ? 'D-day' : days > 0 ? `D-${days}` : `D+${Math.abs(days)}`
+    countdown = days === 0 ? 'D-DAY' : days > 0 ? `D-${days}` : `D+${Math.abs(days)}`
   }
   return { schedule, countdown }
 }

@@ -18,9 +18,8 @@ export const Hero = styled.header`
 export const HeroBackground = styled.img`
   position: absolute;
   top: -28px;
-  left: 50%;
+  right: 0;
   max-width: none;
-  transform: translateX(-50%);
   pointer-events: none;
 `
 export const HeroNavigation = styled.div`
@@ -47,7 +46,7 @@ export const EditLink = styled(Link)`
 export const Metadata = styled.div`
   position: relative;
   display: flex;
-  max-width: calc(100% - 150px);
+  max-width: calc(100% - 165px);
   flex-direction: column;
   gap: 3px;
   margin: 21px 0 0 27px;
@@ -73,12 +72,18 @@ export const TimeVenue = styled.p`
   white-space: nowrap;
   text-overflow: ellipsis;
 `
-export const Countdown = styled.p`
+export const Countdown = styled.p<{ $length: number }>`
   position: absolute;
-  right: 35px;
-  bottom: 20px;
+  right: 0;
+  bottom: 21px;
+  width: 136px;
+  text-align: center;
+  white-space: nowrap;
   color: #5fa192;
-  font-size: 32px;
+  font-family: var(--font-sans);
+  font-size: ${({ $length }) => $length > 8 ? '20px' : $length > 6 ? '24px' : '32px'};
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
   line-height: 24px;
   font-weight: 800;
 `

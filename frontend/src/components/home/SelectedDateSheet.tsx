@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { HomeSchedule } from '../../types/home/schedule'
 import closeIcon from '../../assets/home/day-sheet-close.svg'
 import chevronIcon from '../../assets/home/day-sheet-chevron.svg'
+import { isScheduleOnDate } from '../../utils/schedules'
 import * as S from '../../styles/home/SelectedDateSheet.styles'
 
 type Props = {
@@ -27,7 +28,7 @@ export default function SelectedDateSheet({ date, schedules, onClose, onAdd, onS
   const [closing, setClosing] = useState(false)
   const [, month, day] = date.split('-').map(Number)
   const selectedSchedules = schedules
-    .filter(event => event.date <= date && (event.endDate ?? event.date) >= date)
+    .filter(event => isScheduleOnDate(event, date))
     .sort((a, b) => {
       if (Boolean(a.allDay) !== Boolean(b.allDay)) return a.allDay ? -1 : 1
       return (a.startTime ?? '').localeCompare(b.startTime ?? '')

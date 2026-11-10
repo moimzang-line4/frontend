@@ -11,7 +11,8 @@ type MainLayoutProps = {
   showFooter?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
-  header?: ReactNode
+  headerVariant?: 'default' | 'brand'
+  headerRightAction?: ReactNode
   home?: boolean
   children?: ReactNode
 }
@@ -22,7 +23,8 @@ export default function MainLayout({
   showFooter = true,
   footerItems,
   headerAlign = 'center',
-  header,
+  headerVariant = 'default',
+  headerRightAction,
   home = false,
   children,
 }: MainLayoutProps) {
@@ -32,13 +34,13 @@ export default function MainLayout({
         본문 바로가기
       </SkipLink>
 
-      {header ?? (
-        <Header
-          title={title}
-          showBack={showBack}
-          align={headerAlign}
-        />
-      )}
+      <Header
+        title={title}
+        showBack={showBack}
+        align={headerAlign}
+        variant={headerVariant}
+        rightAction={headerRightAction}
+      />
 
       <Content
         id="main-content"
