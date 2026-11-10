@@ -5,5 +5,5 @@ export type DemoGroup = {
   description: string
   generation: string
   ownerId: string
-  members: { id: string; name: string }[]
+  members: { id: string; name: string; profile: string }[]
 }

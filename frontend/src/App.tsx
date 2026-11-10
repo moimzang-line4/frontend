@@ -6,6 +6,9 @@ import MainLayout from './layouts/MainLayout'
 
 import HomePage from './pages/home/HomePage'
 import SettingsPage from './pages/settings/SettingsPage'
+import OperatorsPage from './pages/settings/OperatorsPage'
+import InviteLinkPage from './pages/settings/InviteLinkPage'
+import GroupEditPage from './pages/settings/GroupEditPage'
 import GroupSelectionPage from './pages/groups/GroupSelectionPage'
 import useDemoGroup from './hooks/groups/useDemoGroup'
 import ScheduleCreatePage from './pages/schedules/ScheduleCreatePage'
@@ -164,6 +167,9 @@ export default function App() {
       {/* 홈 */}
       <Route path="/" element={<GroupHomeRoute />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/settings/operators" element={<OperatorsPage />} />
+      <Route path="/settings/invite" element={<InviteLinkPage />} />
+      <Route path="/settings/group" element={<GroupEditPage />} />
       <Route path="/groups" element={<GroupSelectionPage />} />
       <Route path="/groups/join/:groupId" element={<GroupSelectionPage />} />
 

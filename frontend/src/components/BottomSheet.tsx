@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import * as S from '../styles/BottomSheet.styles'
 
@@ -6,13 +6,16 @@ type Props = {
   title: string
   description?: ReactNode
   onClose: () => void
-  children: ReactNode
+  children: ReactNode | ((close: (afterClose?: () => void) => void) => ReactNode)
 }
 
 // dialog 기반 공통 바텀시트 (열림/닫힘 애니메이션, 바깥 클릭·ESC 닫기)
 export default function BottomSheet({ title, description, onClose, children }: Props) {
+  const titleId = useId()
   const ref = useRef<HTMLDialogElement>(null)
   const [closing, setClosing] = useState(false)
+  const [afterClose, setAfterClose] = useState<(() => void) | undefined>()
+  function close(callback?: () => void) { setAfterClose(() => callback); setClosing(true) }
 
   useEffect(() => {
     ref.current?.showModal()
@@ -32,8 +35,8 @@ export default function BottomSheet({ title, description, onClose, children }: P
     <S.Sheet
       ref={ref}
       $closing={closing}
-      aria-labelledby="bottom-sheet-title"
-      onClose={onClose}
+      aria-labelledby={titleId}
+      onClose={() => { onClose(); afterClose?.() }}
       onCancel={event => { event.preventDefault(); setClosing(true) }}
       onClick={event => {
         const dialog = ref.current
@@ -44,7 +47,7 @@ export default function BottomSheet({ title, description, onClose, children }: P
     >
       <S.HandleRow aria-hidden="true" />
       <S.Header>
-        <S.Title id="bottom-sheet-title">{title}</S.Title>
+        <S.Title id={titleId}>{title}</S.Title>
         <S.CloseButton type="button" aria-label="닫기" onClick={() => setClosing(true)}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M5 5l10 10M15 5L5 15" stroke="#253F3B" strokeWidth="1.8" strokeLinecap="round" />
@@ -52,7 +55,7 @@ export default function BottomSheet({ title, description, onClose, children }: P
         </S.CloseButton>
       </S.Header>
       {description && <S.Description>{description}</S.Description>}
-      <S.Body>{children}</S.Body>
+      <S.Body>{typeof children === 'function' ? children(close) : children}</S.Body>
     </S.Sheet>
   )
 }
