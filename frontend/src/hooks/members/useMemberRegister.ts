@@ -10,6 +10,7 @@ import type {
 import {
     INITIAL_MEMBER_REGISTER_FORM,
 } from '../../constants/members/memberRegister'
+import { showAlert } from '../useAlert'
 
 interface Props {
     groupId: number
@@ -47,12 +48,12 @@ export default function useMemberRegister({
         )
 
         if (hasEmptyRequiredField) {
-            alert('모든 필수 항목을 입력해주세요.')
+            showAlert('모든 필수 항목을 입력해주세요.')
             return
         }
 
         if (!agreed) {
-            alert('개인정보 수집 및 이용에 동의해주세요.')
+            showAlert('개인정보 수집 및 이용에 동의해주세요.')
             return
         }
 
@@ -69,7 +70,7 @@ export default function useMemberRegister({
 
         // 실제 등록 API 연결 전 임시 동작
         console.log('부원 등록 데이터:', payload)
-        alert('등록 요청이 완료되었습니다.')
+        showAlert('등록 요청이 완료되었습니다.')
     }
 
     return {

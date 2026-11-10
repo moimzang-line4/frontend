@@ -1,53 +1,49 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 
-import Button from '../../components/Button'
-import MemberStepIndicator from '../../components/members/MemberStepIndicator'
+import MemberTabs from '../../components/members/MemberTabs'
 import MemberStatusBadge from '../../components/members/MemberStatusBadge'
 
-import { MOCK_MEMBER_GROUP } from '../../constants/members/memberRegister'
+import type { MemberGroup } from '../../types/members/member'
 
 import * as S from '../../styles/members/MemberLinkPage.styles'
+import { showAlert } from '../../hooks/useAlert'
 
-export default function MemberLinkPage() {
+interface Props {
+    group: MemberGroup
+}
+
+export default function MemberLinkPage({ group }: Props) {
     const navigate = useNavigate()
-    const { id } = useParams<{ id: string }>()
 
     const [copied, setCopied] = useState(false)
+    const timerRef = useRef<number | undefined>(undefined)
 
-    // 추후 기존 useMemberGroups 훅 또는 API 조회로 교체
-    const group = MOCK_MEMBER_GROUP
+    useEffect(() => () => window.clearTimeout(timerRef.current), [])
 
-    const groupId = id ?? String(group.id)
-
-    const registerLink = `${window.location.origin}/members/register/${groupId}`
+    const registerPath = `/members/register/${group.id}`
+    const registerLink = `${window.location.origin}${registerPath}`
+    const displayLink = registerLink.replace(/^https?:\/\//, '')
 
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(registerLink)
 
             setCopied(true)
-
-            setTimeout(() => {
-                setCopied(false)
-            }, 2000)
+            window.clearTimeout(timerRef.current)
+            timerRef.current = window.setTimeout(() => setCopied(false), 2000)
         } catch {
-            alert('링크 복사에 실패했습니다.')
+            showAlert('링크 복사에 실패했어요.', { description: '잠시 후 다시 시도해주세요.' })
         }
-    }
-
-    const handlePreview = () => {
-        navigate(`/members/register/${groupId}`)
     }
 
     return (
         <S.Container>
-            <MemberStepIndicator currentStep="link" />
+            <MemberTabs groupId={group.id} />
 
             <S.GroupInfo>
                 <S.GroupTitleRow>
                     <S.GroupTitle>{group.name}</S.GroupTitle>
-
                     <MemberStatusBadge status={group.status} />
                 </S.GroupTitleRow>
 
@@ -59,17 +55,17 @@ export default function MemberLinkPage() {
             <S.LinkCard>
                 <S.CardTitle>부원 등록 링크</S.CardTitle>
 
-                <S.LinkBox>
-                    {registerLink}
+                <S.LinkBox title={registerLink}>
+                    <S.LinkText>{displayLink}</S.LinkText>
                 </S.LinkBox>
 
-                <Button onClick={handleCopy}>
+                <S.CopyButton type="button" onClick={handleCopy}>
                     {copied ? '복사 완료!' : '링크 복사하기'}
-                </Button>
+                </S.CopyButton>
 
-                <S.Description>
+                <S.CardDescription>
                     복사한 링크를 부원에게 보내 등록을 받아보세요.
-                </S.Description>
+                </S.CardDescription>
             </S.LinkCard>
 
             <S.PreviewSection>
@@ -77,15 +73,15 @@ export default function MemberLinkPage() {
 
                 <S.PreviewButton
                     type="button"
-                    onClick={handlePreview}
+                    onClick={() => navigate(registerPath)}
                 >
                     부원 등록 폼 미리보기
                 </S.PreviewButton>
-
-                <S.Description>
-                    링크에 접속해 직접 등록하면 부원 목록에 자동 추가됩니다.
-                </S.Description>
             </S.PreviewSection>
+
+            <S.Note>
+                링크에 접속해 직접 등록하면 부원 목록에 자동 추가됩니다.
+            </S.Note>
         </S.Container>
     )
 }

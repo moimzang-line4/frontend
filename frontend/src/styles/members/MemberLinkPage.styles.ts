@@ -1,33 +1,47 @@
 import styled from 'styled-components'
 
+// MainLayout 상단 여백(24px) → 피그마 16px에 맞춤
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   width: 100%;
+  margin-top: -8px;
+  padding-bottom: 24px;
 `
 
 export const GroupInfo = styled.section`
-  margin-top: 36px;
-  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
 `
 
 export const GroupTitleRow = styled.div`
   display: flex;
+  height: 28px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 `
 
 export const GroupTitle = styled.h2`
-  margin: 0;
-  font-size: 18px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  line-height: 26px;
   font-weight: 700;
-  color: #18251f;
+  color: #19251f;
 `
 
 export const MemberCount = styled.p`
-  margin-top: 12px;
   font-size: 13px;
+  line-height: 20px;
+  font-weight: 400;
   color: #78918c;
 `
 
@@ -35,78 +49,101 @@ export const LinkCard = styled.section`
   display: flex;
   flex-direction: column;
   gap: 12px;
-
-  margin-top: 32px;
+  width: 100%;
   padding: 16px;
-
   border: 1px solid #ddece7;
   border-radius: 16px;
   background: #ffffff;
 `
 
 export const CardTitle = styled.h3`
-  margin: 0;
   font-size: 14px;
+  line-height: 21px;
   font-weight: 700;
-  color: #18251f;
+  color: #19251f;
 `
 
 export const LinkBox = styled.div`
   display: flex;
+  height: 44px;
   align-items: center;
-
-  width: 100%;
-  min-height: 44px;
-  padding: 12px;
-  box-sizing: border-box;
-
+  padding: 8px 10px;
   border-radius: 10px;
   background: #f7f8fa;
-
-  font-size: 12px;
-  color: #78918c;
-
-  overflow-wrap: anywhere;
 `
 
-export const Description = styled.p`
-  margin: 0;
-  font-size: 11px;
-  line-height: 18px;
+export const LinkText = styled.span`
+  min-width: 0;
+  flex: 1 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 19px;
+  color: #53625a;
+`
+
+export const CopyButton = styled.button`
+  display: flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #438b7e;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+
+  &:active {
+    filter: brightness(0.95);
+  }
+`
+
+export const CardDescription = styled.p`
+  font-size: 12px;
+  line-height: 19px;
   color: #78918c;
 `
 
 export const PreviewSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 14px;
-
-  margin-top: 24px;
+  gap: 10px;
+  width: 100%;
 `
 
 export const SectionTitle = styled.h3`
-  margin: 0;
   font-size: 14px;
+  line-height: 20px;
   font-weight: 700;
-  color: #18251f;
+  color: #253f3b;
 `
 
 export const PreviewButton = styled.button`
+  display: flex;
   width: 100%;
   height: 48px;
-
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
   border: 1px solid #ddece7;
   border-radius: 10px;
-
   background: #ffffff;
-  color: #344a43;
-
   font-size: 13px;
+  line-height: 20px;
   font-weight: 700;
-
+  color: #253f3b;
   cursor: pointer;
 
   &:active {
     background: #f7f8fa;
   }
+`
+
+export const Note = styled.p`
+  font-size: 11px;
+  line-height: 18px;
+  color: #78918c;
 `

@@ -1,16 +1,18 @@
 export type MemberGroupStatus = "open" | "closed";
 
+export interface MemberField {
+    id: string;
+    label: string;
+    enabled: boolean;
+}
+
 export interface MemberGroup {
     id: number;
     name: string;
     memberCount: number;
     status: MemberGroupStatus;
-}
-
-export interface MemberField {
-    id: string;
-    label: string;
-    enabled: boolean;
+    deadline?: string;
+    fields?: MemberField[];
 }
 
 export interface CreateMemberGroup {

@@ -29,7 +29,7 @@ export const GlobalStyle = createGlobalStyle`
 
   --color-button-start: #5aa997;
   --color-button-end: #438b7e;
-  --color-button-disabled: #d4d4d4;
+  --color-button-disabled: #DBE5E0;
   --color-button-disabled-text: #78918c;
 
   /* 홈 캘린더 */

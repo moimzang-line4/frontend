@@ -2,21 +2,20 @@ import styled from 'styled-components'
 import type { MemberRegistrationStatus } from '../../types/members/memberRegister'
 
 export const Badge = styled.span<{
-    $status: MemberRegistrationStatus
+  $status: MemberRegistrationStatus
 }>`
   display: inline-flex;
+  height: 18px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  line-height: 18px;
+  font-weight: 700;
+  white-space: nowrap;
 
-  padding: 4px 10px;
-  border-radius: 20px;
-
-  font-size: 11px;
-  font-weight: 600;
-
-  color: ${({ $status }) =>
-        $status === 'open' ? '#C77953' : '#666666'};
-
-  background: ${({ $status }) =>
-        $status === 'open' ? '#FFEBE2' : '#EEEEEE'};
+  color: ${({ $status }) => ($status === 'open' ? '#A15B31' : '#424242')};
+  background: ${({ $status }) => ($status === 'open' ? '#FFEBDE' : '#EEEEEE')};
 `

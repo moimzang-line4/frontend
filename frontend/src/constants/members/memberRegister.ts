@@ -48,6 +48,8 @@ export const INITIAL_MEMBER_REGISTER_FORM: MemberRegisterForm = {
     department: '',
     phone: '',
     studentId: '',
+    part: '',
+    grade: '',
 }
 
 // API 연결 전 화면 확인용 임시 데이터
