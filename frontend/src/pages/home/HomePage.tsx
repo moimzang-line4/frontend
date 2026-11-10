@@ -19,7 +19,7 @@ export default function HomePage() {
   const [modal, setModal] = useState<Modal>(null)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   return (
-    <MainLayout title="홈" showBack={false} headerRightAction={
+    <MainLayout title="moimzang" headerAlign="left" headerVariant="brand" showBack={false} headerRightAction={
       <S.SettingsButton type="button" aria-label="설정" onClick={() => setModal('settings')}>
         <img src={settingsIcon} alt="" width={24} height={24} />
       </S.SettingsButton>

@@ -20,7 +20,7 @@ export default function ScheduleDetailPage() {
         <S.HeroBackground src={heroBackground} alt="" width={390} height={211} />
         <S.HeroNavigation><S.Brand to="/" aria-label="moimzang 홈">moimzang</S.Brand><S.EditLink to={`${basePath}/edit`}>수정하기</S.EditLink></S.HeroNavigation>
         <S.Metadata><S.Date>{dateText}</S.Date><S.Title title={schedule.title}>{schedule.title}</S.Title><S.TimeVenue title={`${timeText}${schedule.venue ? ` · ${schedule.venue}` : ''}`}>{timeText}{schedule.venue ? ` · ${schedule.venue}` : ''}</S.TimeVenue></S.Metadata>
-        <S.Countdown aria-label={`일정까지 ${countdown}`}>{countdown}</S.Countdown>
+        <S.Countdown $length={countdown.length} aria-label={`일정까지 ${countdown}`}>{countdown}</S.Countdown>
       </S.Hero>
       <S.Content>
         {schedule.operationMenuCount !== undefined ? <S.MenuGrid aria-label="일정 운영 메뉴">
