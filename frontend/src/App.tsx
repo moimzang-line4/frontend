@@ -10,6 +10,9 @@ import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage'
 import ScheduleEditPage from './pages/schedules/ScheduleEditPage'
 import ScheduleOperationPage from './pages/schedules/ScheduleOperationPage'
 import AttendancePage from './pages/attendance/AttendancePage'
+import PaymentsPage from './pages/payments/PaymentsPage'
+import ReceiptCameraPage from './pages/payments/ReceiptCameraPage'
+import ReceiptResultPage from './pages/payments/ReceiptResultPage'
 
 import MemberListPage from './pages/members/MemberListPage'
 import MemberCreatePage from './pages/members/MemberCreatePage'
@@ -174,6 +177,14 @@ export default function App() {
         path="/schedules/:scheduleId/operations/attendance"
         element={<AttendancePage />}
       />
+
+      {/* 운영 메뉴 > 정산·입금 */}
+      <Route path="/schedules/:scheduleId/operations/payments" element={<PaymentsPage tab="receipts" />} />
+      <Route path="/schedules/:scheduleId/operations/payments/members" element={<PaymentsPage tab="members" />} />
+      <Route path="/schedules/:scheduleId/operations/payments/notice" element={<PaymentsPage tab="notice" />} />
+      <Route path="/schedules/:scheduleId/operations/payments/receipts/camera" element={<ReceiptCameraPage />} />
+      <Route path="/schedules/:scheduleId/operations/payments/receipts/new" element={<ReceiptResultPage key="scan" mode="scan" />} />
+      <Route path="/schedules/:scheduleId/operations/payments/receipts/manual" element={<ReceiptResultPage key="manual" mode="manual" />} />
 
       <Route
         path="/schedules/:scheduleId/operations/:menuId"
