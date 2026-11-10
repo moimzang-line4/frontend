@@ -1,5 +1,6 @@
 import chevron from '../../assets/home/calendar-chevron.svg'
 import type { HomeSchedule } from '../../types/home/schedule'
+import { isScheduleOnDate } from '../../utils/schedules'
 import * as S from '../../styles/home/MonthCalendar.styles'
 
 type Props = {
@@ -7,13 +8,14 @@ type Props = {
   monthIndex: number
   days: ({ day: number; date: string } | null)[]
   selectedDate: string
+  today: string
   schedules: HomeSchedule[]
   onMonthChange: (offset: number) => void
   onSelectDate: (date: string) => void
   onSelectEvent: (event: HomeSchedule) => void
 }
 
-export default function MonthCalendar({ year, monthIndex, days, selectedDate, schedules, onMonthChange, onSelectDate, onSelectEvent }: Props) {
+export default function MonthCalendar({ year, monthIndex, days, selectedDate, today, schedules, onMonthChange, onSelectDate, onSelectEvent }: Props) {
   return (
     <S.Calendar aria-label="월간 일정 캘린더">
       <S.MonthNavigation>
@@ -28,13 +30,13 @@ export default function MonthCalendar({ year, monthIndex, days, selectedDate, sc
       <S.Weekdays>{['일', '월', '화', '수', '목', '금', '토'].map(day => <span key={day}>{day}</span>)}</S.Weekdays>
       <S.Days>
         {days.map((cell, index) => (
-          <S.DayCell key={cell?.date ?? `empty-${index}`} $eventCount={cell ? schedules.filter(event => event.date <= cell.date && (event.endDate ?? event.date) >= cell.date && event.calendarLabel).length : 0}>
+          <S.DayCell key={cell?.date ?? `empty-${index}`} $eventCount={cell ? schedules.filter(event => isScheduleOnDate(event, cell.date)).length : 0}>
             {cell && <>
-              <S.DayButton type="button" $selected={selectedDate === cell.date} aria-label={`${year}년 ${monthIndex + 1}월 ${cell.day}일`} aria-pressed={selectedDate === cell.date} onClick={() => onSelectDate(cell.date)}>
+              <S.DayButton type="button" $today={today === cell.date} aria-current={today === cell.date ? 'date' : undefined} aria-label={`${year}년 ${monthIndex + 1}월 ${cell.day}일`} aria-pressed={selectedDate === cell.date} onClick={() => onSelectDate(cell.date)}>
                 {cell.day}
               </S.DayButton>
-              {schedules.filter(event => event.date <= cell.date && (event.endDate ?? event.date) >= cell.date && event.calendarLabel).map(event => (
-                <S.EventBadge type="button" key={event.id} $category={event.category} $color={event.color} aria-label={`${cell.date} ${event.title} 일정 보기`} onClick={() => onSelectEvent(event)}>{event.calendarLabel}</S.EventBadge>
+              {schedules.filter(event => isScheduleOnDate(event, cell.date)).map(event => (
+                <S.EventBadge type="button" key={event.id} $category={event.category} $color={event.color} aria-label={`${cell.date} ${event.title} 일정 보기`} title={event.title} onClick={() => onSelectEvent(event)}>{event.title}</S.EventBadge>
               ))}
             </>}
           </S.DayCell>

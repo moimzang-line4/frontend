@@ -55,13 +55,13 @@ export const DayCell = styled.div<{ $eventCount: number }>`
   padding-top: 4px;
   gap: 2px;
 `
-export const DayButton = styled.button<{ $selected: boolean }>`
+export const DayButton = styled.button<{ $today: boolean }>`
   font-size: 11px;
   font-weight: var(--font-weight-bold);
   line-height: 1.4;
-  padding: ${({ $selected }) => $selected ? '0.5px 2px' : '0'};
-  color: ${({ $selected }) => $selected ? 'white' : 'inherit'};
-  background: ${({ $selected }) => $selected ? 'linear-gradient(119.96deg, #438b7e 10.022%, #96cebc 131.72%)' : 'transparent'};
+  padding: ${({ $today }) => $today ? '0.5px 2px' : '0'};
+  color: ${({ $today }) => $today ? 'white' : 'inherit'};
+  background: ${({ $today }) => $today ? 'linear-gradient(119.96deg, #438b7e 10.022%, #96cebc 131.72%)' : 'transparent'};
   border-radius: 999px;
   cursor: pointer;
 `

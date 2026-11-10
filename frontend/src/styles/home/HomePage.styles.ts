@@ -1,26 +1,5 @@
 import styled from 'styled-components'
 
-export const Header = styled.header`
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  padding-top: env(safe-area-inset-top, 0px);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-home-divider);
-`
-export const HeaderRow = styled.div`
-  height: var(--spacing-header);
-  padding: 0 6px 0 var(--spacing-page-x);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`
-export const Brand = styled.h1`
-  color: var(--color-primary-strong);
-  font-size: 24px;
-  font-weight: 800;
-  line-height: normal;
-`
 export const SettingsButton = styled.button`
   display: flex;
   width: var(--spacing-touch-target);
@@ -61,4 +40,10 @@ export const AddButton = styled.button`
 export const StorageNotice = styled.p`
   font-size: 12px;
   color: #a33b30;
+`
+
+export const EmptyMessage = styled.p`
+  font-size: 13px;
+  color: var(--color-muted);
+  padding-block: 12px;
 `
