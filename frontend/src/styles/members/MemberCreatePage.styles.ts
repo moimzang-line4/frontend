@@ -8,10 +8,12 @@ export const Container = styled.div`
   flex-direction: column;
 `;
 
-export const Content = styled.main`
+// 탭이 있을 때(명단방 수정) 상단 여백을 피그마 16px에 맞춤
+export const Content = styled.div<{ $withTabs?: boolean }>`
   flex: 1;
   min-height: 0;
   padding: 0;
+  margin-top: ${({ $withTabs }) => ($withTabs ? "-8px" : "0")};
 `;
 
 export const FormGroup = styled.div`

@@ -6,6 +6,8 @@ export type MemberRegisterFieldKey =
     | 'department'
     | 'phone'
     | 'studentId'
+    | 'part'
+    | 'grade'
 
 export type MemberRegisterForm = Record<
     MemberRegisterFieldKey,

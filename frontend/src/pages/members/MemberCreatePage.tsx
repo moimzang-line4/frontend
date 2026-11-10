@@ -1,14 +1,19 @@
 import { useRef, useState } from "react";
 
 import MemberFieldToggle from "../../components/members/MemberFieldToggle";
-import MemberStepIndicator from "../../components/members/MemberStepIndicator";
+import MemberTabs from "../../components/members/MemberTabs";
 import Button from "../../components/Button";
 
 import type { MemberField, CreateMemberGroup } from "../../types/members/member";
 
 import * as S from "../../styles/members/MemberCreatePage.styles";
+import { showAlert } from "../../hooks/useAlert";
 
 interface Props {
+    // 명단방 수정 탭에서 사용할 때 전달
+    groupId?: number;
+    initialValues?: CreateMemberGroup;
+    submitText?: string;
     onSubmit: (data: CreateMemberGroup) => void;
 }
 
@@ -20,10 +25,26 @@ const initialFields: MemberField[] = [
     { id: "phone", label: "전화번호", enabled: false },
 ];
 
-export default function MemberCreatePage({ onSubmit }: Props) {
-    const [name, setName] = useState("");
-    const [deadline, setDeadline] = useState("");
-    const [fields, setFields] = useState(initialFields);
+// 저장된 항목 설정을 기본 순서에 맞춰 병합
+const mergeFields = (saved?: MemberField[]) =>
+    initialFields.map((field) => ({
+        ...field,
+        enabled:
+            saved?.find((item) => item.id === field.id)?.enabled ??
+            field.enabled,
+    }));
+
+export default function MemberCreatePage({
+    groupId,
+    initialValues,
+    submitText = "명단방 생성하기",
+    onSubmit,
+}: Props) {
+    const [name, setName] = useState(initialValues?.name ?? "");
+    const [deadline, setDeadline] = useState(initialValues?.deadline ?? "");
+    const [fields, setFields] = useState(() =>
+        initialValues ? mergeFields(initialValues.fields) : initialFields
+    );
 
     const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,12 +68,12 @@ export default function MemberCreatePage({ onSubmit }: Props) {
 
     const handleSubmit = () => {
         if (!name.trim()) {
-            alert("명단방 이름을 입력해주세요.");
+            showAlert("명단방 이름을 입력해주세요.");
             return;
         }
 
         if (!deadline) {
-            alert("등록 마감일을 선택해주세요.");
+            showAlert("등록 마감일을 선택해주세요.");
             return;
         }
 
@@ -66,8 +87,8 @@ export default function MemberCreatePage({ onSubmit }: Props) {
     return (
         <S.Container>
 
-            <S.Content>
-                <MemberStepIndicator currentStep="create" />
+            <S.Content $withTabs={groupId !== undefined}>
+                {groupId !== undefined && <MemberTabs groupId={groupId} />}
 
                 <S.FormGroup>
                     <S.Label htmlFor="groupName">명단방 이름</S.Label>
@@ -164,7 +185,7 @@ export default function MemberCreatePage({ onSubmit }: Props) {
 
             <S.BottomAction>
                 <Button onClick={handleSubmit}>
-                    명단방 생성하기
+                    {submitText}
                 </Button>
             </S.BottomAction>
         </S.Container>

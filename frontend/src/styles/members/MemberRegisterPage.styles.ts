@@ -119,3 +119,75 @@ export const BottomAction = styled.div`
   border-top: 1px solid #e4ebe8;
   background: #ffffff;
 `
+
+/* 등록 완료 화면 (피그마: 등록 완료) */
+export const CompleteContent = styled.main`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 95px 20px 40px;
+  text-align: center;
+`
+
+export const CompleteIcon = styled.svg`
+  flex-shrink: 0;
+  margin-bottom: 20px;
+`
+
+export const CompleteTitle = styled.h2`
+  margin: 0;
+  font-size: 16px;
+  line-height: 23px;
+  font-weight: 700;
+  color: #253f3b;
+`
+
+export const CompleteDescription = styled.p`
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 19px;
+  color: #78918c;
+`
+
+export const GroupCard = styled.div`
+  display: flex;
+  width: 262px;
+  max-width: 100%;
+  align-items: center;
+  gap: 22px;
+  margin-top: 16px;
+  padding: 12px 26px;
+  border: 1px solid #ffffff;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px 0 rgba(255, 255, 255, 0.8) inset, 0 6px 18px 0 rgba(63, 141, 124, 0.09);
+  text-align: left;
+`
+
+export const GroupIcon = styled.svg`
+  flex-shrink: 0;
+  color: #96cebc;
+`
+
+export const GroupText = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+`
+
+export const GroupLabel = styled.span`
+  font-size: 12px;
+  line-height: 18px;
+  color: #69766f;
+`
+
+export const GroupName = styled.strong`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 700;
+  color: #17231c;
+`
