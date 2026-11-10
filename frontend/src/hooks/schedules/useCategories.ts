@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { defaultCategories } from '../../constants/schedules/options'
 import type { CategoryOption } from '../../types/schedules/schedule'
 
 const storageKey = 'moimzang.schedule.categories.v1'
@@ -9,10 +8,10 @@ export default function useCategories() {
       const saved: unknown = JSON.parse(localStorage.getItem(storageKey) ?? 'null')
       if (Array.isArray(saved)) {
         const valid = saved.filter((item): item is CategoryOption => item && typeof item.id === 'string' && typeof item.label === 'string' && item.kind === 'custom')
-        return [...defaultCategories, ...valid]
+        return valid
       }
-    } catch { /* Keep the default categories if storage is unavailable. */ }
-    return defaultCategories
+    } catch { /* Start empty if storage is unavailable. */ }
+    return []
   })
   function addCategory(label: string) {
     const existing = categories.find(item => item.label === label.trim())
