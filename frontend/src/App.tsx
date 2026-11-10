@@ -79,7 +79,7 @@ export default function App() {
       ))}
 
       {/* 부원 명단 목록 */}
-      <Route element={<MainLayout title="부원" showBack={false} headerAlign="left"/>}>
+      <Route element={<MainLayout title="부원" showBack={false} headerAlign="left" />}>
         <Route
           path="/members"
           element={<MemberListRoute groups={groups} />}
@@ -87,7 +87,15 @@ export default function App() {
       </Route>
 
       {/* 새 명단방 생성 */}
-      <Route element={<MainLayout title="새 명단방 만들기" showBack />}>
+      <Route
+        element={
+          <MainLayout
+            title="새 명단방 만들기"
+            showBack
+            showFooter={false}
+          />
+        }
+      >
         <Route
           path="/members/new"
           element={

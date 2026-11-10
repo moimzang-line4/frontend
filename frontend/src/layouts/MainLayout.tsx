@@ -6,6 +6,7 @@ import type { FooterItem } from './Footer'
 type MainLayoutProps = {
   title: string
   showBack?: boolean
+  showFooter?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
 }
@@ -13,6 +14,7 @@ type MainLayoutProps = {
 export default function MainLayout({
   title,
   showBack = true,
+  showFooter = true,
   footerItems,
   headerAlign = 'center',
 }: MainLayoutProps) {
@@ -20,7 +22,7 @@ export default function MainLayout({
     <div
       className="
         mx-auto flex min-h-dvh w-full
-        max-w-app flex-col bg-surface
+        max-w-app flex-col bg-[#F7F8FA]
       "
     >
       <a
@@ -38,12 +40,14 @@ export default function MainLayout({
 
       <main
         id="main-content"
-        className="flex-1 px-page-x pt-page-top pb-layout"
+        className={`flex-1 min-h-0 px-page-x pt-page-top ${
+          showFooter ? 'pb-layout' : 'pb-0'
+        }`}
       >
         <Outlet />
       </main>
 
-      <Footer items={footerItems} />
+      {showFooter && <Footer items={footerItems} />}
     </div>
   )
 }

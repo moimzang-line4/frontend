@@ -1,6 +1,7 @@
 import MemberGroupCard from '../../components/members/MemberGroupCard'
 import type { MemberGroup } from '../../types/member'
 import * as S from './MemberListPage.styles'
+import Button from "../../components/Button";
 
 interface Props {
     groups: MemberGroup[]
@@ -25,9 +26,9 @@ export default function MemberListPage({
                 ))}
             </S.GroupList>
 
-            <S.CreateButton type="button" onClick={onCreate}>
+            <Button onClick={onCreate}>
                 + 새 명단
-            </S.CreateButton>
+            </Button>
         </S.Container>
     )
 }
