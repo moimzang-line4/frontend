@@ -30,7 +30,7 @@ export default function MemberFieldToggle({
 }
 
 const Container = styled.div<{ $enabled: boolean }>`
-  height: 43px;
+  height: 48px;
   padding: 0 12px;
   display: flex;
   align-items: center;
@@ -42,27 +42,30 @@ const Container = styled.div<{ $enabled: boolean }>`
 `;
 
 const Label = styled.span`
-  font-size: 12px;
-  color: #444444;
+    font-size: 14px;
+    color: #253f3b;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
 `;
 
 const Toggle = styled.button<{ $enabled: boolean }>`
-  width: 36px;
-  height: 21px;
+  width: 40px;
+  height: 24px;
   padding: 3px;
   display: flex;
   align-items: center;
   border: none;
-  border-radius: 20px;
+  border-radius: 12px;
   background: ${({ $enabled }) =>
-    $enabled ? "#459887" : "#dce7e3"};
+    $enabled ? "#438b7e" : "#dce5e2"};
   cursor: pointer;
   transition: background 0.2s;
 `;
 
 const Circle = styled.span<{ $enabled: boolean }>`
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: white;
   transform: ${({ $enabled }) =>

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import MemberFieldToggle from "../../components/members/MemberFieldToggle";
 import MemberStepIndicator from "../../components/members/MemberStepIndicator";
+import Button from "../../components/Button";
 
-import type { MemberField, CreateMemberGroup } from "../../types/member";
+import type { MemberField, CreateMemberGroup } from "../../types/members/member";
 
 import * as S from "../../styles/members/MemberCreatePage.styles";
 
@@ -23,6 +24,16 @@ export default function MemberCreatePage({ onSubmit }: Props) {
     const [name, setName] = useState("");
     const [deadline, setDeadline] = useState("");
     const [fields, setFields] = useState(initialFields);
+
+    const dateInputRef = useRef<HTMLInputElement>(null);
+
+    const formatDate = (date: string) => {
+        if (!date) return "등록 마감일을 선택해주세요.";
+
+        const [year, month, day] = date.split("-");
+
+        return `${year.slice(2)}. ${Number(month)}. ${Number(day)}.`;
+    };
 
     const toggleField = (id: string) => {
         setFields((prev) =>
@@ -63,7 +74,7 @@ export default function MemberCreatePage({ onSubmit }: Props) {
                     <S.Input
                         id="groupName"
                         type="text"
-                        placeholder="2027년 1학기 음샘"
+                        placeholder="명단방 이름을 입력해주세요."
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
@@ -71,12 +82,53 @@ export default function MemberCreatePage({ onSubmit }: Props) {
 
                 <S.FormGroup>
                     <S.Label htmlFor="deadline">등록 마감일</S.Label>
-                    <S.Input
-                        id="deadline"
-                        type="date"
-                        value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
-                    />
+
+                    <S.DateWrapper
+                        onClick={() => dateInputRef.current?.showPicker()}
+                    >
+                        <S.CalendarIcon>
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <rect x="3" y="5" width="18" height="16" rx="2" />
+                                <path d="M7 3v4M17 3v4M3 10h18" />
+                            </svg>
+                        </S.CalendarIcon>
+
+                        <S.DateText $placeholder={!deadline}>
+                            {formatDate(deadline)}
+                        </S.DateText>
+
+                        <S.ArrowIcon>
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="m6 9 6 6 6-6" />
+                            </svg>
+                        </S.ArrowIcon>
+
+                        <S.HiddenDateInput
+                            ref={dateInputRef}
+                            id="deadline"
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                        />
+                    </S.DateWrapper>
                 </S.FormGroup>
 
                 <S.FieldSection>
@@ -111,9 +163,9 @@ export default function MemberCreatePage({ onSubmit }: Props) {
             </S.Content>
 
             <S.BottomAction>
-                <S.SubmitButton type="button" onClick={handleSubmit}>
+                <Button onClick={handleSubmit}>
                     명단방 생성하기
-                </S.SubmitButton>
+                </Button>
             </S.BottomAction>
         </S.Container>
     );

@@ -8,6 +8,7 @@ import type { FooterItem } from './Footer'
 type MainLayoutProps = {
   title: string
   showBack?: boolean
+  showFooter?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
   header?: ReactNode
@@ -18,6 +19,7 @@ type MainLayoutProps = {
 export default function MainLayout({
   title,
   showBack = true,
+  showFooter = true,
   footerItems,
   headerAlign = 'center',
   header,
@@ -26,10 +28,27 @@ export default function MainLayout({
 }: MainLayoutProps) {
   return (
     <LayoutRoot>
-      <SkipLink href="#main-content">본문 바로가기</SkipLink>
-      {header ?? <Header title={title} showBack={showBack} align={headerAlign} />}
-      <Content id="main-content" $home={home}>{children ?? <Outlet />}</Content>
-      <Footer items={footerItems} />
+      <SkipLink href="#main-content">
+        본문 바로가기
+      </SkipLink>
+
+      {header ?? (
+        <Header
+          title={title}
+          showBack={showBack}
+          align={headerAlign}
+        />
+      )}
+
+      <Content
+        id="main-content"
+        $home={home}
+        $showFooter={showFooter}
+      >
+        {children ?? <Outlet />}
+      </Content>
+
+      {showFooter && <Footer items={footerItems} />}
     </LayoutRoot>
   )
 }
@@ -41,7 +60,7 @@ const LayoutRoot = styled.div`
   width: 100%;
   max-width: var(--container-app);
   flex-direction: column;
-  background: var(--color-surface);
+  background: #F7F8FA;
 `
 
 const SkipLink = styled.a`
@@ -54,6 +73,7 @@ const SkipLink = styled.a`
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+
   &:focus {
     position: static;
     width: auto;
@@ -66,9 +86,21 @@ const SkipLink = styled.a`
   }
 `
 
-const Content = styled.main<{ $home: boolean }>`
+const Content = styled.main<{
+  $home: boolean
+  $showFooter: boolean
+}>`
   flex: 1;
-  padding-inline: ${({ $home }) => $home ? '0' : 'var(--spacing-page-x)'};
-  padding-top: ${({ $home }) => $home ? '0' : 'var(--spacing-page-top)'};
-  padding-bottom: calc(var(--spacing-content-bottom) + env(safe-area-inset-bottom, 0px));
+  min-height: 0;
+
+  padding-inline: ${({ $home }) =>
+    $home ? '0' : 'var(--spacing-page-x)'};
+
+  padding-top: ${({ $home }) =>
+    $home ? '0' : 'var(--spacing-page-top)'};
+
+  padding-bottom: ${({ $showFooter }) =>
+    $showFooter
+      ? 'calc(var(--spacing-content-bottom) + env(safe-area-inset-bottom, 0px))'
+      : '0'};
 `
