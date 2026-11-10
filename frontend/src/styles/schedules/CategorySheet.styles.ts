@@ -3,15 +3,15 @@ import styled, { keyframes } from 'styled-components'
 const enter = keyframes`from { transform: translateY(100%); } to { transform: translateY(0); }`
 const leave = keyframes`from { transform: translateY(0); } to { transform: translateY(100%); }`
 const dim = keyframes`from { opacity: 0; } to { opacity: 1; }`
-export const Sheet = styled.dialog<{ $closing: boolean }>`
+export const Sheet = styled.dialog<{ $closing: boolean; $empty: boolean }>`
   position: fixed;
   inset: auto 0 0;
   width: 100%;
   max-width: var(--container-app);
-  min-height: min(382px, 85dvh);
+  min-height: min(${({ $empty }) => $empty ? '268px' : '382px'}, 85dvh);
   max-height: 85dvh;
   margin: 0 auto;
-  padding: 8px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  padding: 8px 20px calc(${({ $empty }) => $empty ? '40px' : '24px'} + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   border: none;
   border-radius: 24px 24px 0 0;
@@ -103,4 +103,16 @@ export const Error = styled.p`
   margin-top: 8px;
   font-size: 12px;
   color: #b43b34;
+`
+
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 24px 0 34px;
+  text-align: center;
+  line-height: 1.4;
+  strong { color: #8c8c8c; font-size: 14px; font-weight: 700; }
+  p { color: #b3b3b3; font-size: 12px; font-weight: 500; }
 `
