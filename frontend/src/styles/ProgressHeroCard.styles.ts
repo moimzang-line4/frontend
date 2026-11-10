@@ -117,7 +117,9 @@ export const Track = styled.div`
   background: #6fa59b;
 `
 
+// 0%일 때도 피그마처럼 작은 점(12px)으로 표시
 export const Fill = styled.div`
+  min-width: 12px;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(180deg, #77bcb0 0%, #f2fbfa 100%);
