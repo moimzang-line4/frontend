@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { MemberGroup, CreateMemberGroup } from "../types/member";
+import type { MemberGroup, CreateMemberGroup } from "../../types/members/member";
 
 const initialGroups: MemberGroup[] = [
     {

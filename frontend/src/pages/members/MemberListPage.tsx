@@ -1,7 +1,7 @@
 import MemberGroupCard from '../../components/members/MemberGroupCard'
-import type { MemberGroup } from '../../types/member'
-import * as S from './MemberListPage.styles'
+import type { MemberGroup } from '../../types/members/member'
 import Button from "../../components/Button";
+import * as S from '../../styles/members/MemberListPage.styles'
 
 interface Props {
     groups: MemberGroup[]

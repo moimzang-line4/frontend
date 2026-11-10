@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import type { MemberGroup, MemberGroupStatus } from "../../types/member";
+import type { MemberGroup, MemberGroupStatus } from "../../types/members/member";
 
 interface Props {
   group: MemberGroup;

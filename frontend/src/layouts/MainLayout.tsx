@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+import styled from 'styled-components'
 import { Outlet } from 'react-router'
 import Header from './Header'
 import Footer from './Footer'
@@ -9,6 +11,9 @@ type MainLayoutProps = {
   showFooter?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
+  header?: ReactNode
+  home?: boolean
+  children?: ReactNode
 }
 
 export default function MainLayout({
@@ -17,37 +22,85 @@ export default function MainLayout({
   showFooter = true,
   footerItems,
   headerAlign = 'center',
+  header,
+  home = false,
+  children,
 }: MainLayoutProps) {
   return (
-    <div
-      className="
-        mx-auto flex min-h-dvh w-full
-        max-w-app flex-col bg-[#F7F8FA]
-      "
-    >
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:p-3"
-      >
+    <LayoutRoot>
+      <SkipLink href="#main-content">
         본문 바로가기
-      </a>
+      </SkipLink>
 
-      <Header
-        title={title}
-        showBack={showBack}
-        align={headerAlign}
-      />
+      {header ?? (
+        <Header
+          title={title}
+          showBack={showBack}
+          align={headerAlign}
+        />
+      )}
 
-      <main
+      <Content
         id="main-content"
-        className={`flex-1 min-h-0 px-page-x pt-page-top ${
-          showFooter ? 'pb-layout' : 'pb-0'
-        }`}
+        $home={home}
+        $showFooter={showFooter}
       >
-        <Outlet />
-      </main>
+        {children ?? <Outlet />}
+      </Content>
 
       {showFooter && <Footer items={footerItems} />}
-    </div>
+    </LayoutRoot>
   )
 }
+
+const LayoutRoot = styled.div`
+  margin-inline: auto;
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: var(--container-app);
+  flex-direction: column;
+  background: #F7F8FA;
+`
+
+const SkipLink = styled.a`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+
+  &:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 12px;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+`
+
+const Content = styled.main<{
+  $home: boolean
+  $showFooter: boolean
+}>`
+  flex: 1;
+  min-height: 0;
+
+  padding-inline: ${({ $home }) =>
+    $home ? '0' : 'var(--spacing-page-x)'};
+
+  padding-top: ${({ $home }) =>
+    $home ? '0' : 'var(--spacing-page-top)'};
+
+  padding-bottom: ${({ $showFooter }) =>
+    $showFooter
+      ? 'calc(var(--spacing-content-bottom) + env(safe-area-inset-bottom, 0px))'
+      : '0'};
+`

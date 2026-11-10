@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router'
+import styled, { css } from 'styled-components'
+import { NavLink, useLocation } from 'react-router'
 import background from '../assets/navigation/tab-bar.svg'
 import homeIcon from '../assets/navigation/home.svg'
 import homeInactiveIcon from '../assets/navigation/home-inactive.svg'
@@ -35,79 +36,126 @@ type FooterProps = {
 export default function Footer({
   items = defaultFooterItems,
 }: FooterProps) {
+  const { pathname } = useLocation()
+  const scheduleSection = pathname.startsWith('/schedules/') && pathname !== '/schedules/new'
   return (
-    <footer
-      className="
-        fixed bottom-0 left-1/2 z-30
-        w-full max-w-app -translate-x-1/2
-        bg-surface pb-safe
-      "
-    >
-      <div className="relative h-footer">
-        <div
-          aria-hidden="true"
-          className="
-            pointer-events-none absolute inset-x-0
-            -top-footer-curve h-footer-background overflow-hidden
-          "
-        >
-          <img
-            src={background}
-            alt=""
-            width={390}
-            height={98}
-            className="absolute left-1/2 max-w-none -translate-x-1/2"
-          />
-        </div>
-
-        <nav
-          aria-label="하단 메뉴"
-          className="relative grid grid-cols-5"
-        >
+    <FooterRoot>
+      <FooterContent>
+        <BackgroundSlot aria-hidden="true">
+          <Background src={background} alt="" width={390} height={98} />
+        </BackgroundSlot>
+        <Navigation aria-label="하단 메뉴">
           {items.map(({ label, to, icon, activeIcon, activeIconSize = 22, elevated, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                elevated
-                  ? `
-                    relative -top-footer-offset
-                    flex size-ai-button flex-col
-                    items-center justify-center justify-self-center
-                    gap-0.5 rounded-ai bg-ai-gradient
-                    text-nav-ai font-bold text-white drop-shadow-ai
-                  `
-                  : `
-                    mt-footer-offset flex h-footer-item min-w-0
-                    flex-col items-center justify-center
-                    gap-1 rounded-control text-nav
-                    ${
-                      isActive
-                        ? 'font-bold text-primary-strong'
-                        : 'font-regular text-muted'
-                    }
-                  `
-              }
-            >
+            <MenuLink key={to} to={to} end={end} data-section-active={to === '/operations' && scheduleSection} $elevated={Boolean(elevated)}>
               {({ isActive }) => (
                 <>
-                  <span className="flex size-icon shrink-0 items-center justify-center">
-                    <img
-                      src={isActive && activeIcon ? activeIcon : icon}
+                  <IconSlot>
+                    <Icon
+                      src={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIcon : icon}
                       alt=""
-                      width={isActive && activeIcon ? activeIconSize : 22}
-                      height={isActive && activeIcon ? activeIconSize : 22}
-                      className="shrink-0"
+                      width={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIconSize : 22}
+                      height={(isActive || (to === '/operations' && scheduleSection)) && activeIcon ? activeIconSize : 22}
                     />
-                  </span>
-                  <span className="whitespace-nowrap">{label}</span>
+                  </IconSlot>
+                  <Label>{label}</Label>
                 </>
               )}
-            </NavLink>
+            </MenuLink>
           ))}
-        </nav>
-      </div>
-    </footer>
+        </Navigation>
+      </FooterContent>
+    </FooterRoot>
   )
 }
+
+const FooterRoot = styled.footer`
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  z-index: 30;
+  width: 100%;
+  max-width: var(--container-app);
+  transform: translateX(-50%);
+  background: var(--color-surface);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+`
+
+const FooterContent = styled.div`
+  position: relative;
+  height: var(--spacing-footer);
+`
+
+const BackgroundSlot = styled.div`
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: calc(-1 * var(--spacing-footer-curve));
+  height: var(--spacing-footer-background);
+  overflow: hidden;
+`
+
+const Background = styled.img`
+  position: absolute;
+  left: 50%;
+  max-width: none;
+  transform: translateX(-50%);
+`
+
+const Navigation = styled.nav`
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+`
+
+const MenuLink = styled(NavLink)<{ $elevated: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  ${({ $elevated }) => $elevated ? css`
+    position: relative;
+    top: calc(-1 * var(--spacing-footer-offset));
+    width: var(--spacing-ai-button);
+    height: var(--spacing-ai-button);
+    justify-self: center;
+    gap: 2px;
+    border-radius: var(--radius-ai);
+    background-image: linear-gradient(126.87deg, var(--color-button-start) 10.714%, var(--color-button-end) 82.143%);
+    font-size: var(--text-nav-ai);
+    line-height: var(--text-nav-ai--line-height);
+    font-weight: var(--font-weight-bold);
+    color: white;
+    filter: drop-shadow(var(--drop-shadow-ai));
+  ` : css`
+    margin-top: var(--spacing-footer-offset);
+    height: var(--spacing-footer-item);
+    min-width: 0;
+    gap: 4px;
+    border-radius: var(--radius-control);
+    font-size: var(--text-nav);
+    line-height: var(--text-nav--line-height);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-muted);
+    &[aria-current='page'], &[data-section-active='true'] {
+      font-weight: var(--font-weight-bold);
+      color: var(--color-primary-strong);
+    }
+  `}
+`
+
+const IconSlot = styled.span`
+  display: flex;
+  width: var(--spacing-icon);
+  height: var(--spacing-icon);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+`
+
+const Icon = styled.img`
+  flex-shrink: 0;
+`
+
+const Label = styled.span`
+  white-space: nowrap;
+`

@@ -1,42 +1,33 @@
 import type { ButtonHTMLAttributes } from 'react'
+import styled from 'styled-components'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>
 
-export default function Button({
-  children,
-  type = 'button',
-  disabled = false,
-  className = '',
-  ...props
-}: ButtonProps) {
-  return (
-    <button
-      {...props}
-      type={type}
-      disabled={disabled}
-      className={`
-        flex h-[48px] w-full shrink-0
-        items-center justify-center
-        rounded-[12px] px-[16px]
-        font-sans text-button font-bold
-        border border-solid border-white/20
-        ${
-          disabled
-            ? `
-              cursor-not-allowed
-              bg-button-disabled text-button-disabled-text
-            `
-            : `
-              cursor-pointer bg-button-gradient
-              text-white
-              shadow-[0_5px_14px_rgba(63,143,128,0.18)]
-              active:brightness-95
-            `
-        }
-        ${className}
-      `}
-    >
-      {children}
-    </button>
-  )
+export default function Button({ children, type = 'button', disabled = false, ...props }: ButtonProps) {
+  return <StyledButton {...props} type={type} disabled={disabled}>{children}</StyledButton>
 }
+
+const StyledButton = styled.button`
+  display: flex;
+  height: var(--spacing-button);
+  width: 100%;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-button);
+  padding-inline: 16px;
+  font-family: var(--font-sans);
+  font-size: var(--text-button);
+  line-height: var(--text-button--line-height);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  color: white;
+  background-image: linear-gradient(169.64deg, var(--color-button-start) 10.714%, var(--color-button-end) 82.143%);
+  &:active:not(:disabled) { filter: brightness(0.95); }
+  &:disabled {
+    cursor: not-allowed;
+    background-image: none;
+    background-color: var(--color-button-disabled);
+    color: var(--color-button-disabled-text);
+  }
+`

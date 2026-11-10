@@ -4,9 +4,9 @@ import MemberFieldToggle from "../../components/members/MemberFieldToggle";
 import MemberStepIndicator from "../../components/members/MemberStepIndicator";
 import Button from "../../components/Button";
 
-import type { MemberField, CreateMemberGroup } from "../../types/member";
+import type { MemberField, CreateMemberGroup } from "../../types/members/member";
 
-import * as S from "./MemberCreatePage.styles";
+import * as S from "../../styles/members/MemberCreatePage.styles";
 
 interface Props {
     onSubmit: (data: CreateMemberGroup) => void;
