@@ -35,20 +35,23 @@ export default function CategorySheet({ selectedId, onSelect, onClose }: Props) 
   }
 
   return (
-    <S.Sheet ref={ref} $closing={closing} aria-labelledby="category-sheet-title" onClose={onClose} onCancel={event => { event.preventDefault(); setClosing(true) }} onClick={event => {
+    <S.Sheet ref={ref} $closing={closing} $empty={categories.length === 0} aria-labelledby="category-sheet-title" onClose={onClose} onCancel={event => { event.preventDefault(); setClosing(true) }} onClick={event => {
       if (event.target !== ref.current) return
       const rect = ref.current.getBoundingClientRect()
       if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) setClosing(true)
     }}>
       <S.HandleRow aria-hidden="true" />
       <S.Header><h2 id="category-sheet-title">카테고리 선택</h2><S.CloseButton type="button" aria-label="닫기" onClick={() => setClosing(true)}><img src={closeIcon} alt="" width={20} height={20} /></S.CloseButton></S.Header>
-      <S.Options aria-label="카테고리 목록">
+      {categories.length === 0 ? <S.EmptyState>
+        <strong>새 카테고리를 추가해주세요</strong>
+        <p>모임에 맞는 카테고리를 추가해 보세요.</p>
+      </S.EmptyState> : <S.Options aria-label="카테고리 목록">
         {categories.map(option => (
           <S.Option key={option.id} type="button" $selected={selectedId === option.id} aria-pressed={selectedId === option.id} onClick={() => choose(option)}>
             <span>{option.label}</span>{selectedId === option.id && <img src={checkIcon} alt="" width={22} height={22} />}
           </S.Option>
         ))}
-      </S.Options>
+      </S.Options>}
       {adding ? <S.AddForm onSubmit={event => {
         event.preventDefault()
         const name = nameRef.current?.value.trim()
