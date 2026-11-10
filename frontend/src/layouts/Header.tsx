@@ -5,6 +5,7 @@ import backIcon from '../assets/navigation/back.svg'
 
 type HeaderProps = {
   title: string
+  variant?: 'default' | 'brand'
   showBack?: boolean
   onBack?: () => void
   align?: 'left' | 'center'
@@ -13,6 +14,7 @@ type HeaderProps = {
 
 export default function Header({
   title,
+  variant = 'default',
   showBack = true,
   onBack,
   align = 'center',
@@ -36,7 +38,7 @@ export default function Header({
 
   return (
     <HeaderRoot>
-      <HeaderContent $align={align}>
+      <HeaderContent $align={align} $brand={variant === 'brand'}>
         {(showBack || align === 'center') && (
           <BackSlot>
             {showBack && (
@@ -46,8 +48,8 @@ export default function Header({
             )}
           </BackSlot>
         )}
-        <Title $align={align}>{title}</Title>
-        {align === 'center' && <RightAction>{rightAction}</RightAction>}
+        <Title $align={align} $brand={variant === 'brand'}>{title}</Title>
+        {(align === 'center' || rightAction) && <RightAction>{rightAction}</RightAction>}
       </HeaderContent>
     </HeaderRoot>
   )
@@ -65,13 +67,14 @@ const HeaderRoot = styled.header`
   box-shadow: var(--shadow-app-bar);
 `
 
-const HeaderContent = styled.div<{ $align: 'left' | 'center' }>`
+const HeaderContent = styled.div<{ $align: 'left' | 'center'; $brand: boolean }>`
   display: ${({ $align }) => $align === 'left' ? 'flex' : 'grid'};
   height: var(--spacing-header);
   align-items: center;
   border-bottom: 1px solid var(--color-divider);
   grid-template-columns: var(--spacing-header-slot) minmax(0, 1fr) var(--spacing-header-slot);
-  padding-inline: ${({ $align }) => $align === 'left' ? 'var(--spacing-page-x)' : '0'};
+  padding-left: ${({ $align }) => $align === 'left' ? 'var(--spacing-page-x)' : '0'};
+  padding-right: ${({ $align, $brand }) => $align === 'left' ? ($brand ? '6px' : 'var(--spacing-page-x)') : '0'};
 `
 
 const BackSlot = styled.div`
@@ -89,16 +92,17 @@ const BackButton = styled.button`
   border-radius: var(--radius-control);
 `
 
-const Title = styled.h1<{ $align: 'left' | 'center' }>`
+const Title = styled.h1<{ $align: 'left' | 'center'; $brand: boolean }>`
   min-width: 0;
   flex: ${({ $align }) => $align === 'left' ? 1 : 'initial'};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: ${({ $align }) => $align};
-  font-size: var(--text-page-title);
-  line-height: var(--text-page-title--line-height);
-  font-weight: var(--font-weight-bold);
+  color: ${({ $brand }) => $brand ? 'var(--color-primary-strong)' : 'inherit'};
+  font-size: ${({ $brand }) => $brand ? '24px' : 'var(--text-page-title)'};
+  line-height: ${({ $brand }) => $brand ? 'normal' : 'var(--text-page-title--line-height)'};
+  font-weight: ${({ $brand }) => $brand ? 800 : 'var(--font-weight-bold)'};
 `
 
 const RightAction = styled.div`

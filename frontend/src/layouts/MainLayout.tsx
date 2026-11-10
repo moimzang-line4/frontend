@@ -11,6 +11,7 @@ type MainLayoutProps = {
   showFooter?: boolean
   footerItems?: readonly FooterItem[]
   headerAlign?: 'left' | 'center'
+  headerVariant?: 'default' | 'brand'
   headerRightAction?: ReactNode
   home?: boolean
   children?: ReactNode
@@ -22,6 +23,7 @@ export default function MainLayout({
   showFooter = true,
   footerItems,
   headerAlign = 'center',
+  headerVariant = 'default',
   headerRightAction,
   home = false,
   children,
@@ -36,6 +38,7 @@ export default function MainLayout({
         title={title}
         showBack={showBack}
         align={headerAlign}
+        variant={headerVariant}
         rightAction={headerRightAction}
       />
 
