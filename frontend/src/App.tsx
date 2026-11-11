@@ -39,6 +39,7 @@ import { showAlert } from './hooks/useAlert'
 
 const MeetingFormPage = lazy(() => import('./pages/meetings/MeetingFormPage'))
 const MeetingRunPage = lazy(() => import('./pages/meetings/MeetingRunPage'))
+const MeetingLinkPage = lazy(() => import('./pages/meetings/MeetingLinkPage'))
 
 // 부원 명단 목록 라우트
 function MemberListRoute({
@@ -172,6 +173,7 @@ export default function App() {
       <Route path="/groups" element={<GroupSelectionPage />} />
       <Route path="/groups/join/:groupId" element={<GroupSelectionPage />} />
 
+      <Route path="/schedules/:scheduleId/meetings/link" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingLinkPage /></Suspense>} />
       <Route path="/meetings/new" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
       <Route path="/meetings/:meetingId" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
       <Route path="/meetings/:meetingId/run" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingRunPage /></Suspense>} />
