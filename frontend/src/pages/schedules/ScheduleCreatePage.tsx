@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import Header from '../../layouts/Header'
 import ColorPicker from '../../components/schedules/ColorPicker'
 import DateTimeRow from '../../components/schedules/DateTimeRow'
@@ -11,6 +11,7 @@ import * as S from '../../styles/schedules/ScheduleCreatePage.styles'
 
 export default function ScheduleCreatePage({ initialSchedule }: { initialSchedule?: Schedule }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const { draft, update, canSubmit, invalidRange, toSchedule } = useScheduleForm(initialSchedule)
   const { addSchedule, updateSchedule } = useSchedules()
   const [categoryOpen, setCategoryOpen] = useState(false)
@@ -28,7 +29,7 @@ export default function ScheduleCreatePage({ initialSchedule }: { initialSchedul
             navigate(`/schedules/${encodeURIComponent(initialSchedule.id)}`, { replace: true })
           } else {
             addSchedule(schedule)
-            navigate(`/?date=${schedule.date}`, { replace: true })
+            navigate(params.get('from') === 'operations' ? '/operations' : `/?date=${schedule.date}`, { replace: true })
           }
         } catch { setError('일정을 저장하지 못했어요. 브라우저 저장 공간을 확인하고 다시 시도해주세요.') }
       }}>

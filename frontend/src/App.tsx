@@ -5,6 +5,7 @@ import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from
 import MainLayout from './layouts/MainLayout'
 
 import HomePage from './pages/home/HomePage'
+import OperationsPage from './pages/operations/OperationsPage'
 import SettingsPage from './pages/settings/SettingsPage'
 import OperatorsPage from './pages/settings/OperatorsPage'
 import InviteLinkPage from './pages/settings/InviteLinkPage'
@@ -124,13 +125,7 @@ function OperationsRoute() {
     )
   }
 
-  return (
-    <MainLayout title="운영 공간">
-      <Placeholder>
-        운영 공간 페이지 준비 중입니다.
-      </Placeholder>
-    </MainLayout>
-  )
+  return <OperationsPage />
 }
 
 function GroupHomeRoute() {
