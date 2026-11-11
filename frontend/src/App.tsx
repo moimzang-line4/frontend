@@ -41,6 +41,9 @@ const MeetingFormPage = lazy(() => import('./pages/meetings/MeetingFormPage'))
 const MeetingRunPage = lazy(() => import('./pages/meetings/MeetingRunPage'))
 const MeetingLinkPage = lazy(() => import('./pages/meetings/MeetingLinkPage'))
 
+const OperationNotesPage = lazy(() => import('./pages/notes/OperationNotesPage'))
+const OperationNoteFormPage = lazy(() => import('./pages/notes/OperationNoteFormPage'))
+
 // 부원 명단 목록 라우트
 function MemberListRoute({
   groups,
@@ -193,6 +196,10 @@ export default function App() {
         path="/schedules/:scheduleId/edit"
         element={<ScheduleEditPage />}
       />
+
+      <Route path="/schedules/:scheduleId/operations/notes" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNotesPage /></Suspense>} />
+      <Route path="/schedules/:scheduleId/operations/notes/new" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
+      <Route path="/schedules/:scheduleId/operations/notes/:noteId" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
 
       {/* 운영 메뉴 > 참석·출석 (다른 메뉴보다 먼저 매칭됨) */}
       <Route
