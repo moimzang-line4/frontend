@@ -64,7 +64,7 @@ export default function MeetingFormPage() {
   const { meetingId } = useParams()
   const [params] = useSearchParams()
   const { schedules } = useSchedules()
-  const sourceScheduleId = meetingId ? undefined : params.get('scheduleId') || undefined
+  const sourceScheduleId = params.get('scheduleId') || undefined
   const { meetings } = useMeetings()
   const meeting = meetings.find(item => item.id === meetingId)
   if (sourceScheduleId && !schedules.some(schedule => schedule.id === sourceScheduleId)) return <S.Page><Header title="회의 만들기" /><S.Notice><h1>연결할 일정을 찾을 수 없어요</h1><Link to="/operations?type=minute">회의록 목록으로 이동</Link></S.Notice></S.Page>

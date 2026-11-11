@@ -14,5 +14,9 @@ export default function useScheduleMinutes(scheduleId?: string) {
     if (!scheduleId) return
     saveMeetings(getMeetings().map(item => item.id === id && !item.scheduleIds.includes(scheduleId) ? { ...item, scheduleIds: [...item.scheduleIds, scheduleId] } : item))
   }
-  return { minutes, linked: minutes.filter(item => scheduleId && item.scheduleIds.includes(scheduleId)), available: minutes.filter(item => !scheduleId || !item.scheduleIds.includes(scheduleId)), create, link }
+  function unlink(id: string) {
+    if (!scheduleId) return
+    saveMeetings(getMeetings().map(item => item.id === id ? { ...item, scheduleIds: item.scheduleIds.filter(value => value !== scheduleId) } : item))
+  }
+  return { minutes, linked: minutes.filter(item => scheduleId && item.scheduleIds.includes(scheduleId)), available: minutes.filter(item => !scheduleId || !item.scheduleIds.includes(scheduleId)), create, link, unlink }
 }
