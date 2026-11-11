@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
+import { meetingFinished } from '../../utils/meetings/store'
 import useSchedules from '../schedules/useSchedules'
 import useScheduleMinutes from '../schedules/useScheduleMinutes'
 import type { OperationFilter, OperationRecord, OperationSort } from '../../types/operations/operation'
@@ -10,9 +12,20 @@ export default function useOperationRecords() {
   const { schedules } = useSchedules()
   const { minutes, create } = useScheduleMinutes()
   const [today] = useState(localDate)
-  const [year, setYear] = useState(today.slice(0, 4))
-  const [past, setPast] = useState(false)
-  const [filter, setFilter] = useState<OperationFilter>('all')
+  const [params, setParams] = useSearchParams()
+  const requestedYear = params.get('year')
+  const year = requestedYear && /^\d{4}$/.test(requestedYear) ? requestedYear : today.slice(0, 4)
+  function setYear(value: string) {
+    setParams(current => { const next = new URLSearchParams(current); if (value === today.slice(0, 4)) next.delete('year'); else next.set('year', value); return next }, { replace: true })
+  }
+  const past = params.get('period') === 'past'
+  function setPast(value: boolean) {
+    setParams(current => { const next = new URLSearchParams(current); if (value) next.set('period', 'past'); else next.delete('period'); return next }, { replace: true })
+  }
+  const filter: OperationFilter = params.get('type') === 'minute' ? 'minute' : params.get('type') === 'schedule' ? 'schedule' : 'all'
+  function setFilter(value: OperationFilter) {
+    setParams(current => { const next = new URLSearchParams(current); if (value === 'all') next.delete('type'); else next.set('type', value); return next }, { replace: true })
+  }
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<OperationSort>('latest')
   const records: OperationRecord[] = [
@@ -23,7 +36,7 @@ export default function useOperationRecords() {
       const linkedSchedules = schedules.filter(schedule => item.scheduleIds.includes(schedule.id))
       const date = item.date ?? linkedSchedules[0]?.date ?? today
       return { id: item.id, kind: 'minute' as const, title: item.title, date, createdAt: item.createdAt ?? date,
-        past: linkedSchedules.length ? linkedSchedules.every(schedule => (schedule.endDate ?? schedule.date) < today) : date < today }
+        past: meetingFinished(item, today) }
     }),
   ]
   const years = [...new Set([today.slice(0, 4), ...records.map(item => item.date.slice(0, 4))])].sort().reverse()

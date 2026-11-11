@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import { lazy, Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router'
 
@@ -35,6 +36,9 @@ import useMembers from './hooks/members/useMembers'
 import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
 import { showAlert } from './hooks/useAlert'
+
+const MeetingFormPage = lazy(() => import('./pages/meetings/MeetingFormPage'))
+const MeetingRunPage = lazy(() => import('./pages/meetings/MeetingRunPage'))
 
 // 부원 명단 목록 라우트
 function MemberListRoute({
@@ -167,6 +171,10 @@ export default function App() {
       <Route path="/settings/group" element={<GroupEditPage />} />
       <Route path="/groups" element={<GroupSelectionPage />} />
       <Route path="/groups/join/:groupId" element={<GroupSelectionPage />} />
+
+      <Route path="/meetings/new" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
+      <Route path="/meetings/:meetingId" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
+      <Route path="/meetings/:meetingId/run" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingRunPage /></Suspense>} />
 
       {/* 일정 관리 */}
       <Route
