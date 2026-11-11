@@ -81,5 +81,12 @@ export default function useSchedules() {
     snapshot = next
     window.dispatchEvent(new Event(changeEvent))
   }
-  return { schedules, addSchedule, updateSchedule }
+  function deleteSchedule(id: string) {
+    if (!snapshot.some(item => item.id === id)) throw new Error('일정을 찾을 수 없어요.')
+    const next = snapshot.filter(item => item.id !== id)
+    localStorage.setItem(storageKey, JSON.stringify(next))
+    snapshot = next
+    window.dispatchEvent(new Event(changeEvent))
+  }
+  return { schedules, addSchedule, updateSchedule, deleteSchedule }
 }
