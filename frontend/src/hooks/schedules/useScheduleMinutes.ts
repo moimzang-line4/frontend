@@ -1,34 +1,27 @@
-import { useState } from 'react'
+import { useSyncExternalStore } from 'react'
+import type { Meeting } from '../../types/meetings/meeting'
+import { getMeetings, meetingToday, newAgenda, saveMeetings, subscribeMeetings } from '../../utils/meetings/store'
 
-import type { ScheduleMinute } from '../../types/schedules/schedule'
-const storageKey = 'moimzang.schedule.minutes.v1'
-function readMinutes(): ScheduleMinute[] {
-  try {
-    const data: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
-    if (Array.isArray(data)) return data.filter((item): item is ScheduleMinute => item
-      && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.content === 'string'
-      && (item.createdAt === undefined || typeof item.createdAt === 'string')
-      && (item.date === undefined || (typeof item.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.date)))
-      && Array.isArray(item.scheduleIds) && item.scheduleIds.every((id: unknown) => typeof id === 'string'))
-  } catch { /* Render the empty state if no records are available. */ }
-  return []
-}
 export default function useScheduleMinutes(scheduleId?: string) {
-  const [minutes, setMinutes] = useState(readMinutes)
-  function save(next: ScheduleMinute[]) {
-    localStorage.setItem(storageKey, JSON.stringify(next))
-    setMinutes(next)
-  }
+  const minutes = useSyncExternalStore(subscribeMeetings, getMeetings)
   function create(title: string, content: string) {
-    const now = new Date()
-    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-    const item: ScheduleMinute = { id: crypto.randomUUID(), title: title.trim(), content: content.trim(), scheduleIds: scheduleId ? [scheduleId] : [], date, createdAt: now.toISOString() }
-    save([...minutes, item])
+    const agenda = { ...newAgenda(), preparation: content.trim().slice(0, 100), discussion: content.trim().length > 100 ? content.trim() : '' }
+    const item: Meeting = { id: crypto.randomUUID(), title: title.trim(), content: content.trim(), scheduleIds: scheduleId ? [scheduleId] : [], date: meetingToday(), createdAt: new Date().toISOString(), categoryName: '', participants: '', status: 'draft', agendas: [agenda], activeAgendaId: agenda.id }
+    saveMeetings([...getMeetings(), item])
     return item
   }
-  function link(id: string) {
-    if (!scheduleId) return
-    save(minutes.map(item => item.id === id && !item.scheduleIds.includes(scheduleId) ? { ...item, scheduleIds: [...item.scheduleIds, scheduleId] } : item))
+  function linkMany(ids: readonly string[]) {
+    if (!scheduleId) throw new Error('연결할 일정을 찾을 수 없어요.')
+    const selected = new Set(ids)
+    const current = getMeetings()
+    if ([...selected].some(id => !current.some(item => item.id === id))) throw new Error('선택한 회의록이 삭제되었어요. 목록을 다시 확인해주세요.')
+    if (!selected.size) return
+    saveMeetings(current.map(item => selected.has(item.id) && !item.scheduleIds.includes(scheduleId) ? { ...item, scheduleIds: [...item.scheduleIds, scheduleId] } : item))
   }
-  return { minutes, linked: minutes.filter(item => scheduleId && item.scheduleIds.includes(scheduleId)), available: minutes.filter(item => !scheduleId || !item.scheduleIds.includes(scheduleId)), create, link }
+  function link(id: string) { linkMany([id]) }
+  function unlink(id: string) {
+    if (!scheduleId) return
+    saveMeetings(getMeetings().map(item => item.id === id ? { ...item, scheduleIds: item.scheduleIds.filter(value => value !== scheduleId) } : item))
+  }
+  return { minutes, linked: minutes.filter(item => scheduleId && item.scheduleIds.includes(scheduleId)), available: minutes.filter(item => !scheduleId || !item.scheduleIds.includes(scheduleId)), create, link, linkMany, unlink }
 }

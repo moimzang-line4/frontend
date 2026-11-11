@@ -34,14 +34,14 @@ export const Sort = styled.button`
   font-size: 12px; cursor: pointer;
 `
 export const Filters = styled.div`
-  display: flex; gap: 8px; align-items: center; min-height: 33px;
+  display: flex; gap: 10px; align-items: center; min-height: 33px; border-radius: 16px; background: #f0f0f0;
 `
 export const Filter = styled.button<{ $active: boolean }>`
-  height: 30px; padding: 0 18px; border-radius: 15px;
-  border: 1px solid ${({ $active }) => $active ? '#9ccfc2' : '#ddece7'};
-  background: ${({ $active }) => $active ? '#e4f3ef' : 'white'};
+  min-height: 32px; flex: 1; padding: 6px 12px; border-radius: 999px;
+  background: ${({ $active }) => $active ? 'white' : 'transparent'};
+  box-shadow: ${({ $active }) => $active ? '0 2px 5px rgb(54 125 112 / 9%)' : 'none'};
   color: ${({ $active }) => $active ? '#367d70' : '#78918c'};
-  font-size: 12px; font-weight: ${({ $active }) => $active ? 700 : 400}; cursor: pointer;
+  font-size: 12px; font-weight: ${({ $active }) => $active ? 700 : 500}; cursor: pointer;
 `
 export const Heading = styled.div`
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
