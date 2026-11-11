@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import Header from '../../layouts/Header'
 import CategorySheet from '../../components/schedules/CategorySheet'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import useMeetings from '../../hooks/meetings/useMeetings'
 import useCategories from '../../hooks/schedules/useCategories'
+import useSchedules from '../../hooks/schedules/useSchedules'
 import { meetingListPath, newAgenda } from '../../utils/meetings/store'
 import type { Meeting, MeetingAgenda } from '../../types/meetings/meeting'
 import type { CategoryOption } from '../../types/schedules/schedule'
@@ -13,10 +14,11 @@ import calendarIcon from '../../assets/schedules/calendar.svg'
 import chevronIcon from '../../assets/schedules/date-chevron.svg'
 import * as S from '../../styles/meetings/MeetingPage.styles'
 
-function MeetingForm({ meeting }: { meeting?: Meeting }) {
+function MeetingForm({ meeting, sourceScheduleId }: { meeting?: Meeting; sourceScheduleId?: string }) {
   const navigate = useNavigate()
   const { create, update, remove } = useMeetings()
   const { categories } = useCategories()
+  const returnPath = sourceScheduleId ? `/schedules/${encodeURIComponent(sourceScheduleId)}` : meetingListPath(meeting)
   const [title, setTitle] = useState(meeting?.title ?? '')
   const [date, setDate] = useState(meeting?.date ?? '')
   const [category, setCategory] = useState<CategoryOption | null>(meeting?.categoryName ? categories.find(item => item.label === meeting.categoryName) ?? { id: meeting.categoryName, label: meeting.categoryName, kind: 'custom' } : null)
@@ -32,12 +34,12 @@ function MeetingForm({ meeting }: { meeting?: Meeting }) {
     const input = { title: title.trim(), date, categoryName: category!.label, participants: participants.trim(), agendas: agendas.map(agenda => ({ ...agenda, preparation: agenda.preparation.trim() })) }
     try {
       if (meeting) update(meeting.id, input)
-      else create(input)
-      navigate(meetingListPath({ date, status: meeting?.status ?? 'draft' }), { replace: true })
+      else create(input, sourceScheduleId)
+      navigate(sourceScheduleId ? returnPath : meetingListPath({ date, status: meeting?.status ?? 'draft' }), { replace: true })
     } catch { setError('회의록을 저장하지 못했어요. 브라우저 저장 공간을 확인해주세요.') }
   }
   return <S.Page>
-    <Header title="회의 만들기" onBack={() => navigate(meetingListPath(meeting))} />
+    <Header title="회의 만들기" onBack={() => navigate(returnPath)} />
     <S.Content><S.Form onSubmit={submit}>
       <S.Card>
         <S.Row><label htmlFor="meeting-title">회의 제목 <S.Required>*</S.Required></label><input aria-label="회의 제목" id="meeting-title" required maxLength={80} placeholder="회의 제목을 입력해주세요" value={title} onChange={event => setTitle(event.target.value)} /></S.Row>
@@ -60,8 +62,12 @@ function MeetingForm({ meeting }: { meeting?: Meeting }) {
 }
 export default function MeetingFormPage() {
   const { meetingId } = useParams()
+  const [params] = useSearchParams()
+  const { schedules } = useSchedules()
+  const sourceScheduleId = meetingId ? undefined : params.get('scheduleId') || undefined
   const { meetings } = useMeetings()
   const meeting = meetings.find(item => item.id === meetingId)
+  if (sourceScheduleId && !schedules.some(schedule => schedule.id === sourceScheduleId)) return <S.Page><Header title="회의 만들기" /><S.Notice><h1>연결할 일정을 찾을 수 없어요</h1><Link to="/operations?type=minute">회의록 목록으로 이동</Link></S.Notice></S.Page>
   if (meetingId && !meeting) return <S.Page><Header title="회의 만들기" /><S.Notice><h1>회의록을 찾을 수 없어요</h1><Link to="/operations?type=minute">회의록 목록으로 이동</Link></S.Notice></S.Page>
-  return <MeetingForm key={meetingId ?? 'new'} meeting={meeting} />
+  return <MeetingForm key={meetingId ?? sourceScheduleId ?? 'new'} meeting={meeting} sourceScheduleId={sourceScheduleId} />
 }

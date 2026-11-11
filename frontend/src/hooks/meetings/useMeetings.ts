@@ -10,8 +10,8 @@ export function startMeeting(id: string) { change(id, item => ({ ...item, status
 
 export default function useMeetings() {
   const meetings = useSyncExternalStore(subscribeMeetings, getMeetings)
-  function create(input: MeetingInput) {
-    const item: Meeting = { ...input, id: crypto.randomUUID(), content: agendaContent(input.agendas), scheduleIds: [],
+  function create(input: MeetingInput, scheduleId?: string) {
+    const item: Meeting = { ...input, id: crypto.randomUUID(), content: agendaContent(input.agendas), scheduleIds: scheduleId ? [scheduleId] : [],
       createdAt: new Date().toISOString(), status: 'draft', activeAgendaId: input.agendas[0].id }
     saveMeetings([...getMeetings(), item])
     return item
