@@ -6,7 +6,8 @@ export const Content = styled.div`
 export const Generation = styled.label`
   position: relative; display: flex; align-items: center; justify-content: center;
   height: 33px; border: 1px solid #dbdbde; border-radius: 999px; background: #e7e7e7;
-  select { appearance: none; width: 100%; height: 100%; padding: 0 36px; text-align: center; border: 0; background: transparent; font-size: 13px; cursor: pointer; }
+  select { appearance: none; width: 100%; height: 100%; padding: 0 36px; text-align: center; text-align-last: center; border: 0; background: transparent; font-size: 13px; cursor: pointer; }
+  option { text-align: center; }
   img { position: absolute; left: calc(50% + 38px); pointer-events: none; }
 `
 export const Tabs = styled.div`
@@ -27,10 +28,10 @@ export const Search = styled.label`
   input { min-width: 0; width: 100%; height: 100%; border: none; background: transparent; font-size: 14px; }
   input::placeholder { color: #636363; }
 `
-export const Sort = styled.label`
-  display: flex; align-items: center; position: relative; flex-shrink: 0;
-  select { appearance: none; width: 80px; height: 38px; border: none; padding: 0 20px 0 4px; background: transparent; font-size: 12px; text-align: right; cursor: pointer; }
-  img { position: absolute; right: 0; pointer-events: none; }
+export const Sort = styled.button`
+  display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+  flex-shrink: 0; min-height: 38px; padding: 0 4px;
+  font-size: 12px; cursor: pointer;
 `
 export const Filters = styled.div`
   display: flex; gap: 8px; align-items: center; min-height: 33px;

@@ -7,6 +7,7 @@ function readMinutes(): ScheduleMinute[] {
     const data: unknown = JSON.parse(localStorage.getItem(storageKey) ?? '[]')
     if (Array.isArray(data)) return data.filter((item): item is ScheduleMinute => item
       && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.content === 'string'
+      && (item.createdAt === undefined || typeof item.createdAt === 'string')
       && (item.date === undefined || (typeof item.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.date)))
       && Array.isArray(item.scheduleIds) && item.scheduleIds.every((id: unknown) => typeof id === 'string'))
   } catch { /* Render the empty state if no records are available. */ }
@@ -21,7 +22,7 @@ export default function useScheduleMinutes(scheduleId?: string) {
   function create(title: string, content: string) {
     const now = new Date()
     const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-    const item: ScheduleMinute = { id: crypto.randomUUID(), title: title.trim(), content: content.trim(), scheduleIds: scheduleId ? [scheduleId] : [], date }
+    const item: ScheduleMinute = { id: crypto.randomUUID(), title: title.trim(), content: content.trim(), scheduleIds: scheduleId ? [scheduleId] : [], date, createdAt: now.toISOString() }
     save([...minutes, item])
     return item
   }

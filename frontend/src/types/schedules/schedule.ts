@@ -14,6 +14,7 @@ export type Schedule = {
   endTime?: string
   allDay?: boolean
   color?: string
+  createdAt?: string
 }
 
 export type NewSchedule = Pick<Schedule, 'title' | 'date' | 'category' | 'categoryName' | 'venue' | 'endDate' | 'startTime' | 'endTime' | 'allDay' | 'color'> & {
@@ -22,4 +23,4 @@ export type NewSchedule = Pick<Schedule, 'title' | 'date' | 'category' | 'catego
 
 export type CategoryOption = { id: string; label: string; kind: ScheduleCategory }
 
-export type ScheduleMinute = { id: string; title: string; content: string; scheduleIds: string[]; date?: string }
+export type ScheduleMinute = { id: string; title: string; content: string; scheduleIds: string[]; date?: string; createdAt?: string }
