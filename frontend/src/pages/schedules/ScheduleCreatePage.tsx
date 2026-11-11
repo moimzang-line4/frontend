@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import ColorPicker from '../../components/schedules/ColorPicker'
 import DateTimeRow from '../../components/schedules/DateTimeRow'
 import CategorySheet from '../../components/schedules/CategorySheet'
@@ -12,8 +13,9 @@ import * as S from '../../styles/schedules/ScheduleCreatePage.styles'
 export default function ScheduleCreatePage({ initialSchedule }: { initialSchedule?: Schedule }) {
   const navigate = useNavigate()
   const { draft, update, canSubmit, invalidRange, toSchedule } = useScheduleForm(initialSchedule)
-  const { addSchedule, updateSchedule } = useSchedules()
+  const { addSchedule, updateSchedule, deleteSchedule } = useSchedules()
   const [categoryOpen, setCategoryOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const [error, setError] = useState('')
   return (
     <S.Page>
@@ -55,9 +57,15 @@ export default function ScheduleCreatePage({ initialSchedule }: { initialSchedul
           <S.ToggleRow><span>운영 공간 함께 만들기</span><S.Switch type="button" role="switch" aria-label="운영 공간 함께 만들기" aria-checked={draft.createOperationSpace} $checked={draft.createOperationSpace} onClick={() => update('createOperationSpace', !draft.createOperationSpace)} /></S.ToggleRow>
           <S.Description>일정을 등록하면 이 일정의 운영 공간이 함께 만들어져요.<br />등록 전에는 운영 공간이 생성되지 않아요.</S.Description>
         </S.OperationCard>
+        {initialSchedule && <S.DeleteButton type="button" onClick={() => setDeleteOpen(true)}>일정 삭제하기</S.DeleteButton>}
         {error && <S.Error role="alert">{error}</S.Error>}
       </S.Form>
-      <S.ActionBar><S.SubmitButton type="submit" form="schedule-create-form" disabled={!canSubmit}>{initialSchedule ? '수정 완료' : '일정 등록하기'}</S.SubmitButton></S.ActionBar>
+      <S.ActionBar><S.SubmitButton type="submit" form="schedule-create-form" disabled={!canSubmit}>{initialSchedule ? '수정하기' : '일정 등록하기'}</S.SubmitButton></S.ActionBar>
+      <ConfirmDialog open={deleteOpen} title="일정을 삭제할까요?" description="삭제한 일정은 복구할 수 없어요." confirmText="삭제하기" onCancel={() => setDeleteOpen(false)} onConfirm={() => {
+        if (!initialSchedule) return
+        deleteSchedule(initialSchedule.id)
+        navigate('/', { replace: true })
+      }} />
       {categoryOpen && <CategorySheet selectedId={draft.category?.id} onSelect={category => update('category', category)} onClose={() => setCategoryOpen(false)} />}
     </S.Page>
   )
