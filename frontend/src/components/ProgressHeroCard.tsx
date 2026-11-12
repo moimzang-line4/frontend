@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import * as S from '../styles/ProgressHeroCard.styles'
 
 type Props = {
@@ -13,10 +14,44 @@ type Props = {
 // 피그마 '진행 카드' 배경 (오른쪽 위가 파인 모양)
 const CARD_PATH = 'M227.928 37.0594L223.514 15.9132C221.579 6.64248 213.407 0 203.936 0H20C8.95431 0 0 8.95431 0 20V119C0 130.046 8.9543 139 20 139H330C341.046 139 350 130.046 350 119V72.9726C350 61.9269 341.046 52.9726 330 52.9726H247.506C238.036 52.9726 229.863 46.3301 227.928 37.0594Z'
 
+const DURATION_MS = 900
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
+
+// 화면에 들어올 때 0%에서 목표 퍼센트까지 부드럽게 채우기 (값이 바뀌면 이전 값에서 이어서)
+function useAnimatedPercent(target: number) {
+  const [value, setValue] = useState(0)
+  const current = useRef(0)
+
+  useEffect(() => {
+    const from = current.current
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (reduceMotion || from === target) {
+      current.current = target
+      setValue(target)
+      return
+    }
+
+    let frame = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / DURATION_MS)
+      const next = from + (target - from) * easeOutCubic(progress)
+      current.current = next
+      setValue(next)
+      if (progress < 1) frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [target])
+
+  return value
+}
+
 // 출석·정산 화면 상단의 진행 카드 (오른쪽 위가 파인 모양)
 export default function ProgressHeroCard({ title, status, doneStatus, done, total, ariaLabel }: Props) {
   const percent = total === 0 ? 0 : Math.round((done / total) * 100)
   const complete = total > 0 && done === total
+  const animated = useAnimatedPercent(percent)
 
   return (
     <S.Card aria-label={ariaLabel ?? `${title} 진행 현황`}>
@@ -53,9 +88,9 @@ export default function ProgressHeroCard({ title, status, doneStatus, done, tota
         aria-valuenow={percent}
         aria-label="진행률"
       >
-        <S.Bubble $percent={percent}>{percent}%</S.Bubble>
+        <S.Bubble style={{ left: `clamp(16px, ${animated}%, calc(100% - 16px))` }}>{Math.round(animated)}%</S.Bubble>
         <S.Track>
-          <S.Fill style={{ width: `${percent}%` }} />
+          <S.Fill style={{ width: `${animated}%` }} />
         </S.Track>
       </S.Progress>
     </S.Card>

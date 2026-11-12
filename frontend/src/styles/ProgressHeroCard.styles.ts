@@ -79,10 +79,10 @@ export const Progress = styled.div`
   top: 72px;
 `
 
-export const Bubble = styled.span<{ $percent: number }>`
+// left는 애니메이션 값으로 컴포넌트에서 지정
+export const Bubble = styled.span`
   position: absolute;
   top: 0;
-  left: clamp(16px, ${({ $percent }) => $percent}%, calc(100% - 16px));
   display: flex;
   min-width: 33px;
   height: 18px;
@@ -95,7 +95,7 @@ export const Bubble = styled.span<{ $percent: number }>`
   font-size: 11px;
   font-weight: 800;
   color: #367d70;
-  transition: left 0.3s ease;
+  font-variant-numeric: tabular-nums;
 
   &::after {
     content: '';
@@ -123,5 +123,4 @@ export const Fill = styled.div`
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(180deg, #77bcb0 0%, #f2fbfa 100%);
-  transition: width 0.3s ease;
 `
