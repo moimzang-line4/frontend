@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import useSchedules from '../schedules/useSchedules'
 import useTodayDate from './useTodayDate'
+import useDemoGroup from '../groups/useDemoGroup'
 
 const groupKey = 'moimzang.home.group-name'
 
 export default function useHomeCalendar() {
   const today = useTodayDate()
+  const { group, updateGroup } = useDemoGroup()
   const [searchParams] = useSearchParams()
   const dateParam = searchParams.get('date')
   const initialDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : today
@@ -17,13 +19,13 @@ export default function useHomeCalendar() {
   const [selectedDate, setSelectedDate] = useState(initialDate)
   const { schedules } = useSchedules()
   const [groupName, updateGroupName] = useState(() => {
-    try { return localStorage.getItem(groupKey) || '음샘' } catch { return '음샘' }
+    try { return group.shortName || localStorage.getItem(groupKey) || '음샘' } catch { return '음샘' }
   })
   const [storageError, setStorageError] = useState(false)
 
   function setGroupName(name: string) {
     updateGroupName(name)
-    try { localStorage.setItem(groupKey, name); setStorageError(false) }
+    try { updateGroup({ name: group.name, shortName: name, description: group.description, generation: group.generation }); localStorage.setItem(groupKey, name); setStorageError(false) }
     catch { setStorageError(true) }
   }
 
@@ -48,5 +50,5 @@ export default function useHomeCalendar() {
   }
 
 
-  return { year, monthIndex, days, today, selectedDate, setSelectedDate, schedules, upcoming, changeMonth, groupName, setGroupName, storageError }
+  return { year, monthIndex, days, today, selectedDate, setSelectedDate, schedules, upcoming, changeMonth, groupName: group.shortName || groupName, setGroupName, storageError }
 }

@@ -13,6 +13,7 @@ import InviteLinkPage from './pages/settings/InviteLinkPage'
 import GroupEditPage from './pages/settings/GroupEditPage'
 import GroupSelectionPage from './pages/groups/GroupSelectionPage'
 import useDemoGroup from './hooks/groups/useDemoGroup'
+import useOnboarding from './hooks/onboarding/useOnboarding'
 import ScheduleCreatePage from './pages/schedules/ScheduleCreatePage'
 import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage'
 import ScheduleEditPage from './pages/schedules/ScheduleEditPage'
@@ -46,6 +47,10 @@ const MeetingLinkPage = lazy(() => import('./pages/meetings/MeetingLinkPage'))
 
 const OperationNotesPage = lazy(() => import('./pages/notes/OperationNotesPage'))
 const OperationNoteFormPage = lazy(() => import('./pages/notes/OperationNoteFormPage'))
+
+const OnboardingPage = lazy(() => import('./pages/onboarding/OnboardingPage'))
+const GroupCreatePage = lazy(() => import('./pages/onboarding/GroupCreatePage'))
+const GroupInvitePage = lazy(() => import('./pages/onboarding/GroupInvitePage'))
 
 // 부원 명단 목록 라우트
 function MemberListRoute({
@@ -119,7 +124,6 @@ function MemberGroupRoute({
 // 기존 페이지 유지
 const pages = [
   { path: '/files', title: '자료실' },
-  { path: '/groups/new', title: '그룹 만들기' },
 ]
 
 function OperationsRoute() {
@@ -140,6 +144,9 @@ function OperationsRoute() {
 
 function GroupHomeRoute() {
   const { isMember } = useDemoGroup()
+  const onboarding = useOnboarding()
+  if (!onboarding.completed) return <Navigate to="/onboarding" replace />
+  if (!onboarding.group) return <Navigate to="/groups/new" replace />
   return isMember ? <HomePage /> : <Navigate to="/groups" replace />
 }
 
@@ -176,6 +183,9 @@ export default function App() {
   return (
     <>
     <Routes>
+      <Route path="/onboarding" element={<Suspense fallback={<Placeholder>시작 화면을 불러오는 중이에요.</Placeholder>}><OnboardingPage /></Suspense>} />
+      <Route path="/groups/new" element={<Suspense fallback={<Placeholder>그룹 정보를 불러오는 중이에요.</Placeholder>}><GroupCreatePage /></Suspense>} />
+      <Route path="/groups/new/invite" element={<Suspense fallback={<Placeholder>초대 링크를 불러오는 중이에요.</Placeholder>}><GroupInvitePage /></Suspense>} />
       {/* 홈 */}
       <Route path="/" element={<GroupHomeRoute />} />
       <Route path="/settings" element={<SettingsPage />} />
