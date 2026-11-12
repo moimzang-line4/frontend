@@ -2,8 +2,12 @@ export type ReceiptFieldKey = 'storeName' | 'paidAt' | 'amount' | 'support' | 'r
 
 export type ReceiptForm = Record<ReceiptFieldKey, string>
 
+// 정산중 / 정산 완료 (입금 확인 기능이 생기면 갱신)
+export type ReceiptStatus = 'ongoing' | 'done'
+
 export type Receipt = ReceiptForm & {
   id: string
+  status?: ReceiptStatus
   // 촬영한 영수증 사진 (직접 등록이면 없음)
   image?: string
   createdAt: number

@@ -24,6 +24,19 @@ export const TabSection = styled.section`
   gap: 70px;
 `
 
+// 피그마: 영수증 목록 — 탭·카드 간격 14px, 목록 ↔ 추가 버튼 18px
+export const ListBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+`
+
+export const List = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`
+
 export const Actions = styled.div`
   display: flex;
   flex-direction: column;

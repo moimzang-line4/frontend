@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import useReceiptCamera, { fileToReceiptImage } from '../../hooks/payments/useReceiptCamera'
 import { saveReceiptDraft } from '../../hooks/payments/useReceiptDraft'
 import { showAlert } from '../../hooks/useAlert'
@@ -13,10 +13,14 @@ export default function ReceiptCameraPage() {
   const { videoRef, status, capture } = useReceiptCamera()
   const fileRef = useRef<HTMLInputElement>(null)
   const basePath = paymentsPath(scheduleId)
+  // 영수증 수정 중 '다시 촬영하기'로 들어온 경우 그 영수증으로 돌아감
+  const [searchParams] = useSearchParams()
+  const editingId = searchParams.get('receipt')
+  const editPath = editingId ? `${basePath}/receipts/${encodeURIComponent(editingId)}` : undefined
 
   const goToResult = (image: string) => {
     saveReceiptDraft(scheduleId, image)
-    navigate(`${basePath}/receipts/new`, { replace: true })
+    navigate(editPath ? `${editPath}?retake=1` : `${basePath}/receipts/new`, { replace: true })
   }
 
   const handleShutter = () => {
@@ -41,7 +45,7 @@ export default function ReceiptCameraPage() {
   return (
     <S.Screen>
       <S.Header>
-        <S.CloseButton type="button" aria-label="닫기" onClick={() => navigate(basePath, { replace: true })}>
+        <S.CloseButton type="button" aria-label="닫기" onClick={() => navigate(editPath ?? basePath, { replace: true })}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>

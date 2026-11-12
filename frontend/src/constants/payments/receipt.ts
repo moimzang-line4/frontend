@@ -1,4 +1,4 @@
-import type { PaymentsTab, ReceiptField, ReceiptForm } from '../../types/payments/receipt'
+import type { PaymentsTab, ReceiptField, ReceiptForm, ReceiptStatus } from '../../types/payments/receipt'
 
 export const paymentsPath = (scheduleId: string) =>
   `/schedules/${encodeURIComponent(scheduleId)}/operations/payments`
@@ -34,7 +34,28 @@ export const RECEIPT_TEXT = {
   cameraHint: '영수증을 화면 안에 맞춰 촬영해주세요',
   resultTitle: '영수증을 인식했어요!',
   resultDescription: '아래 내용을 확인하고 등록해주세요',
+  deleteTitle: '영수증을 삭제할까요?',
+  deleteDescription: '해당 차수와 정산 명단이 함께 삭제돼요.\n이미 반영된 장부 내역과 잔액은 유지돼요.',
 } as const
+
+// 피그마: 영수증 목록 상태 배지
+export const RECEIPT_STATUS: Record<ReceiptStatus, { label: string; color: string; background: string }> = {
+  ongoing: { label: '정산중', color: '#424242', background: '#EEEEEE' },
+  done: { label: '정산 완료', color: '#4F75F8', background: '#DCE8FE' },
+}
+
+// 89000 → '89,000원' (입력값의 쉼표·문자는 무시)
+export const formatAmount = (value: string) => {
+  const digits = value.replace(/\D/g, '')
+  return digits ? `${Number(digits).toLocaleString('ko-KR')}원` : '금액 미입력'
+}
+
+// 1789000000000 → '2026.09.20'
+export const formatReceiptDate = (time: number) => {
+  const date = new Date(time)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`
+}
 
 // 촬영 이미지 저장 시 최대 너비 (용량 줄이기)
 export const RECEIPT_IMAGE_MAX_WIDTH = 1080

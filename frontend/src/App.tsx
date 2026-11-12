@@ -21,6 +21,8 @@ import AttendancePage from './pages/attendance/AttendancePage'
 import PaymentsPage from './pages/payments/PaymentsPage'
 import ReceiptCameraPage from './pages/payments/ReceiptCameraPage'
 import ReceiptResultPage from './pages/payments/ReceiptResultPage'
+import RoundRosterPage from './pages/payments/RoundRosterPage'
+import RoundEditPage from './pages/payments/RoundEditPage'
 
 import MemberListPage from './pages/members/MemberListPage'
 import MemberCreatePage from './pages/members/MemberCreatePage'
@@ -141,6 +143,13 @@ function GroupHomeRoute() {
   return isMember ? <HomePage /> : <Navigate to="/groups" replace />
 }
 
+// 영수증 수정: 영수증·재촬영마다 화면 상태를 새로 시작
+function ReceiptEditRoute() {
+  const { receiptId } = useParams<{ receiptId: string }>()
+  const [searchParams] = useSearchParams()
+  return <ReceiptResultPage key={`${receiptId}-${searchParams.has('retake')}`} mode="edit" />
+}
+
 export default function App() {
   const { groups: savedGroups, createGroup, updateGroup, deleteGroup } = useMemberGroups()
   const {
@@ -214,6 +223,9 @@ export default function App() {
       <Route path="/schedules/:scheduleId/operations/payments/receipts/camera" element={<ReceiptCameraPage />} />
       <Route path="/schedules/:scheduleId/operations/payments/receipts/new" element={<ReceiptResultPage key="scan" mode="scan" />} />
       <Route path="/schedules/:scheduleId/operations/payments/receipts/manual" element={<ReceiptResultPage key="manual" mode="manual" />} />
+      <Route path="/schedules/:scheduleId/operations/payments/receipts/:receiptId" element={<ReceiptEditRoute />} />
+      <Route path="/schedules/:scheduleId/operations/payments/rounds/edit" element={<RoundEditPage />} />
+      <Route path="/schedules/:scheduleId/operations/payments/rounds/:round" element={<RoundRosterPage />} />
 
       <Route
         path="/schedules/:scheduleId/operations/:menuId"

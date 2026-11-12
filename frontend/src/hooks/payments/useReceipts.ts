@@ -26,15 +26,21 @@ export default function useReceipts(scheduleId: string) {
     })
   }
 
+  const getReceipt = (id: string) => receipts.find(item => item.id === id)
+
   const addReceipt = (form: ReceiptForm, image?: string) => {
-    const receipt: Receipt = { ...form, id: `receipt-${Date.now()}`, image, createdAt: Date.now() }
+    const receipt: Receipt = { ...form, id: `receipt-${Date.now()}`, status: 'ongoing', image, createdAt: Date.now() }
     update(prev => [receipt, ...prev])
     return receipt
+  }
+
+  const updateReceipt = (id: string, form: ReceiptForm, image?: string) => {
+    update(prev => prev.map(item => (item.id === id ? { ...item, ...form, image: image ?? item.image } : item)))
   }
 
   const removeReceipt = (id: string) => {
     update(prev => prev.filter(item => item.id !== id))
   }
 
-  return { receipts, addReceipt, removeReceipt }
+  return { receipts, getReceipt, addReceipt, updateReceipt, removeReceipt }
 }
