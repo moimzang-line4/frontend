@@ -66,3 +66,8 @@ export const Missing = styled.div`
   line-height: 20px;
   color: #78918c;
 `
+
+// 삭제 모달 설명 줄바꿈 유지
+export const ModalText = styled.span`
+  white-space: pre-line;
+`

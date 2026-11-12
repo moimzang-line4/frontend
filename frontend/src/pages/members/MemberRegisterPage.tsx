@@ -135,7 +135,7 @@ function RegistrationForm({ group, onAdd, onRegisterAgain }: { group: MemberGrou
 
             <S.BottomAction>
                 <Button onClick={handleSubmit}>
-                    명단 등록하기
+                    닫기
                 </Button>
             </S.BottomAction>
         </S.Container>
