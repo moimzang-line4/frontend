@@ -15,16 +15,17 @@ export default function OnboardingPage() {
   const onboarding = useOnboarding()
   const [params] = useSearchParams()
   const replay = params.get('replay') === '1'
-  const [phase, setPhase] = useState<'light' | 'mint' | 'slides'>(replay ? 'slides' : 'light')
-  const [step, setStep] = useState(replay && params.get('step') === '3' ? 2 : 0)
+  const resumeLastStep = replay && params.get('step') === '3'
+  const [phase, setPhase] = useState<'light' | 'mint' | 'slides'>(resumeLastStep ? 'slides' : 'light')
+  const [step, setStep] = useState(resumeLastStep ? 2 : 0)
   const [error, setError] = useState('')
   useEffect(() => {
-    if (replay) return
+    if (resumeLastStep) return
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const mint = window.setTimeout(() => setPhase('mint'), reduced ? 100 : 700)
     const intro = window.setTimeout(() => setPhase('slides'), reduced ? 200 : 1800)
     return () => { window.clearTimeout(mint); window.clearTimeout(intro) }
-  }, [replay])
+  }, [resumeLastStep])
   function finish() {
     try { onboarding.update({ completed: true }); navigate('/groups/new', { replace: true }) }
     catch (caught) { setError(caught instanceof Error ? caught.message : '진행 상태를 저장하지 못했어요.') }
