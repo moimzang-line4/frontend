@@ -30,7 +30,7 @@ function read(): Meeting[] {
       return [{ ...item, id: item.id, title: item.title, content: item.content, scheduleIds: item.scheduleIds,
         date, createdAt: typeof item.createdAt === 'string' ? item.createdAt : `${date}T00:00:00`,
         categoryName: typeof item.categoryName === 'string' ? item.categoryName : '', participants: typeof item.participants === 'string' ? item.participants : '',
-        status, agendas, activeAgendaId: typeof item.activeAgendaId === 'string' && agendas.some(agenda => agenda.id === item.activeAgendaId) ? item.activeAgendaId : agendas[0].id,
+        status, agendas: agendas.map(agenda => ({ ...agenda, title: typeof agenda.title === 'string' ? agenda.title : undefined, scheduleIds: Array.isArray(agenda.scheduleIds) ? agenda.scheduleIds.filter((id: unknown): id is string => typeof id === 'string') : [] })), activeAgendaId: typeof item.activeAgendaId === 'string' && agendas.some(agenda => agenda.id === item.activeAgendaId) ? item.activeAgendaId : agendas[0].id,
       } as Meeting]
     })
   } catch { return [] }

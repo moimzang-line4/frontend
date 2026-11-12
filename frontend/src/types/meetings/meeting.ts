@@ -1,6 +1,8 @@
 export type MeetingStatus = 'draft' | 'in-progress' | 'completed'
 export type MeetingAgenda = {
   id: string
+  title?: string
+  scheduleIds?: string[]
   preparation: string
   discussion: string
   decision: string
@@ -21,3 +23,6 @@ export type Meeting = {
   activeAgendaId: string
 }
 export type MeetingInput = Pick<Meeting, 'title' | 'date' | 'categoryName' | 'participants' | 'agendas'>
+
+export type AgendaReference = { meetingId: string; agendaId: string }
+export type MeetingLinkSelection = { meetingIds: string[]; agendas: AgendaReference[] }

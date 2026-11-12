@@ -1,33 +1,29 @@
 import styled from 'styled-components'
-import { Card } from './MeetingCard.styles'
-import { Search as OperationSearch } from '../operations/OperationsPage.styles'
 
-export const Confirm = styled.button`
-  display: flex; align-items: center; justify-content: center;
-  min-width: 44px; min-height: 44px; color: #367d70; font-size: 14px; font-weight: 700; cursor: pointer;
-  &:disabled { color: #b3b3b3; cursor: default; }
+export const Content = styled.main`
+  display: flex; flex-direction: column; gap: 14px; padding: 18px 20px calc(28px + env(safe-area-inset-bottom, 0px));
 `
-export const Summary = styled.div`
-  display: flex; flex-direction: column; gap: 6px;
-  h2 { font-size: 18px; line-height: 1.4; font-weight: 700; overflow-wrap: anywhere; }
-  p { font-size: 13px; line-height: 18px; color: #78918c; }
+export const Toolbar = styled.div`
+  position: sticky; top: calc(var(--spacing-header) + env(safe-area-inset-top, 0px) + 1px); z-index: 10;
+  display: flex; align-items: center; gap: 10px; padding: 8px 0; background: white;
 `
-export const List = styled.ul`display: flex; flex-direction: column; gap: 12px;`
-export const Selectable = styled(Card).attrs({ as: 'label' })`
-  display: flex; flex-direction: column; gap: 12px; cursor: pointer; border: 1px solid transparent;
-  &:has(input:checked) { border-color: #9ccfc2; background: #f3faf7; }
-  &:focus-within { outline: 2px solid #367d70; outline-offset: 2px; }
+export const Search = styled.label`
+  display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; min-height: 38px; padding: 0 12px;
+  border-radius: 12px; background: #f0f0f0;
+  input { width: 100%; min-width: 0; height: 38px; background: transparent; border: none; font-size: 14px; }
+  input::placeholder { color: #636363; }
+  img { flex-shrink: 0; }
 `
-export const Checkbox = styled.input.attrs({ type: 'checkbox' })`
-  width: 22px; height: 22px; flex-shrink: 0; accent-color: #367d70; cursor: pointer;
+export const Add = styled.button`
+  flex-shrink: 0; min-width: 78px; min-height: 32px; padding: 6px 12px; border: 1px solid rgb(255 255 255 / 45%); border-radius: 12px;
+  background: linear-gradient(151deg, #5aa997 10.714%, #438b7e 82.143%); color: white; font-size: 12px; font-weight: 700; cursor: pointer;
+  &:disabled { background: #dce5e2; color: #78918c; cursor: default; }
 `
-export const Footer = styled.div`
-  border-top: 1px solid #edf1ee; padding-top: 12px; display: flex; align-items: center; gap: 8px;
-  color: #78918c; font-size: 12px; line-height: 18px; flex-wrap: wrap;
-  span { display: flex; align-items: center; gap: 6px; }
+export const Count = styled.div`
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 33px;
+  h2 { color: #19251f; font-size: 17px; line-height: 1.4; font-weight: 700; }
+  span { color: #78918c; font-size: 12px; }
 `
-export const Empty = styled.p`
-  padding: 40px 12px; color: #78918c; text-align: center; font-size: 14px; line-height: 1.6;
-`
-
-export const Search = styled(OperationSearch)`flex: none; min-height: 38px;`
+export const List = styled.ul`display: flex; flex-direction: column; gap: 10px;`
+export const Empty = styled.p`padding: 40px 12px; text-align: center; color: #78918c; font-size: 14px; line-height: 1.6;`
+export const Page = styled.div`width: 100%; max-width: var(--container-app); min-height: 100dvh; margin-inline: auto; background: white;`
