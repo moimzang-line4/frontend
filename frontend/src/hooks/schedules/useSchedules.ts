@@ -19,6 +19,7 @@ function isSchedule(value: unknown): value is Schedule {
   return typeof item.id === 'string' && typeof item.title === 'string'
     && typeof item.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.date)
     && categories.includes(item.category)
+    && (item.createdAt === undefined || typeof item.createdAt === 'string')
     && (item.calendarLabel === undefined || typeof item.calendarLabel === 'string')
     && (item.venue === undefined || typeof item.venue === 'string')
     && (item.operationMenuCount === undefined || typeof item.operationMenuCount === 'number')
@@ -57,6 +58,7 @@ export default function useSchedules() {
     const item: Schedule = {
       ...values,
       id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
       calendarLabel: input.title,
       ...(createOperationSpace ? { operationMenuCount: 0 } : {}),
     }
@@ -81,5 +83,12 @@ export default function useSchedules() {
     snapshot = next
     window.dispatchEvent(new Event(changeEvent))
   }
-  return { schedules, addSchedule, updateSchedule }
+  function deleteSchedule(id: string) {
+    if (!snapshot.some(item => item.id === id)) throw new Error('일정을 찾을 수 없어요.')
+    const next = snapshot.filter(item => item.id !== id)
+    localStorage.setItem(storageKey, JSON.stringify(next))
+    snapshot = next
+    window.dispatchEvent(new Event(changeEvent))
+  }
+  return { schedules, addSchedule, updateSchedule, deleteSchedule }
 }

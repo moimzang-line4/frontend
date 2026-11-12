@@ -216,3 +216,17 @@ export const Error = styled.p`
   color: #b43b34;
   line-height: 1.5;
 `
+
+export const DeleteButton = styled.button`
+  min-height: 44px;
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: white;
+  color: #ea5a55;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+  cursor: pointer;
+`

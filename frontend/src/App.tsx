@@ -1,10 +1,12 @@
 import styled from 'styled-components'
+import { lazy, Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import MainLayout from './layouts/MainLayout'
 
 import HomePage from './pages/home/HomePage'
+import OperationsPage from './pages/operations/OperationsPage'
 import SettingsPage from './pages/settings/SettingsPage'
 import OperatorsPage from './pages/settings/OperatorsPage'
 import InviteLinkPage from './pages/settings/InviteLinkPage'
@@ -36,6 +38,13 @@ import useMembers from './hooks/members/useMembers'
 import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
 import { showAlert } from './hooks/useAlert'
+
+const MeetingFormPage = lazy(() => import('./pages/meetings/MeetingFormPage'))
+const MeetingRunPage = lazy(() => import('./pages/meetings/MeetingRunPage'))
+const MeetingLinkPage = lazy(() => import('./pages/meetings/MeetingLinkPage'))
+
+const OperationNotesPage = lazy(() => import('./pages/notes/OperationNotesPage'))
+const OperationNoteFormPage = lazy(() => import('./pages/notes/OperationNoteFormPage'))
 
 // 부원 명단 목록 라우트
 function MemberListRoute({
@@ -126,13 +135,7 @@ function OperationsRoute() {
     )
   }
 
-  return (
-    <MainLayout title="운영 공간">
-      <Placeholder>
-        운영 공간 페이지 준비 중입니다.
-      </Placeholder>
-    </MainLayout>
-  )
+  return <OperationsPage />
 }
 
 function GroupHomeRoute() {
@@ -182,6 +185,11 @@ export default function App() {
       <Route path="/groups" element={<GroupSelectionPage />} />
       <Route path="/groups/join/:groupId" element={<GroupSelectionPage />} />
 
+      <Route path="/schedules/:scheduleId/meetings/link" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingLinkPage /></Suspense>} />
+      <Route path="/meetings/new" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
+      <Route path="/meetings/:meetingId" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
+      <Route path="/meetings/:meetingId/run" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingRunPage /></Suspense>} />
+
       {/* 일정 관리 */}
       <Route
         path="/schedules/new"
@@ -197,6 +205,10 @@ export default function App() {
         path="/schedules/:scheduleId/edit"
         element={<ScheduleEditPage />}
       />
+
+      <Route path="/schedules/:scheduleId/operations/notes" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNotesPage /></Suspense>} />
+      <Route path="/schedules/:scheduleId/operations/notes/new" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
+      <Route path="/schedules/:scheduleId/operations/notes/:noteId" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
 
       {/* 운영 메뉴 > 참석·출석 (다른 메뉴보다 먼저 매칭됨) */}
       <Route
