@@ -17,21 +17,24 @@ export default function useMeetings() {
     return item
   }
   function update(id: string, input: MeetingInput) {
-    change(id, item => ({ ...item, ...input, content: agendaContent(input.agendas),
-      activeAgendaId: input.agendas.some(agenda => agenda.id === item.activeAgendaId) ? item.activeAgendaId : input.agendas[0].id }))
+    change(id, item => {
+      const agendas = input.agendas.map(agenda => ({ ...agenda, scheduleIds: item.agendas.find(current => current.id === agenda.id)?.scheduleIds ?? agenda.scheduleIds ?? [] }))
+      return { ...item, ...input, agendas, content: agendaContent(agendas),
+        activeAgendaId: agendas.some(agenda => agenda.id === item.activeAgendaId) ? item.activeAgendaId : agendas[0].id }
+    })
   }
   function remove(id: string) { saveMeetings(getMeetings().filter(item => item.id !== id)) }
 
   function saveAgenda(id: string, agenda: MeetingAgenda) {
     change(id, item => {
-      const agendas = item.agendas.map(value => value.id === agenda.id ? agenda : value)
+      const agendas = item.agendas.map(value => value.id === agenda.id ? { ...agenda, scheduleIds: value.scheduleIds } : value)
       return { ...item, agendas, content: agendaContent(agendas) }
     })
   }
   function selectAgenda(id: string, agendaId: string) { change(id, item => ({ ...item, activeAgendaId: agendaId })) }
   function completeAgenda(id: string, agenda: MeetingAgenda) {
     change(id, item => {
-      const agendas = item.agendas.map(value => value.id === agenda.id ? { ...agenda, completed: true } : value)
+      const agendas = item.agendas.map(value => value.id === agenda.id ? { ...agenda, scheduleIds: value.scheduleIds, completed: true } : value)
       const next = agendas.find(value => !value.completed)
       return { ...item, agendas, content: agendaContent(agendas), activeAgendaId: next?.id ?? agenda.id, status: next ? 'in-progress' : 'completed' }
     })

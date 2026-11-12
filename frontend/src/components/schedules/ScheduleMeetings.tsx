@@ -1,31 +1,38 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import useScheduleMinutes from '../../hooks/schedules/useScheduleMinutes'
 import ConfirmDialog from '../common/ConfirmDialog'
-import chevronIcon from '../../assets/meetings/linked-chevron.svg'
-import * as C from '../../styles/meetings/LinkedMeetingCard.styles'
-import * as S from '../../styles/schedules/ScheduleDetailPage.styles'
+import AgendaAccordion from '../meetings/AgendaAccordion'
+import MeetingAccordion from '../meetings/MeetingAccordion'
+import { meetingAgendas } from '../../utils/meetings/agendaLinks'
+import { meetingToday } from '../../utils/meetings/store'
+import emptyIcon from '../../assets/meetings/empty-paper.svg'
+import * as S from '../../styles/meetings/MeetingAttachments.styles'
 
 type Props = { scheduleId: string }
+type Disconnect = { meetingId: string; agendaId?: string } | null
 export default function ScheduleMeetings({ scheduleId }: Props) {
-  const navigate = useNavigate()
-  const { linked, unlink } = useScheduleMinutes(scheduleId)
-  const [editing, setEditing] = useState(false)
-  const [unlinkId, setUnlinkId] = useState<string | null>(null)
-  return (
-    <S.MeetingSection aria-label="연결된 회의록">
-      <S.SectionHeading><h2>연결된 회의록</h2>{linked.length ? <C.EditButton type="button" onClick={() => setEditing(value => !value)}>{editing ? '완료' : '수정'}</C.EditButton> : <S.TextButton type="button" onClick={() => navigate(`/meetings/new?scheduleId=${encodeURIComponent(scheduleId)}`)}>+ 만들기</S.TextButton>}</S.SectionHeading>
-      {linked.length ? <C.List>{linked.map(item => {
-        const index = Math.max(0, item.agendas.findIndex(agenda => agenda.id === item.activeAgendaId))
-        const agenda = item.agendas[index]
-        return <div key={item.id}><C.Card to={`/meetings/${encodeURIComponent(item.id)}?scheduleId=${encodeURIComponent(scheduleId)}`} aria-label={`${item.title} 안건 확인 및 수정`}>
-          <div><div><strong>회의 | {item.date.replaceAll('-', '.')}</strong><h3>{item.title}</h3></div><p>안건 {index + 1} · {agenda.preparation || '등록된 안건 내용이 없어요.'}</p></div>
-          <img src={chevronIcon} alt="" width={24} height={24} />
-        </C.Card>{editing && <C.ManageRow><button type="button" aria-label={`${item.title} 연결 해제`} onClick={() => setUnlinkId(item.id)}>연결 해제</button></C.ManageRow>}</div>
-      })}</C.List> : <S.Empty><h3>연결할 회의록이 없어요</h3><p>일정과 관련된 회의를 작성한 뒤<br />이 일정에 연결할 수 있어요.</p></S.Empty>}
-      {editing && linked.length > 0 && <C.CreateButton type="button" onClick={() => navigate(`/meetings/new?scheduleId=${encodeURIComponent(scheduleId)}`)}>+ 새 회의록 만들기</C.CreateButton>}
-      <S.FindButton type="button" onClick={() => navigate(`/schedules/${encodeURIComponent(scheduleId)}/meetings/link`)}>연동할 회의록 찾기</S.FindButton>
-      <ConfirmDialog open={!!unlinkId} title="회의록 연결을 해제할까요?" description="이 일정과의 연결만 해제되며, 회의록은 운영 공간에 유지돼요." confirmText="연결 해제" onCancel={() => setUnlinkId(null)} onConfirm={() => { if (unlinkId) unlink(unlinkId); setUnlinkId(null) }} />
-    </S.MeetingSection>
-  )
+  const { minutes, linked, unlink, unlinkAgenda } = useScheduleMinutes(scheduleId)
+  const [filter, setFilter] = useState<'all' | 'meeting' | 'agenda'>('all')
+  const [disconnect, setDisconnect] = useState<Disconnect>(null)
+  const [today] = useState(meetingToday)
+  const agendas = meetingAgendas(minutes).filter(({ agenda }) => agenda.scheduleIds?.includes(scheduleId))
+  const hasContent = linked.length > 0 || agendas.length > 0
+  const hasVisibleContent = filter === 'meeting' ? linked.length > 0 : filter === 'agenda' ? agendas.length > 0 : hasContent
+  const createPath = `/meetings/new?scheduleId=${encodeURIComponent(scheduleId)}`
+  return <S.Section aria-label="회의록 & 안건">
+    <S.Top><S.Heading><h2>회의록 &amp; 안건</h2>{hasContent && <Link to={createPath}>+ 만들기</Link>}</S.Heading>
+      <S.Tabs aria-label="연결 항목 유형">{([{ value: 'all', label: '전체' }, { value: 'meeting', label: '회의록' }, { value: 'agenda', label: '안건' }] as const).map(tab => <S.Tab key={tab.value} type="button" $active={filter === tab.value} aria-pressed={filter === tab.value} onClick={() => setFilter(tab.value)}>{tab.label}</S.Tab>)}</S.Tabs>
+    </S.Top>
+    {hasVisibleContent ? <S.List>
+      {filter !== 'agenda' && linked.map(meeting => <li key={`meeting-${meeting.id}`}><MeetingAccordion meeting={meeting} today={today} scheduleId={scheduleId} onUnlink={() => setDisconnect({ meetingId: meeting.id })} /></li>)}
+      {filter !== 'meeting' && agendas.map(({ meeting, agenda, index }) => <li key={`agenda-${meeting.id}-${agenda.id}`}><AgendaAccordion meeting={meeting} agenda={agenda} index={index} today={today} onUnlink={() => setDisconnect({ meetingId: meeting.id, agendaId: agenda.id })} /></li>)}
+    </S.List> : <S.Empty><img src={emptyIcon} alt="" width={24} height={24} /><div><strong>{hasContent ? `연결된 ${filter === 'meeting' ? '회의록이' : '안건이'} 없어요` : '아직 등록된 내용이 없어요'}</strong><p>만들었던 회의의 관련 안건을 연결하거나<br />내용에 맞는 회의를 만들어보세요.</p></div></S.Empty>}
+    <S.Actions><S.Action to={`/schedules/${encodeURIComponent(scheduleId)}/meetings/link`}>안건 연결하기</S.Action><S.Action $primary to={createPath}>회의록 작성하기</S.Action></S.Actions>
+    <ConfirmDialog open={!!disconnect} title="연결을 끊을까요?" description="이 일정과의 연결만 해제되며, 회의록과 안건 내용은 유지돼요." confirmText="연결 끊기" onCancel={() => setDisconnect(null)} onConfirm={() => {
+      if (disconnect?.agendaId) unlinkAgenda(disconnect.meetingId, disconnect.agendaId)
+      else if (disconnect) unlink(disconnect.meetingId)
+      setDisconnect(null)
+    }} />
+  </S.Section>
 }
