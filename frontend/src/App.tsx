@@ -18,6 +18,7 @@ import ScheduleDetailPage from './pages/schedules/ScheduleDetailPage'
 import ScheduleEditPage from './pages/schedules/ScheduleEditPage'
 import ScheduleOperationPage from './pages/schedules/ScheduleOperationPage'
 import AttendancePage from './pages/attendance/AttendancePage'
+import AssistantPage from './pages/ai/AssistantPage'
 import PaymentsPage from './pages/payments/PaymentsPage'
 import ReceiptCameraPage from './pages/payments/ReceiptCameraPage'
 import ReceiptResultPage from './pages/payments/ReceiptResultPage'
@@ -117,7 +118,6 @@ function MemberGroupRoute({
 
 // 기존 페이지 유지
 const pages = [
-  { path: '/ai', title: 'AI' },
   { path: '/files', title: '자료실' },
   { path: '/groups/new', title: '그룹 만들기' },
 ]
@@ -236,6 +236,9 @@ export default function App() {
         path="/operations"
         element={<OperationsRoute />}
       />
+
+      {/* AI 운영 비서 */}
+      <Route path="/ai" element={<AssistantPage />} />
 
       {/* 기존 페이지 */}
       {pages.map(({ path, title }) => (
