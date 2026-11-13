@@ -54,10 +54,3 @@ export const Action = styled.button<{ $danger?: boolean }>`
   ${({ $danger }) => $danger && 'border-top: 1px solid #d9d9d9; margin-top: 6px; padding-top: 6px; min-height: 66px;'}
   img { width: 20px; height: 20px; }
 `
-export const Preview = styled.div`
-  display: flex; flex-direction: column; gap: 12px; padding: 8px 0;
-  img { width: 100%; max-height: 50dvh; object-fit: contain; }
-  iframe { width: 100%; height: 50dvh; background: white; }
-  pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 50dvh; overflow: auto; font-size: 13px; padding: 12px; background: white; }
-  p { font-size: 14px; }
-`
