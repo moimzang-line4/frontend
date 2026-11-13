@@ -26,7 +26,11 @@ export function validDate(value: string) {
 }
 
 export function validateLedgerInput(input: LedgerInput) {
-  if (!input.title.trim() || input.title.trim().length > 150)
+  if (
+    !input.title.trim() ||
+    input.title.trim().length > 150 ||
+    Array.from(input.title).some((char) => char.charCodeAt(0) < 32)
+  )
     throw new Error('항목명을 1~150자로 입력해주세요.')
   if (
     !Number.isSafeInteger(input.amount) ||

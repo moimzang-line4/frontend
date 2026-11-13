@@ -55,7 +55,9 @@ export default function useScheduleFiles(scheduleId: string) {
       ) >
       200 * 1024 * 1024
     )
-      throw new Error('일정 하나당 최대 200MB까지 첨부할 수 있어요.')
+      throw new Error(
+        `${scheduleId.startsWith('documents:') ? '기수' : '일정'} 하나당 최대 200MB까지 첨부할 수 있어요.`,
+      )
     await saveFiles(
       selected.map((file) => ({
         id: crypto.randomUUID(),

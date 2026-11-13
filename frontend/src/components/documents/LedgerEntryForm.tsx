@@ -129,6 +129,9 @@ export default function LedgerEntryForm({ initial, onSave, onDelete }: Props) {
               disabled={pending}
               onChange={(event) => setDate(event.target.value)}
             />
+            <span aria-hidden="true">
+              {date ? `${date.slice(2).replaceAll('-', '. ')}.` : '날짜 선택'}
+            </span>
             <img src={dateChevron} alt="" />
           </S.DateControl>
         </S.Field>

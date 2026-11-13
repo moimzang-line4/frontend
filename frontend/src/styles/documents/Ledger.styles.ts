@@ -50,6 +50,7 @@ export const Totals = styled.div`
     font-size: 11px;
   }
   dd {
+    overflow-wrap: anywhere;
     margin: 0;
     padding-top: 5px;
     font-size: 14px;
@@ -263,7 +264,25 @@ export const DateControl = styled.div`
   border: 1px solid #f0f0f0;
   border-radius: 10px;
 
+  min-height: 38px;
+
+  > span {
+    width: 100%;
+    padding-inline: 34px 30px;
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--color-primary-strong);
+    outline-offset: 2px;
+  }
+
   input[type='date'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
     border: 0;
     padding-inline: 34px 30px;
   }

@@ -89,7 +89,11 @@ function LedgerUpload({ scopeId }: { scopeId: string }) {
         },
       }
       ledgerTotals(next)
-      await updateLedger(scopeId, () => next)
+      await updateLedger(scopeId, (current) => {
+        if ((current?.file.id ?? null) !== (ledger?.file.id ?? null))
+          throw new Error('장부가 변경되었어요. 현재 장부를 다시 확인해주세요.')
+        return next
+      })
       navigate('/files', {
         replace: true,
         state: { tab: '장부', uploadedFileName: next.file.name },
