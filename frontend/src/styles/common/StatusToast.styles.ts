@@ -5,19 +5,35 @@ const enter = keyframes`
   to { opacity: 1; transform: translate(-50%, 0); }
 `
 
-export const Toast = styled.div`
+const countdown = keyframes`
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+`
+
+export const Progress = styled.div<{ $duration: number }>`
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 7px;
+  height: 2px;
+  border-radius: 999px;
+  background: white;
+  transform-origin: left;
+  animation: ${countdown} ${({ $duration }) => $duration}ms linear forwards;
+`
+
+export const Toast = styled.div<{ $aboveFooter: boolean }>`
   position: fixed;
   left: 50%;
-  bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(${({ $aboveFooter }) => $aboveFooter ? '109px' : '26px'} + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   display: flex;
   width: calc(min(100%, var(--container-app)) - var(--spacing-page-x) * 2);
-  height: 72px;
+  height: ${({ $aboveFooter }) => $aboveFooter ? '78px' : '72px'};
   align-items: center;
   padding: 0 12px 0 14px;
   transform: translateX(-50%);
   border-radius: 14px;
-  background: linear-gradient(127deg, #438b7e 10.71%, #96cebc 82.14%);
+  background: linear-gradient(${({ $aboveFooter }) => $aboveFooter ? '163.45deg' : '127deg'}, #438b7e 10.71%, #96cebc 82.14%);
   box-shadow: 0 7px 18px 0 rgba(63, 141, 124, 0.18);
   animation: ${enter} 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
 
