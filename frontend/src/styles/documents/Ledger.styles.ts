@@ -253,3 +253,36 @@ export const SourceHeader = styled.div`
     cursor: wait;
   }
 `
+
+export const DateControl = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+
+  input[type='date'] {
+    border: 0;
+    padding-inline: 34px 30px;
+  }
+  img {
+    position: absolute;
+    pointer-events: none;
+  }
+  img:first-child {
+    left: 10px;
+  }
+  img:last-child {
+    right: 8px;
+  }
+  input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+`
