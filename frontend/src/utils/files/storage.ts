@@ -27,7 +27,10 @@ async function transaction<T>(mode: IDBTransactionMode, action: (store: IDBObjec
 }
 
 export async function readFiles(scheduleId: string): Promise<ScheduleFile[]> {
-  return transaction('readonly', store => store.index('scheduleId').getAll(scheduleId))
+  const files = await transaction<(Omit<ScheduleFile, 'category'> & { category: ScheduleFile['category'] | '예산안' })[]>(
+    'readonly', store => store.index('scheduleId').getAll(scheduleId),
+  )
+  return files.map(file => ({ ...file, category: file.category === '예산안' ? '예산·회계' : file.category }))
 }
 
 export async function saveFiles(files: ScheduleFile[]) {
