@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import Button from '../../components/Button'
 
 export const Panel = styled.section`
@@ -96,25 +96,31 @@ export const Entries = styled.div`
   box-shadow: var(--shadow-app-bar);
 `
 
-export const EntryHeading = styled.div`
+const entryColumns = css`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(80px, auto) 44px;
+  grid-template-columns: minmax(0, 1fr) 112px 44px;
   align-items: center;
   gap: 14px;
+
+  @media (max-width: 360px) {
+    grid-template-columns: minmax(0, 1fr) 96px 44px;
+  }
+`
+
+export const EntryHeading = styled.div`
+  ${entryColumns}
   padding-bottom: 12px;
   color: #367d70;
   font-size: 12px;
   font-weight: 700;
+  span:nth-child(2),
   span:last-child {
-    text-align: right;
+    text-align: center;
   }
 `
 
 export const Entry = styled.button<{ $income: boolean }>`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(80px, auto) 44px;
-  align-items: center;
-  gap: 14px;
+  ${entryColumns}
   width: 100%;
   min-height: 54px;
   padding: 8px 0;
@@ -140,12 +146,15 @@ export const Entry = styled.button<{ $income: boolean }>`
     font-size: 10px;
   }
   > span:nth-child(2) {
-    text-align: right;
+    min-width: 0;
+    text-align: center;
+    overflow-wrap: anywhere;
     font-size: 13px;
     color: ${({ $income }) => ($income ? '#08a23a' : '#1b1e20')};
   }
   > span:last-child {
-    text-align: right;
+    display: grid;
+    place-items: center;
     color: #78918c;
     font-size: 24px;
   }
