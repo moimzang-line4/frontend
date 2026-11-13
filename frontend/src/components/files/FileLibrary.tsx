@@ -26,7 +26,7 @@ type FileListProps = {
   listPath?: string
   documentView?: boolean
   generationLabel?: string
-  ledgerContent?: ReactNode
+  ledgerContent?: ReactNode | ((search: string) => ReactNode)
 }
 
 export default function FileLibrary({
@@ -132,7 +132,9 @@ export default function FileLibrary({
         </S.Tabs>
 
         {category === '장부' ? (
-          (ledgerContent ?? <S.Empty>연결된 장부가 없어요.</S.Empty>)
+          ((typeof ledgerContent === 'function'
+            ? ledgerContent(search)
+            : ledgerContent) ?? <S.Empty>연결된 장부가 없어요.</S.Empty>)
         ) : (
           <>
             <S.Summary>
