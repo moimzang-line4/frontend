@@ -108,7 +108,14 @@ export default function FileLibrary({
           <S.Attach
             type="button"
             disabled={loading || !!error}
-            onClick={() => navigate(`${listPath}/new`, { state: { category } })}
+            onClick={() =>
+              navigate(
+                documentView && category === '장부'
+                  ? '/files/ledger/upload'
+                  : `${listPath}/new`,
+                { state: { category } },
+              )
+            }
           >
             ＋ 파일 첨부
           </S.Attach>

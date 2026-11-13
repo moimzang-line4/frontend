@@ -41,6 +41,7 @@ import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
 import { showAlert } from './hooks/useAlert'
 
+const LedgerUploadPage = lazy(() => import('./pages/documents/LedgerUploadPage'))
 const DocumentsPage = lazy(() => import('./pages/documents/DocumentsPage'))
 const FilePreviewPage = lazy(() => import('./pages/files/FilePreviewPage'))
 const FileUploadPage = lazy(() => import('./pages/files/FileUploadPage'))
@@ -220,6 +221,7 @@ export default function App() {
       <Route path="/schedules/:scheduleId/operations/notes/new" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
       <Route path="/schedules/:scheduleId/operations/notes/:noteId" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
 
+      <Route path="/files/ledger/upload" element={<Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}><LedgerUploadPage /></Suspense>} />
       <Route path="/files" element={<Suspense fallback={<Placeholder>문서함을 불러오는 중이에요.</Placeholder>}><DocumentsPage /></Suspense>} />
       <Route path="/files/new" element={<Suspense fallback={<Placeholder>첨부 화면을 불러오는 중이에요.</Placeholder>}><FileUploadPage /></Suspense>} />
       <Route path="/files/:fileId" element={<Suspense fallback={<Placeholder>미리보기를 불러오는 중이에요.</Placeholder>}><FilePreviewPage /></Suspense>} />
