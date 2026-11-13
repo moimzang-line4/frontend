@@ -57,7 +57,6 @@ function UploadForm({ schedule }: { schedule: Schedule }) {
     }}>
       <S.Section>
         <h2>첨부할 파일</h2>
-        <S.Hint>파일은 한 번에 1개씩 첨부할 수 있어요.</S.Hint>
         <S.HiddenInput ref={inputRef} type="file" aria-label="첨부할 파일 선택" disabled={pending} onChange={event => { choose(event.target.files?.[0]); event.target.value = '' }} />
         {selected ? <S.Selected><div><strong title={selected.name}>{selected.name}</strong><button type="button" disabled={pending} onClick={() => inputRef.current?.click()}>변경</button></div><span>{fileDateLabel(selected.lastModified)} · {fileSizeLabel(selected.size)}</span></S.Selected>
           : <S.Picker type="button" onClick={() => inputRef.current?.click()}><img src={uploadIcon} alt="" width={24} height={24} /><strong>파일 선택</strong><span>내 기기에서 파일을 선택해 주세요</span></S.Picker>}
@@ -65,13 +64,10 @@ function UploadForm({ schedule }: { schedule: Schedule }) {
       <S.Section>
         <label htmlFor="material-name">자료 이름</label>
         <S.NameField><input id="material-name" value={name} maxLength={150} disabled={pending} placeholder="자료 이름을 입력해 주세요" autoComplete="off" onChange={event => { setName(event.target.value); setError('') }} />{extension && <span aria-label="파일 확장자">{extension}</span>}</S.NameField>
-        {selected && <S.Hint>파일명을 자동으로 채워드려요. 이름만 수정할 수 있어요.</S.Hint>}
       </S.Section>
       <S.Section><S.Categories disabled={pending}><legend>분류</legend>{fileCategories.map(value => <S.Category type="button" key={value} $active={category === value} aria-pressed={category === value} onClick={() => setCategory(value)}>{value}</S.Category>)}</S.Categories></S.Section>
-      {selected && <S.Location>저장 위치 · {schedule.title} 자료실</S.Location>}
       {error && <ErrorText role="alert">{error}</ErrorText>}
       {storageError && <><ErrorText role="alert">{storageError}</ErrorText><S.Close type="button" aria-label="저장소 다시 불러오기" onClick={() => void reload()}>↻</S.Close></>}
-      <S.Hint>파일당 최대 50MB · 일정당 최대 200MB</S.Hint>
       <S.Submit type="submit" disabled={!selected || !name.trim() || pending || loading || !!storageError}>{pending ? '업로드 중…' : '업로드'}</S.Submit>
     </S.Form>
   </S.Page>

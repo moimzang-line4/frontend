@@ -59,7 +59,7 @@ function FileList({ scheduleId }: { scheduleId: string }) {
       </S.Card>)}</S.List>}
     </S.Content>
     <Footer />
-    {typeof uploadedFileName === 'string' && <StatusToast title="자료가 업로드됐어요" description={uploadedFileName} aboveFooter autoCloseMs={5000} showProgress onClose={() => navigate(location.pathname, { replace: true, state: null })} />}
+    {typeof uploadedFileName === 'string' && <StatusToast title="자료가 업로드됐어요" description={uploadedFileName} aboveFooter autoCloseMs={3000} showProgress onClose={() => navigate(location.pathname, { replace: true, state: null })} />}
     {menu && <BottomSheet title={menu.name} onClose={() => setMenu(null)}>{close => <>
       <S.Action type="button" onClick={() => close(() => setPreview(menu))}><img src={previewIcon} alt="" />문서 미리보기</S.Action>
       <S.Action type="button" onClick={() => { downloadBlob(menu.blob, menu.name); close() }}><img src={downloadIcon} alt="" />다운로드</S.Action>
