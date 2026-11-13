@@ -1,5 +1,6 @@
 import { useMatch, useNavigate, useParams } from 'react-router'
 import Header from '../../layouts/Header'
+import LedgerRequiredDialog from '../../components/documents/LedgerRequiredDialog'
 import LedgerEntryDeleteDialog from '../../components/documents/LedgerEntryDeleteDialog'
 import LedgerEntryForm from '../../components/documents/LedgerEntryForm'
 import useFileScope from '../../hooks/files/useFileScope'
@@ -28,15 +29,13 @@ export default function LedgerEntryPage() {
           <S.ErrorText role="alert">{error}</S.ErrorText>
         </S.Content>
       ) : !ledger ? (
-        <S.Content>
-          <S.Empty>먼저 장부를 등록해주세요.</S.Empty>
-          <S.Attach
-            type="button"
-            onClick={() => navigate('/files/ledger/upload')}
-          >
-            장부 업로드
-          </S.Attach>
-        </S.Content>
+        <LedgerRequiredDialog
+          open
+          onCancel={() =>
+            navigate('/files', { replace: true, state: { tab: '장부' } })
+          }
+          onUpload={() => navigate('/files/ledger/upload', { replace: true })}
+        />
       ) : entryId && !entry ? (
         <S.Content>
           <S.Empty>삭제되었거나 이 장부에 없는 내역이에요.</S.Empty>

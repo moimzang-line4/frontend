@@ -1,3 +1,4 @@
+import LedgerRequiredDialog from './LedgerRequiredDialog'
 import LedgerSourceCard from './LedgerSourceCard'
 import entryChevron from '../../assets/files/entry-chevron.svg'
 import { useState } from 'react'
@@ -13,6 +14,7 @@ export default function LedgerPanel({ scopeId, search }: Props) {
   const navigate = useNavigate()
   const { ledger, loading, error, reload } = useLedger(scopeId)
   const [filter, setFilter] = useState('all')
+  const [missing, setMissing] = useState(false)
   const totals = ledger ? ledgerTotals(ledger) : null
   const entries =
     ledger?.entries
@@ -68,7 +70,9 @@ export default function LedgerPanel({ scopeId, search }: Props) {
       <S.Manual
         type="button"
         disabled={loading || !!error}
-        onClick={() => navigate('/files/ledger/new')}
+        onClick={() =>
+          ledger ? navigate('/files/ledger/new') : setMissing(true)
+        }
       >
         +직접 입력
       </S.Manual>
@@ -121,6 +125,11 @@ export default function LedgerPanel({ scopeId, search }: Props) {
           )
         )}
       </S.Entries>
+      <LedgerRequiredDialog
+        open={missing && !ledger}
+        onCancel={() => setMissing(false)}
+        onUpload={() => navigate('/files/ledger/upload')}
+      />
     </S.Panel>
   )
 }
