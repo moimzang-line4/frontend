@@ -1,3 +1,4 @@
+import LedgerSourceCard from './LedgerSourceCard'
 import entryChevron from '../../assets/files/entry-chevron.svg'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -24,6 +25,7 @@ export default function LedgerPanel({ scopeId, search }: Props) {
 
   return (
     <S.Panel aria-label="기수 장부">
+      {ledger && <LedgerSourceCard ledger={ledger} />}
       <S.Balance>
         <S.BalanceHeader>
           <span>현재 잔액</span>

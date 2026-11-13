@@ -231,3 +231,25 @@ export const Submit = styled(Button)`
   font-size: 16px;
   border-radius: 12px;
 `
+
+export const SourceHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h2 {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  button {
+    min-height: 32px;
+    font-size: 11px;
+    color: var(--color-primary-strong);
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+`
