@@ -9,6 +9,9 @@ type Props = {
   aboveFooter?: boolean
   autoCloseMs?: number
   showProgress?: boolean
+  actionText?: string
+  actionDisabled?: boolean
+  onAction?: () => void
 }
 
 export default function StatusToast({
@@ -18,6 +21,9 @@ export default function StatusToast({
   aboveFooter = false,
   autoCloseMs,
   showProgress = false,
+  actionText = '확인',
+  actionDisabled = false,
+  onAction,
 }: Props) {
   const close = useEffectEvent(onClose)
 
@@ -30,11 +36,7 @@ export default function StatusToast({
   }, [autoCloseMs])
 
   return (
-    <S.Toast
-      role="status"
-      aria-live="polite"
-      $aboveFooter={aboveFooter}
-    >
+    <S.Toast role="status" aria-live="polite" $aboveFooter={aboveFooter}>
       <S.Text>
         <strong>{title}</strong>
         <span>{description}</span>
@@ -42,9 +44,11 @@ export default function StatusToast({
 
       <S.ConfirmButton
         type="button"
-        onClick={onClose}
+        onClick={onAction ?? onClose}
+        disabled={actionDisabled}
+        $wide={actionText.length > 2}
       >
-        확인
+        {actionText}
       </S.ConfirmButton>
 
       {showProgress && autoCloseMs && (

@@ -5,6 +5,7 @@ import Header from '../../layouts/Header'
 import Footer from '../../layouts/Footer'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import FileActionsSheet from '../../components/files/FileActionsSheet'
+import FileDeletionToast from './FileDeletionToast'
 import StatusToast from '../../components/common/StatusToast'
 import {
   fileDateLabel as dateLabel,
@@ -223,6 +224,7 @@ export default function FileLibrary({
       </S.Content>
 
       <Footer />
+      <FileDeletionToast scopeId={scheduleId} />
 
       {typeof uploadedFileName === 'string' && (
         <StatusToast
@@ -270,16 +272,14 @@ export default function FileLibrary({
       <ConfirmDialog
         open={!!deleting}
         title="자료를 삭제할까요?"
-        description={
-          deleting
-            ? `${deleting.name} 파일을 삭제하면 복구할 수 없어요.`
-            : undefined
-        }
+        description={deleting ? deleting.name : undefined}
         confirmText="삭제"
         onCancel={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return
           await remove(deleting)
+          if (location.state?.uploadedFileName)
+            navigate(location.pathname, { replace: true, state: null })
           setDeleting(null)
         }}
       />

@@ -42,9 +42,7 @@ function Preview({ scope }: { scope: ReturnType<typeof useFileScope> }) {
       <ConfirmDialog
         open={deleting && !!file}
         title="자료를 삭제할까요?"
-        description={
-          file ? `${file.name} 파일을 삭제하면 복구할 수 없어요.` : undefined
-        }
+        description={file ? file.name : undefined}
         confirmText="삭제"
         onCancel={() => setDeleting(false)}
         onConfirm={async () => {
