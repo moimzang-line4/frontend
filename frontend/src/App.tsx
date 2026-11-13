@@ -41,6 +41,11 @@ import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
 import { showAlert } from './hooks/useAlert'
 
+const LedgerEntryPage = lazy(() => import('./pages/documents/LedgerEntryPage'))
+const LedgerSourcePage = lazy(() => import('./pages/documents/LedgerSourcePage'))
+const LedgerDeletePage = lazy(() => import('./pages/documents/LedgerDeletePage'))
+const LedgerUploadPage = lazy(() => import('./pages/documents/LedgerUploadPage'))
+const DocumentsPage = lazy(() => import('./pages/documents/DocumentsPage'))
 const FilePreviewPage = lazy(() => import('./pages/files/FilePreviewPage'))
 const FileUploadPage = lazy(() => import('./pages/files/FileUploadPage'))
 const ScheduleFilesPage = lazy(() => import('./pages/files/ScheduleFilesPage'))
@@ -124,11 +129,6 @@ function MemberGroupRoute({
     </MainLayout>
   )
 }
-
-// 기존 페이지 유지
-const pages = [
-  { path: '/files', title: '자료실' },
-]
 
 function OperationsRoute() {
   const [params] = useSearchParams()
@@ -224,6 +224,79 @@ export default function App() {
       <Route path="/schedules/:scheduleId/operations/notes/new" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
       <Route path="/schedules/:scheduleId/operations/notes/:noteId" element={<Suspense fallback={<Placeholder>메모를 불러오는 중이에요.</Placeholder>}><OperationNoteFormPage /></Suspense>} />
 
+      <Route
+        path="/files/ledger/entries/:entryId/delete"
+        element={
+          <Suspense fallback={<Placeholder>내역을 불러오는 중이에요.</Placeholder>}>
+            <LedgerEntryPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/ledger/entries/:entryId"
+        element={
+          <Suspense fallback={<Placeholder>내역을 불러오는 중이에요.</Placeholder>}>
+            <LedgerEntryPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/ledger/new"
+        element={
+          <Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}>
+            <LedgerEntryPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/ledger/source"
+        element={
+          <Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}>
+            <LedgerSourcePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/ledger/delete"
+        element={
+          <Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}>
+            <LedgerDeletePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/ledger/upload"
+        element={
+          <Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}>
+            <LedgerUploadPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files"
+        element={
+          <Suspense fallback={<Placeholder>문서함을 불러오는 중이에요.</Placeholder>}>
+            <DocumentsPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/new"
+        element={
+          <Suspense fallback={<Placeholder>첨부 화면을 불러오는 중이에요.</Placeholder>}>
+            <FileUploadPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/files/:fileId"
+        element={
+          <Suspense fallback={<Placeholder>미리보기를 불러오는 중이에요.</Placeholder>}>
+            <FilePreviewPage />
+          </Suspense>
+        }
+      />
+
       <Route path="/schedules/:scheduleId/operations/files/:fileId" element={<Suspense fallback={<Placeholder>미리보기를 불러오는 중이에요.</Placeholder>}><FilePreviewPage /></Suspense>} />
       <Route path="/schedules/:scheduleId/operations/files/new" element={<Suspense fallback={<Placeholder>첨부 화면을 불러오는 중이에요.</Placeholder>}><FileUploadPage /></Suspense>} />
       <Route path="/schedules/:scheduleId/operations/files" element={<Suspense fallback={<Placeholder>자료를 불러오는 중이에요.</Placeholder>}><ScheduleFilesPage /></Suspense>} />
@@ -257,28 +330,6 @@ export default function App() {
 
       {/* AI 운영 비서 */}
       <Route path="/ai" element={<AssistantPage />} />
-
-      {/* 기존 페이지 */}
-      {pages.map(({ path, title }) => (
-        <Route
-          key={path}
-          element={
-            <MainLayout
-              title={title}
-              showBack={path !== '/'}
-            />
-          }
-        >
-          <Route
-            path={path}
-            element={
-              <Placeholder>
-                {title} 페이지 준비 중입니다.
-              </Placeholder>
-            }
-          />
-        </Route>
-      ))}
 
       {/* 부원 명단 목록 */}
       <Route

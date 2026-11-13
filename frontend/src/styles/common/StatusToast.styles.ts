@@ -24,16 +24,23 @@ export const Progress = styled.div<{ $duration: number }>`
 export const Toast = styled.div<{ $aboveFooter: boolean }>`
   position: fixed;
   left: 50%;
-  bottom: calc(${({ $aboveFooter }) => $aboveFooter ? '109px' : '26px'} + env(safe-area-inset-bottom, 0px));
+  bottom: calc(
+    ${({ $aboveFooter }) => ($aboveFooter ? '109px' : '26px')} +
+      env(safe-area-inset-bottom, 0px)
+  );
   z-index: 40;
   display: flex;
   width: calc(min(100%, var(--container-app)) - var(--spacing-page-x) * 2);
-  height: ${({ $aboveFooter }) => $aboveFooter ? '78px' : '72px'};
+  height: ${({ $aboveFooter }) => ($aboveFooter ? '78px' : '72px')};
   align-items: center;
   padding: 0 12px 0 14px;
   transform: translateX(-50%);
   border-radius: 14px;
-  background: linear-gradient(${({ $aboveFooter }) => $aboveFooter ? '163.45deg' : '127deg'}, #438b7e 10.71%, #96cebc 82.14%);
+  background: linear-gradient(
+    ${({ $aboveFooter }) => ($aboveFooter ? '163.45deg' : '127deg')},
+    #438b7e 10.71%,
+    #96cebc 82.14%
+  );
   box-shadow: 0 7px 18px 0 rgba(63, 141, 124, 0.18);
   animation: ${enter} 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
 
@@ -65,9 +72,9 @@ export const Text = styled.div`
   }
 `
 
-export const ConfirmButton = styled.button`
+export const ConfirmButton = styled.button<{ $wide?: boolean }>`
   display: flex;
-  width: 50px;
+  width: ${({ $wide }) => ($wide ? '62px' : '50px')};
   height: 44px;
   flex-shrink: 0;
   align-items: center;
@@ -77,4 +84,8 @@ export const ConfirmButton = styled.button`
   font-weight: 700;
   color: #ffffff;
   cursor: pointer;
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
 `
