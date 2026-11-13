@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
 import Footer from '../../layouts/Footer'
 import BottomSheet from '../../components/BottomSheet'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import FilePreview from '../../components/files/FilePreview'
-import FileUploadSheet from '../../components/files/FileUploadSheet'
+import StatusToast from '../../components/common/StatusToast'
+import { fileDateLabel as dateLabel, fileSizeLabel as sizeLabel } from '../../utils/files/format'
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
 import useScheduleFiles from '../../hooks/files/useScheduleFiles'
 import { fileCategories } from '../../types/files/file'
@@ -19,16 +20,6 @@ import downloadIcon from '../../assets/files/download.svg'
 import deleteIcon from '../../assets/files/delete.svg'
 import * as S from '../../styles/files/FilesPage.styles'
 
-function sizeLabel(bytes: number) {
-  if (bytes < 1024) return `${bytes}B`
-  if (bytes < 1024 * 1024) return `${Math.ceil(bytes / 1024)}KB`
-  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
-}
-function dateLabel(time: number) {
-  const date = new Date(time)
-  return `${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
-}
-
 export default function ScheduleFilesPage() {
   const { schedule } = useScheduleDetail()
   if (!schedule || schedule.operationMenuCount === undefined) return <S.Page><Header title="자료" /><S.Content><S.Empty>자료를 확인할 일정을 찾을 수 없어요.</S.Empty></S.Content><Footer /></S.Page>
@@ -37,11 +28,12 @@ export default function ScheduleFilesPage() {
 
 function FileList({ scheduleId }: { scheduleId: string }) {
   const navigate = useNavigate()
-  const { files, loading, error, reload, upload, remove } = useScheduleFiles(scheduleId)
+  const location = useLocation()
+  const uploadedFileName: unknown = location.state?.uploadedFileName
+  const { files, loading, error, reload, remove } = useScheduleFiles(scheduleId)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<FileCategory | '전체'>('전체')
   const [sort, setSort] = useState('newest')
-  const [uploading, setUploading] = useState(false)
   const [menu, setMenu] = useState<ScheduleFile | null>(null)
   const [preview, setPreview] = useState<ScheduleFile | null>(null)
   const [deleting, setDeleting] = useState<ScheduleFile | null>(null)
@@ -52,7 +44,7 @@ function FileList({ scheduleId }: { scheduleId: string }) {
   return <S.Page>
     <Header title="자료" onBack={() => navigate(`/schedules/${encodeURIComponent(scheduleId)}`)} />
     <S.Content aria-label="일정 자료">
-      <S.SearchRow><S.Search><img src={searchIcon} alt="" width={20} height={20} /><input aria-label="자료 검색" placeholder="자료 검색" type="search" value={search} onChange={event => setSearch(event.target.value)} /></S.Search><S.Attach type="button" disabled={loading || !!error} onClick={() => setUploading(true)}>＋ 파일 첨부</S.Attach></S.SearchRow>
+      <S.SearchRow><S.Search><img src={searchIcon} alt="" width={20} height={20} /><input aria-label="자료 검색" placeholder="자료 검색" type="search" value={search} onChange={event => setSearch(event.target.value)} /></S.Search><S.Attach type="button" disabled={loading || !!error} onClick={() => navigate(`/schedules/${encodeURIComponent(scheduleId)}/operations/files/new`, { state: { category } })}>＋ 파일 첨부</S.Attach></S.SearchRow>
       <S.Tabs role="group" aria-label="자료 분류">{(['전체', ...fileCategories] as const).map(value => <S.Tab type="button" key={value} $active={category === value} aria-pressed={category === value} onClick={() => setCategory(value)}>{value}</S.Tab>)}</S.Tabs>
       <S.Summary><strong aria-live="polite">총 {visible.length}개</strong><select aria-label="자료 정렬" value={sort} onChange={event => setSort(event.target.value)}><option value="newest">최신순</option><option value="oldest">오래된순</option><option value="name">이름순</option></select></S.Summary>
       <S.DownloadAll type="button" disabled={!visible.length || downloading} onClick={async () => {
@@ -67,7 +59,7 @@ function FileList({ scheduleId }: { scheduleId: string }) {
       </S.Card>)}</S.List>}
     </S.Content>
     <Footer />
-    {uploading && <FileUploadSheet initialCategory={category === '전체' ? '활동 문서' : category} onClose={() => setUploading(false)} onUpload={upload} />}
+    {typeof uploadedFileName === 'string' && <StatusToast title="자료가 업로드됐어요" description={uploadedFileName} aboveFooter onClose={() => navigate(location.pathname, { replace: true, state: null })} />}
     {menu && <BottomSheet title={menu.name} onClose={() => setMenu(null)}>{close => <>
       <S.Action type="button" onClick={() => close(() => setPreview(menu))}><img src={previewIcon} alt="" />문서 미리보기</S.Action>
       <S.Action type="button" onClick={() => { downloadBlob(menu.blob, menu.name); close() }}><img src={downloadIcon} alt="" />다운로드</S.Action>

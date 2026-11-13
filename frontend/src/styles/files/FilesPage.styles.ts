@@ -54,12 +54,6 @@ export const Action = styled.button<{ $danger?: boolean }>`
   ${({ $danger }) => $danger && 'border-top: 1px solid #d9d9d9; margin-top: 6px; padding-top: 6px; min-height: 66px;'}
   img { width: 20px; height: 20px; }
 `
-export const Form = styled.form`
-  display: flex; flex-direction: column; gap: 16px; padding: 8px 0;
-  label { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
-  select, input { width: 100%; min-width: 0; min-height: 44px; padding: 10px; border: 1px solid var(--color-border); border-radius: 8px; background: white; }
-  p { font-size: 12px; color: var(--color-muted); }
-`
 export const Preview = styled.div`
   display: flex; flex-direction: column; gap: 12px; padding: 8px 0;
   img { width: 100%; max-height: 50dvh; object-fit: contain; }
