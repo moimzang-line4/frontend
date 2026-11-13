@@ -36,3 +36,24 @@ export async function saveLedgerEntry(
     return next
   })
 }
+
+export async function deleteLedgerEntry(
+  scopeId: string,
+  entryId: string,
+  fileId: string,
+) {
+  await updateLedger(scopeId, (current) => {
+    if (!current || current.file.id !== fileId)
+      throw new Error('장부가 변경되었어요. 현재 장부를 다시 확인해주세요.')
+    if (!current.entries.some((entry) => entry.id === entryId))
+      throw new Error('삭제할 내역을 찾을 수 없어요.')
+
+    const next = {
+      ...current,
+      entries: current.entries.filter((entry) => entry.id !== entryId),
+      updatedAt: Date.now(),
+    }
+    ledgerTotals(next)
+    return next
+  })
+}

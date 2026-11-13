@@ -1,5 +1,6 @@
-import { useNavigate, useParams } from 'react-router'
+import { useMatch, useNavigate, useParams } from 'react-router'
 import Header from '../../layouts/Header'
+import LedgerEntryDeleteDialog from '../../components/documents/LedgerEntryDeleteDialog'
 import LedgerEntryForm from '../../components/documents/LedgerEntryForm'
 import useFileScope from '../../hooks/files/useFileScope'
 import useLedger from '../../hooks/documents/useLedger'
@@ -8,6 +9,7 @@ import * as S from '../../styles/files/FilesPage.styles'
 
 export default function LedgerEntryPage() {
   const { entryId } = useParams()
+  const deleting = !!useMatch('/files/ledger/entries/:entryId/delete')
   const scope = useFileScope()
   const { ledger, loading, error } = useLedger(scope.id)
   const entry = ledger?.entries.find((item) => item.id === entryId)
@@ -55,6 +57,18 @@ export default function LedgerEntryPage() {
             await saveLedgerEntry(scope.id, input, ledger.file.id, entryId)
             back()
           }}
+        />
+      )}
+      {deleting && ledger && entry && (
+        <LedgerEntryDeleteDialog
+          ledger={ledger}
+          entry={entry}
+          onCancel={() =>
+            navigate(`/files/ledger/entries/${encodeURIComponent(entry.id)}`, {
+              replace: true,
+            })
+          }
+          onDeleted={back}
         />
       )}
     </S.Page>
