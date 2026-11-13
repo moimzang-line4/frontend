@@ -77,6 +77,8 @@ export default function FileLibrary({
     <S.Page>
       <Header
         title={documentView ? '문서함' : '자료'}
+        showBack={!documentView}
+        align={documentView ? 'left' : 'center'}
         onBack={() =>
           navigate(
             documentView ? '/' : `/schedules/${encodeURIComponent(scheduleId)}`,
