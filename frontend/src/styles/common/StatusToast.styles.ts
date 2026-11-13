@@ -5,6 +5,22 @@ const enter = keyframes`
   to { opacity: 1; transform: translate(-50%, 0); }
 `
 
+const countdown = keyframes`
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+`
+
+export const Progress = styled.div<{ $duration: number }>`
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 7px;
+  height: 2px;
+  border-radius: 999px;
+  background: white;
+  transform-origin: left;
+  animation: ${countdown} ${({ $duration }) => $duration}ms linear forwards;
+`
+
 export const Toast = styled.div<{ $aboveFooter: boolean }>`
   position: fixed;
   left: 50%;
