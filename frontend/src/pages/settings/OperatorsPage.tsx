@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import { Navigate } from 'react-router'
 
 import Header from '../../layouts/Header'
-import Button from '../../components/Button'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import OperatorActionSheet from '../../components/settings/OperatorActionSheet'
 import useSettingsBack from '../../hooks/settings/useSettingsBack'
@@ -42,7 +41,7 @@ export default function OperatorsPage() {
   }
 
   return (
-    <S.Page>
+    <S.Page $hasActionBar={false}>
       <Header title="운영진 관리" onBack={backToSettings} />
 
       <S.Content>
@@ -94,10 +93,6 @@ export default function OperatorsPage() {
 
         <M.Status role="status">{status}</M.Status>
       </S.Content>
-
-      <S.ActionBar>
-        <Button onClick={backToSettings}>다음</Button>
-      </S.ActionBar>
 
       {selected && selection?.action === 'sheet' && (
         <OperatorActionSheet
