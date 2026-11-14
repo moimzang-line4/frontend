@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
 import Header from '../../layouts/Header'
-import Button from '../../components/Button'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
@@ -24,7 +23,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <S.Page>
+    <S.Page $hasActionBar={false}>
       <Header title="설정" onBack={backToHome} />
 
       <S.Content>
@@ -85,12 +84,6 @@ export default function SettingsPage() {
           </S.Menu>
         </S.AccountSection>
       </S.Content>
-
-      <S.ActionBar>
-        <Button type="button" onClick={backToHome}>
-          다음
-        </Button>
-      </S.ActionBar>
 
       <ConfirmDialog
         open={modal === 'leave'}
