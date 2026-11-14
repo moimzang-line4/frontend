@@ -1,15 +1,16 @@
 import { useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate } from 'react-router'
 
 import Header from '../../layouts/Header'
 import Button from '../../components/Button'
+import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
 import * as S from '../../styles/settings/SettingsPage.styles'
 import * as M from '../../styles/settings/ManagementPage.styles'
 
 export default function InviteLinkPage() {
-  const navigate = useNavigate()
+  const backToSettings = useSettingsBack('/settings')
   const { group, isMember } = useDemoGroup()
 
   const [status, setStatus] = useState('')
@@ -42,10 +43,7 @@ export default function InviteLinkPage() {
 
   return (
     <S.Page>
-      <Header
-        title="초대 링크 관리"
-        onBack={() => navigate('/settings')}
-      />
+      <Header title="초대 링크 관리" onBack={backToSettings} />
 
       <S.Content>
         <S.GroupInfo>
@@ -61,29 +59,19 @@ export default function InviteLinkPage() {
             aria-label="초대 링크"
             readOnly
             value={url}
-            onFocus={event => event.target.select()}
+            onFocus={(event) => event.target.select()}
           />
 
-          <M.CopyButton
-            type="button"
-            disabled={copying}
-            onClick={copy}
-          >
+          <M.CopyButton type="button" disabled={copying} onClick={copy}>
             링크 복사하기
           </M.CopyButton>
 
-          {status && (
-            <M.Status role="status">
-              {status}
-            </M.Status>
-          )}
+          {status && <M.Status role="status">{status}</M.Status>}
         </M.InviteCard>
       </S.Content>
 
       <S.ActionBar>
-        <Button onClick={() => navigate('/settings')}>
-          닫기
-        </Button>
+        <Button onClick={backToSettings}>닫기</Button>
       </S.ActionBar>
     </S.Page>
   )
