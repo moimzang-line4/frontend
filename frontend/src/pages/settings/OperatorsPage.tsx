@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate } from 'react-router'
 
 import Header from '../../layouts/Header'
 import Button from '../../components/Button'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import OperatorActionSheet from '../../components/settings/OperatorActionSheet'
+import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
 import personIcon from '../../assets/settings/person.svg'
@@ -19,24 +20,17 @@ type Selection = {
 }
 
 export default function OperatorsPage() {
-  const navigate = useNavigate()
+  const backToSettings = useSettingsBack('/settings')
 
-  const {
-    group,
-    isMember,
-    isOwner,
-    removeOperator,
-    transferOwner,
-  } = useDemoGroup()
+  const { group, isMember, isOwner, removeOperator, transferOwner } =
+    useDemoGroup()
 
   const [selection, setSelection] = useState<Selection | null>(null)
   const [status, setStatus] = useState('')
 
   const returnFocus = useRef<HTMLButtonElement | null>(null)
 
-  const selected = group.members.find(
-    member => member.id === selection?.id,
-  )
+  const selected = group.members.find((member) => member.id === selection?.id)
 
   function dismiss() {
     setSelection(null)
@@ -49,10 +43,7 @@ export default function OperatorsPage() {
 
   return (
     <S.Page>
-      <Header
-        title="운영진 관리"
-        onBack={() => navigate('/settings')}
-      />
+      <Header title="운영진 관리" onBack={backToSettings} />
 
       <S.Content>
         <S.GroupInfo>
@@ -66,14 +57,9 @@ export default function OperatorsPage() {
           <h3>그룹 관리</h3>
 
           <M.OperatorList>
-            {group.members.map(member => (
+            {group.members.map((member) => (
               <M.Operator key={member.id}>
-                <img
-                  src={personIcon}
-                  alt=""
-                  width={24}
-                  height={24}
-                />
+                <img src={personIcon} alt="" width={24} height={24} />
 
                 <M.Person>
                   <strong>
@@ -89,7 +75,7 @@ export default function OperatorsPage() {
                     type="button"
                     aria-label={`${member.name} 관리`}
                     aria-haspopup="dialog"
-                    onClick={event => {
+                    onClick={(event) => {
                       returnFocus.current = event.currentTarget
 
                       setSelection({
@@ -98,12 +84,7 @@ export default function OperatorsPage() {
                       })
                     }}
                   >
-                    <img
-                      src={moreIcon}
-                      alt=""
-                      width={16}
-                      height={16}
-                    />
+                    <img src={moreIcon} alt="" width={16} height={16} />
                   </M.More>
                 )}
               </M.Operator>
@@ -111,22 +92,18 @@ export default function OperatorsPage() {
           </M.OperatorList>
         </S.Section>
 
-        <M.Status role="status">
-          {status}
-        </M.Status>
+        <M.Status role="status">{status}</M.Status>
       </S.Content>
 
       <S.ActionBar>
-        <Button onClick={() => navigate('/settings')}>
-          다음
-        </Button>
+        <Button onClick={backToSettings}>다음</Button>
       </S.ActionBar>
 
       {selected && selection?.action === 'sheet' && (
         <OperatorActionSheet
           name={selected.name}
           onClose={dismiss}
-          onAction={action =>
+          onAction={(action) =>
             setSelection({
               id: selected.id,
               action,
