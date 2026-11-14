@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import { Navigate } from 'react-router'
 
 import Header from '../../layouts/Header'
-import Button from '../../components/Button'
 import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
@@ -42,7 +41,7 @@ export default function InviteLinkPage() {
   }
 
   return (
-    <S.Page>
+    <S.Page $hasActionBar={false}>
       <Header title="초대 링크 관리" onBack={backToSettings} />
 
       <S.Content>
@@ -69,10 +68,6 @@ export default function InviteLinkPage() {
           {status && <M.Status role="status">{status}</M.Status>}
         </M.InviteCard>
       </S.Content>
-
-      <S.ActionBar>
-        <Button onClick={backToSettings}>닫기</Button>
-      </S.ActionBar>
     </S.Page>
   )
 }
