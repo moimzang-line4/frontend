@@ -7,6 +7,7 @@ import OperatorActionSheet from '../../components/settings/OperatorActionSheet'
 import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
+import ownerCrown from '../../assets/settings/owner-crown.svg'
 import personIcon from '../../assets/settings/person.svg'
 import moreIcon from '../../assets/settings/more.svg'
 
@@ -61,10 +62,15 @@ export default function OperatorsPage() {
                 <img src={personIcon} alt="" width={24} height={24} />
 
                 <M.Person>
-                  <strong>
-                    {member.name}
-                    {member.id === group.ownerId ? ' · 모임장' : ''}
-                  </strong>
+                  <M.PersonName>
+                    <strong>{member.name}</strong>
+                    {member.id === group.ownerId && (
+                      <M.OwnerBadge>
+                        <img src={ownerCrown} alt="" />
+                        <span>모임장</span>
+                      </M.OwnerBadge>
+                    )}
+                  </M.PersonName>
 
                   <p>{member.profile}</p>
                 </M.Person>
