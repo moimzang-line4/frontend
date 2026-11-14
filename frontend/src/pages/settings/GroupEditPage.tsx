@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Navigate } from 'react-router'
 
 import Header from '../../layouts/Header'
 import Button from '../../components/Button'
+import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
 import * as S from '../../styles/settings/SettingsPage.styles'
 import * as M from '../../styles/settings/ManagementPage.styles'
 
 export default function GroupEditPage() {
-  const navigate = useNavigate()
+  const backToSettings = useSettingsBack('/settings')
   const { group, isMember, updateGroup } = useDemoGroup()
 
   const [name, setName] = useState(group.name)
@@ -28,7 +29,7 @@ export default function GroupEditPage() {
       description: group.description,
     })
 
-    navigate('/settings')
+    backToSettings()
   }
 
   if (!isMember) {
@@ -37,10 +38,7 @@ export default function GroupEditPage() {
 
   return (
     <S.Page>
-      <Header
-        title="그룹 정보 수정"
-        onBack={() => navigate('/settings')}
-      />
+      <Header title="그룹 정보 수정" onBack={backToSettings} />
 
       <S.Content>
         <S.GroupInfo>
@@ -59,7 +57,7 @@ export default function GroupEditPage() {
               required
               maxLength={40}
               value={name}
-              onChange={event => setName(event.target.value)}
+              onChange={(event) => setName(event.target.value)}
               placeholder="예) 음샘 중앙밴드"
             />
           </label>
@@ -74,7 +72,7 @@ export default function GroupEditPage() {
               required
               maxLength={40}
               value={generation}
-              onChange={event => setGeneration(event.target.value)}
+              onChange={(event) => setGeneration(event.target.value)}
               placeholder="예) 12기 (기수 구분이 없는 경우 연도를 입력해 주세요.)"
             />
           </label>

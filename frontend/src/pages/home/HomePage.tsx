@@ -27,28 +27,20 @@ export default function HomePage() {
         <S.SettingsButton
           type="button"
           aria-label="설정"
-          onClick={() => navigate('/settings')}
+          onClick={() =>
+            navigate('/settings', { state: { settingsParent: '/' } })
+          }
         >
-          <img
-            src={settingsIcon}
-            alt=""
-            width={24}
-            height={24}
-          />
+          <img src={settingsIcon} alt="" width={24} height={24} />
         </S.SettingsButton>
       }
       home
     >
       <S.Content>
         <S.SectionHeading>
-          <S.Heading>
-            {calendar.groupName} 일정 캘린더
-          </S.Heading>
+          <S.Heading>{calendar.groupName} 일정 캘린더</S.Heading>
 
-          <S.AddButton
-            type="button"
-            onClick={() => navigate('/schedules/new')}
-          >
+          <S.AddButton type="button" onClick={() => navigate('/schedules/new')}>
             ＋ 일정 등록
           </S.AddButton>
         </S.SectionHeading>
@@ -56,11 +48,11 @@ export default function HomePage() {
         <MonthCalendar
           {...calendar}
           onMonthChange={calendar.changeMonth}
-          onSelectDate={date => {
+          onSelectDate={(date) => {
             calendar.setSelectedDate(date)
             setDateSheetOpen(true)
           }}
-          onSelectEvent={event =>
+          onSelectEvent={(event) =>
             navigate(`/schedules/${encodeURIComponent(event.id)}`)
           }
         />
@@ -76,15 +68,13 @@ export default function HomePage() {
         ))}
 
         {calendar.upcoming.length === 0 && (
-          <S.EmptyMessage>
-            예정된 운영 일정이 없어요.
-          </S.EmptyMessage>
+          <S.EmptyMessage>예정된 운영 일정이 없어요.</S.EmptyMessage>
         )}
 
         {calendar.storageError && (
           <S.StorageNotice role="status">
-            브라우저 저장 공간에 접근할 수 없어 변경 내용은
-            새로고침하면 사라질 수 있어요.
+            브라우저 저장 공간에 접근할 수 없어 변경 내용은 새로고침하면 사라질
+            수 있어요.
           </S.StorageNotice>
         )}
       </S.Content>
@@ -95,7 +85,7 @@ export default function HomePage() {
           schedules={calendar.schedules}
           onClose={() => setDateSheetOpen(false)}
           onAdd={() => navigate('/schedules/new')}
-          onSelectEvent={event =>
+          onSelectEvent={(event) =>
             navigate(`/schedules/${encodeURIComponent(event.id)}`)
           }
         />
