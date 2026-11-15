@@ -58,7 +58,7 @@ export const Caret = styled.img<Variant>`
   ${({ $variant }) =>
     $variant === 'generation'
       ? css`
-          left: calc(50% + 68px);
+          left: calc(50% + 150px);
         `
       : css`
           right: 0;
