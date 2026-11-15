@@ -8,11 +8,11 @@ import {
 } from 'react-router'
 
 import Header from '../../layouts/Header'
-import CategorySheet from '../../components/schedules/CategorySheet'
+import CategorySheet from '../../components/meetings/MeetingCategorySheet'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 import useMeetings from '../../hooks/meetings/useMeetings'
-import useCategories from '../../hooks/schedules/useCategories'
+import useMeetingCategoriesApi from '../../hooks/meetings/useMeetingCategoriesApi'
 import useSchedules from '../../hooks/schedules/useSchedules'
 
 import { meetingListPath, newAgenda } from '../../utils/meetings/store'
@@ -47,7 +47,7 @@ function MeetingForm({
 }) {
   const navigate = useNavigate()
   const { create, update, remove } = useMeetings()
-  const { categories } = useCategories()
+  const { categories } = useMeetingCategoriesApi()
 
   const returnPath = sourceScheduleId
     ? `/schedules/${encodeURIComponent(sourceScheduleId)}`
@@ -322,10 +322,11 @@ function MeetingForm({
 
       {categoryOpen && (
         <CategorySheet
-          selectedId={category?.id}
-          onSelect={setCategory}
-          onClose={() => setCategoryOpen(false)}
-        />
+  selectedId={category?.id}
+  selectedName={category?.label}
+  onSelect={setCategory}
+  onClose={() => setCategoryOpen(false)}
+/>
       )}
 
       <ConfirmDialog
