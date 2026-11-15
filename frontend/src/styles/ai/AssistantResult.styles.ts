@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import Button from '../../components/Button'
 
-// 피그마 결과 카드: padding 12 14, gap 10, radius 16, 흰색 → #F3FAF7 그라데이션
 export const Card = styled.section`
   display: flex;
   flex-direction: column;
@@ -31,20 +30,19 @@ export const SummaryText = styled.div`
 `
 
 export const Label = styled.p`
-  font-size: 13px;
+  font-size: 14px;
   line-height: 140%;
-  font-weight: 600;
+  font-weight: 500;
   color: #424242;
 `
 
 export const SubLabel = styled.p`
   margin-top: -4px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 140%;
   color: #7f7e7e;
 `
 
-// 피그마: 22 / 700 / #253F3B, line-height 32
 export const Amount = styled.p`
   font-size: 22px;
   line-height: 32px;
@@ -57,11 +55,12 @@ export const CountBadge = styled.span`
   height: 20px;
   flex-shrink: 0;
   align-items: center;
+  margin-top: 20px;
   align-self: flex-start;
   padding: 0 8px;
   border-radius: 999px;
   background: #fdecec;
-  font-size: 10px;
+  font-size: 9px;
   line-height: normal;
   font-weight: 700;
   color: #e45c55;
@@ -147,7 +146,7 @@ const pill = `
 
 export const ConfirmButton = styled.button`
   ${pill}
-  background: #438b7e;
+  background: linear-gradient(127deg, #5AA997 10.71%, #438B7E 82.14%);
   color: #ffffff;
   cursor: pointer;
 

@@ -67,6 +67,7 @@ export const Stat = styled.div`
   }
 
   span {
+    margin-top: -3px;
     font-size: 12px;
     font-weight: 500;
   }
@@ -82,10 +83,10 @@ export const Progress = styled.div`
 // left는 애니메이션 값으로 컴포넌트에서 지정
 export const Bubble = styled.span`
   position: absolute;
-  top: 0;
+  top: 5px;
   display: flex;
-  min-width: 33px;
-  height: 18px;
+  min-width: 35px;
+  height: 20px;
   padding: 0 5px;
   align-items: center;
   justify-content: center;
@@ -100,11 +101,11 @@ export const Bubble = styled.span`
   &::after {
     content: '';
     position: absolute;
-    bottom: -5px;
+    bottom: -7px;
     left: 50%;
     transform: translateX(-50%);
     border: 3px solid transparent;
-    border-top: 3px solid #ffffff;
+    border-top: 5px solid #ffffff;
   }
 `
 
