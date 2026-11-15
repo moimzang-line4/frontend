@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent, MouseEvent } from 'react'
+import { isAxiosError } from 'axios'
 import {
   Link,
   useNavigate,
@@ -7,16 +8,25 @@ import {
   useSearchParams,
 } from 'react-router'
 
+import { useGetSchedule } from '../../api/generated'
+
 import Header from '../../layouts/Header'
 import CategorySheet from '../../components/meetings/MeetingCategorySheet'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 import useMeetings from '../../hooks/meetings/useMeetings'
+import useCreateServerMeeting from '../../hooks/meetings/useCreateServerMeeting'
 import useMeetingCategoriesApi from '../../hooks/meetings/useMeetingCategoriesApi'
-import useSchedules from '../../hooks/schedules/useSchedules'
 
-import { meetingListPath, newAgenda } from '../../utils/meetings/store'
-import type { Meeting, MeetingAgenda } from '../../types/meetings/meeting'
+import {
+  meetingListPath,
+  newAgenda,
+} from '../../utils/meetings/store'
+
+import type {
+  Meeting,
+  MeetingAgenda,
+} from '../../types/meetings/meeting'
 import type { CategoryOption } from '../../types/schedules/schedule'
 
 import calendarIcon from '../../assets/schedules/calendar.svg'
@@ -46,7 +56,9 @@ function MeetingForm({
   sourceScheduleId?: string
 }) {
   const navigate = useNavigate()
-  const { create, update, remove } = useMeetings()
+
+  const { update, remove } = useMeetings()
+  const serverMeeting = useCreateServerMeeting()
   const { categories } = useMeetingCategoriesApi()
 
   const returnPath = sourceScheduleId
@@ -58,7 +70,9 @@ function MeetingForm({
 
   const [category, setCategory] = useState<CategoryOption | null>(
     meeting?.categoryName
-      ? categories.find(item => item.label === meeting.categoryName) ?? {
+      ? categories.find(
+          item => item.label === meeting.categoryName,
+        ) ?? {
           id: meeting.categoryName,
           label: meeting.categoryName,
           kind: 'custom',
@@ -78,49 +92,75 @@ function MeetingForm({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [error, setError] = useState('')
 
-  const canSubmit = !!(
+  const pending = serverMeeting.pending
+
+  const canSubmit = Boolean(
     title.trim() &&
     date &&
     category &&
-    agendas[0]?.preparation.trim()
+    agendas[0]?.preparation.trim(),
   )
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!canSubmit) return
+    if (!canSubmit || pending || !category) return
 
-    const input = {
-      title: title.trim(),
-      date,
-      categoryName: category!.label,
-      participants: participants.trim(),
-      agendas: agendas.map(agenda => ({
-        ...agenda,
-        preparation: agenda.preparation.trim(),
-      })),
-    }
+    setError('')
 
     try {
       if (meeting) {
-        update(meeting.id, input)
-      } else {
-        create(input, sourceScheduleId)
+        // 수정 API는 다음 단계에서 연결합니다.
+        update(meeting.id, {
+          title: title.trim(),
+          date,
+          categoryName: category.label,
+          participants: participants.trim(),
+          agendas: agendas.map(agenda => ({
+            ...agenda,
+            preparation: agenda.preparation.trim(),
+          })),
+        })
+
+        navigate(returnPath, { replace: true })
+        return
       }
+
+      const meetingId = await serverMeeting.save({
+        title,
+        date,
+        categoryId: Number(category.id),
+        participants,
+        agendas: agendas.map(agenda => agenda.preparation),
+        scheduleId: sourceScheduleId,
+      })
+
+      if (!meetingId) return
 
       navigate(
         sourceScheduleId
-          ? returnPath
-          : meetingListPath({
-              date,
-              status: meeting?.status ?? 'draft',
-            }),
+          ? `/schedules/${encodeURIComponent(sourceScheduleId)}`
+          : '/operations?type=minute',
         { replace: true },
       )
-    } catch {
-      setError(
-        '회의록을 저장하지 못했어요. 브라우저 저장 공간을 확인해주세요.',
-      )
+    } catch (caught) {
+      if (isAxiosError<{ message?: unknown }>(caught)) {
+        const message = caught.response?.data?.message
+
+        setError(
+          typeof message === 'string' && message.trim()
+            ? message
+            : caught.response
+              ? '회의를 저장하지 못했어요.'
+              : '서버에 연결하지 못했어요.',
+        )
+      } else {
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : '회의를 저장하지 못했어요.',
+        )
+      }
     }
   }
 
@@ -128,7 +168,9 @@ function MeetingForm({
     <S.Page>
       <Header
         title="회의 만들기"
-        onBack={() => navigate(returnPath)}
+        onBack={() => {
+          if (!pending) navigate(returnPath)
+        }}
       />
 
       <S.Content>
@@ -146,6 +188,7 @@ function MeetingForm({
                 maxLength={80}
                 placeholder="회의 제목을 입력해주세요"
                 value={title}
+                disabled={pending}
                 onChange={event => setTitle(event.target.value)}
               />
             </S.Row>
@@ -180,6 +223,7 @@ function MeetingForm({
                 type="date"
                 required
                 value={date}
+                disabled={pending}
                 onClick={openDatePicker}
                 onChange={event => setDate(event.target.value)}
               />
@@ -192,9 +236,12 @@ function MeetingForm({
 
               <S.Category
                 type="button"
-                aria-label={`카테고리: ${category?.label ?? '선택해 주세요'}`}
+                aria-label={`카테고리: ${
+                  category?.label ?? '선택해 주세요'
+                }`}
                 aria-haspopup="dialog"
                 aria-expanded={categoryOpen}
+                disabled={pending}
                 onClick={() => setCategoryOpen(true)}
               >
                 {category?.label ?? ''}
@@ -218,7 +265,10 @@ function MeetingForm({
                 maxLength={300}
                 placeholder="예: 김가은, 홍보팀"
                 value={participants}
-                onChange={event => setParticipants(event.target.value)}
+                disabled={pending}
+                onChange={event =>
+                  setParticipants(event.target.value)
+                }
               />
             </S.Row>
 
@@ -230,7 +280,9 @@ function MeetingForm({
                 <S.AgendaHeading>
                   <label htmlFor={`agenda-${agenda.id}`}>
                     안건 {index + 1}{' '}
-                    {index === 0 && <S.Required>*</S.Required>}
+                    {index === 0 && (
+                      <S.Required>*</S.Required>
+                    )}
                   </label>
 
                   <S.Counter>
@@ -239,6 +291,7 @@ function MeetingForm({
                         <button
                           type="button"
                           aria-label={`안건 ${index + 1} 삭제`}
+                          disabled={pending}
                           onClick={() =>
                             setAgendas(current =>
                               current.filter(
@@ -267,6 +320,7 @@ function MeetingForm({
                   maxLength={100}
                   placeholder="준비 사항, 아이디어, 결정 사항을 자유롭게 기록해 주세요."
                   value={agenda.preparation}
+                  disabled={pending}
                   onChange={event =>
                     setAgendas(current =>
                       current.map(value =>
@@ -286,8 +340,12 @@ function MeetingForm({
             <S.AddWrap>
               <S.OutlineButton
                 type="button"
+                disabled={pending}
                 onClick={() =>
-                  setAgendas(current => [...current, newAgenda()])
+                  setAgendas(current => [
+                    ...current,
+                    newAgenda(),
+                  ])
                 }
               >
                 + 안건 추가
@@ -303,15 +361,20 @@ function MeetingForm({
 
           <S.Submit
             type="submit"
-            disabled={!canSubmit}
+            disabled={!canSubmit || pending}
           >
-            {meeting ? '수정하기' : '등록하기'}
+            {pending
+              ? '저장 중…'
+              : meeting
+                ? '수정하기'
+                : '등록하기'}
           </S.Submit>
 
           {meeting && (
             <S.OutlineButton
               type="button"
               $danger
+              disabled={pending}
               onClick={() => setDeleteOpen(true)}
             >
               삭제하기
@@ -322,11 +385,11 @@ function MeetingForm({
 
       {categoryOpen && (
         <CategorySheet
-  selectedId={category?.id}
-  selectedName={category?.label}
-  onSelect={setCategory}
-  onClose={() => setCategoryOpen(false)}
-/>
+          selectedId={category?.id}
+          selectedName={category?.label}
+          onSelect={setCategory}
+          onClose={() => setCategoryOpen(false)}
+        />
       )}
 
       <ConfirmDialog
@@ -336,11 +399,14 @@ function MeetingForm({
         confirmText="삭제하기"
         onCancel={() => setDeleteOpen(false)}
         onConfirm={() => {
-          if (meeting) {
-            remove(meeting.id)
-          }
+          // 삭제 API는 다음 단계에서 연결합니다.
+          if (!meeting) return
 
-          navigate('/operations?type=minute', { replace: true })
+          remove(meeting.id)
+
+          navigate('/operations?type=minute', {
+            replace: true,
+          })
         }}
       />
     </S.Page>
@@ -350,22 +416,66 @@ function MeetingForm({
 export default function MeetingFormPage() {
   const { meetingId } = useParams()
   const [params] = useSearchParams()
-  const { schedules } = useSchedules()
   const { meetings } = useMeetings()
 
-  const sourceScheduleId = params.get('scheduleId') || undefined
-  const meeting = meetings.find(item => item.id === meetingId)
+  const sourceScheduleId =
+    params.get('scheduleId') || undefined
+
+  const numericScheduleId = Number(sourceScheduleId)
+
+  const validScheduleId =
+    !!sourceScheduleId &&
+    /^\d+$/.test(sourceScheduleId) &&
+    Number.isSafeInteger(numericScheduleId) &&
+    numericScheduleId > 0
+
+  const sourceQuery = useGetSchedule(
+    validScheduleId ? numericScheduleId : 0,
+    {
+      query: {
+        enabled: validScheduleId,
+        retry: false,
+      },
+      axios: {
+        timeout: 15000,
+      },
+    },
+  )
+
+  const meeting = meetings.find(
+    item => item.id === meetingId,
+  )
+
+  if (sourceScheduleId && sourceQuery.isLoading) {
+    return (
+      <S.Page>
+        <Header title="회의 만들기" />
+
+        <S.Notice>
+          <p role="status">
+            연결할 일정을 확인하는 중이에요.
+          </p>
+        </S.Notice>
+      </S.Page>
+    )
+  }
 
   if (
     sourceScheduleId &&
-    !schedules.some(schedule => schedule.id === sourceScheduleId)
+    (
+      !validScheduleId ||
+      sourceQuery.isError ||
+      sourceQuery.data?.data.success !== true ||
+      sourceQuery.data?.data.data?.scheduleId !== numericScheduleId
+    )
   ) {
     return (
       <S.Page>
         <Header title="회의 만들기" />
 
         <S.Notice>
-          <h1>연결할 일정을 찾을 수 없어요</h1>
+          <h1>연결할 일정을 확인할 수 없어요</h1>
+
           <Link to="/operations?type=minute">
             회의록 목록으로 이동
           </Link>
@@ -381,6 +491,7 @@ export default function MeetingFormPage() {
 
         <S.Notice>
           <h1>회의록을 찾을 수 없어요</h1>
+
           <Link to="/operations?type=minute">
             회의록 목록으로 이동
           </Link>
