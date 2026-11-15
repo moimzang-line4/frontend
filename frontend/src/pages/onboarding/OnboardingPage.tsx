@@ -37,31 +37,31 @@ export default function OnboardingPage() {
   const [phase, setPhase] = useState<'light' | 'mint' | 'slides'>(
     resumeLastStep ? 'slides' : 'light',
   )
+  const [leaving, setLeaving] = useState(false)
   const [step, setStep] = useState(resumeLastStep ? 2 : 0)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (resumeLastStep) return
+  if (resumeLastStep) return
 
-    const reduced = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches
+  setPhase('light')
+  setLeaving(false)
 
-    const mint = window.setTimeout(
-      () => setPhase('mint'),
-      reduced ? 100 : 700,
-    )
+  // 1초부터 초록 배경으로 부드럽게 전환
+  const mintTimer = window.setTimeout(() => {
+    setPhase('mint')
+  }, 1000)
 
-    const intro = window.setTimeout(
-      () => setPhase('slides'),
-      reduced ? 200 : 1800,
-    )
+  // 총 2초 후 온보딩으로 이동
+  const slidesTimer = window.setTimeout(() => {
+    setPhase('slides')
+  }, 2000)
 
-    return () => {
-      window.clearTimeout(mint)
-      window.clearTimeout(intro)
-    }
-  }, [resumeLastStep])
+  return () => {
+    window.clearTimeout(mintTimer)
+    window.clearTimeout(slidesTimer)
+  }
+}, [resumeLastStep])
 
   function finish() {
     try {
@@ -89,6 +89,7 @@ export default function OnboardingPage() {
     return (
       <S.Splash
         $mint={phase === 'mint'}
+        $leaving={leaving}
         aria-label="moimzang 시작 화면"
       >
         <h1>
@@ -145,11 +146,14 @@ export default function OnboardingPage() {
           <S.Next
             type="button"
             $primary={step === 2}
-            onClick={() =>
-              step === 2
-                ? finish()
-                : setStep(value => Math.min(value + 1, 2))
-            }
+            onClick={() => {
+              if (step === 2) {
+                finish()
+                return
+              }
+
+              setStep(value => Math.min(value + 1, 2))
+            }}
           >
             {step === 2 ? '지금 시작하기' : '다음'}
           </S.Next>
