@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
 import Footer from '../../layouts/Footer'
+import GroupTermSelect from '../groups/GroupTermSelect'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import FileActionsSheet from '../../components/files/FileActionsSheet'
 import FileDeletionToast from './FileDeletionToast'
@@ -41,7 +42,6 @@ export default function FileLibrary({
   scheduleTitle,
   listPath = `/schedules/${encodeURIComponent(scheduleId)}/operations/files`,
   documentView = false,
-  generationLabel,
   ledgerContent,
 }: FileListProps) {
   const navigate = useNavigate()
@@ -95,15 +95,8 @@ export default function FileLibrary({
 
       <S.Content aria-label={documentView ? '문서함 자료' : '일정 자료'}>
         {documentView && (
-          <DropdownSelect
-            aria-label="자료실 기수"
-            value={scheduleId}
-            onChange={() => {}}
-            options={[
-              { value: scheduleId, label: generationLabel ?? scheduleTitle },
-            ]}
-          />
-        )}
+  <GroupTermSelect aria-label="자료실 기수" />
+)}
         <S.SearchRow>
           <S.Search>
             <img src={searchIcon} alt="" width={20} height={20} />

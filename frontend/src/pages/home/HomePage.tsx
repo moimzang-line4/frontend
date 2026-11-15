@@ -5,7 +5,9 @@ import MainLayout from '../../layouts/MainLayout'
 import MonthCalendar from '../../components/home/MonthCalendar'
 import UpcomingEventCard from '../../components/home/UpcomingEventCard'
 import SelectedDateSheet from '../../components/home/SelectedDateSheet'
+
 import useHomeCalendar from '../../hooks/home/useHomeCalendar'
+import useCurrentGroup from '../../hooks/groups/useCurrentGroup'
 
 import settingsIcon from '../../assets/home/settings.svg'
 
@@ -13,9 +15,14 @@ import * as S from '../../styles/home/HomePage.styles'
 
 export default function HomePage() {
   const calendar = useHomeCalendar()
+  const currentGroup = useCurrentGroup()
   const navigate = useNavigate()
 
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
+
+  // 조회 전에는 기존 이름을 표시하고,
+  // 조회에 성공하면 서버에서 받은 이름으로 표시해요.
+  const groupName = currentGroup.group?.name ?? calendar.groupName
 
   return (
     <MainLayout
@@ -28,19 +35,57 @@ export default function HomePage() {
           type="button"
           aria-label="설정"
           onClick={() =>
-            navigate('/settings', { state: { settingsParent: '/' } })
+            navigate('/settings', {
+              state: { settingsParent: '/' },
+            })
           }
         >
-          <img src={settingsIcon} alt="" width={24} height={24} />
+          <img
+            src={settingsIcon}
+            alt=""
+            width={24}
+            height={24}
+          />
         </S.SettingsButton>
       }
       home
     >
       <S.Content>
-        <S.SectionHeading>
-          <S.Heading>{calendar.groupName} 일정 캘린더</S.Heading>
+        {currentGroup.loading && (
+          <S.EmptyMessage role="status">
+            그룹 정보를 불러오는 중이에요.
+          </S.EmptyMessage>
+        )}
 
-          <S.AddButton type="button" onClick={() => navigate('/schedules/new')}>
+        {currentGroup.errorMessage && (
+          <div>
+            <S.StorageNotice role="alert">
+              {currentGroup.errorMessage}
+            </S.StorageNotice>
+
+            {currentGroup.canRetry && (
+              <S.AddButton
+                type="button"
+                disabled={currentGroup.refreshing}
+                onClick={() => void currentGroup.reload()}
+              >
+                {currentGroup.refreshing
+                  ? '불러오는 중…'
+                  : '다시 불러오기'}
+              </S.AddButton>
+            )}
+          </div>
+        )}
+
+        <S.SectionHeading>
+          <S.Heading>
+            {groupName} 일정 캘린더
+          </S.Heading>
+
+          <S.AddButton
+            type="button"
+            onClick={() => navigate('/schedules/new')}
+          >
             ＋ 일정 등록
           </S.AddButton>
         </S.SectionHeading>
@@ -48,11 +93,11 @@ export default function HomePage() {
         <MonthCalendar
           {...calendar}
           onMonthChange={calendar.changeMonth}
-          onSelectDate={(date) => {
+          onSelectDate={date => {
             calendar.setSelectedDate(date)
             setDateSheetOpen(true)
           }}
-          onSelectEvent={(event) =>
+          onSelectEvent={event =>
             navigate(`/schedules/${encodeURIComponent(event.id)}`)
           }
         />
@@ -67,16 +112,37 @@ export default function HomePage() {
           />
         ))}
 
-        {calendar.upcoming.length === 0 && (
-          <S.EmptyMessage>예정된 운영 일정이 없어요.</S.EmptyMessage>
+        {!calendar.loading &&
+  !calendar.errorMessage &&
+  calendar.upcoming.length === 0 && (
+          <S.EmptyMessage>
+            예정된 운영 일정이 없어요.
+          </S.EmptyMessage>
         )}
 
-        {calendar.storageError && (
-          <S.StorageNotice role="status">
-            브라우저 저장 공간에 접근할 수 없어 변경 내용은 새로고침하면 사라질
-            수 있어요.
-          </S.StorageNotice>
-        )}
+        {calendar.loading && (
+  <S.EmptyMessage role="status">
+    일정을 불러오는 중이에요.
+  </S.EmptyMessage>
+)}
+
+{calendar.errorMessage && (
+  <div>
+    <S.StorageNotice role="alert">
+      {calendar.errorMessage}
+    </S.StorageNotice>
+
+    {calendar.canRetry && (
+      <S.AddButton
+        type="button"
+        disabled={calendar.refreshing}
+        onClick={() => void calendar.reload()}
+      >
+        {calendar.refreshing ? '불러오는 중…' : '일정 다시 불러오기'}
+      </S.AddButton>
+    )}
+  </div>
+)}
       </S.Content>
 
       {dateSheetOpen && (
@@ -85,7 +151,7 @@ export default function HomePage() {
           schedules={calendar.schedules}
           onClose={() => setDateSheetOpen(false)}
           onAdd={() => navigate('/schedules/new')}
-          onSelectEvent={(event) =>
+          onSelectEvent={event =>
             navigate(`/schedules/${encodeURIComponent(event.id)}`)
           }
         />

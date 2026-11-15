@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import DropdownSelect from '../../components/common/DropdownSelect'
 import MainLayout from '../../layouts/MainLayout'
 import CreateOperationSheet from '../../components/operations/CreateOperationSheet'
 import SortOperationSheet from '../../components/operations/SortOperationSheet'
 import MeetingCard from '../../components/meetings/MeetingCard'
+import GroupTermSelect from '../../components/groups/GroupTermSelect'
 
 import { sortLabels } from '../../constants/operations/sortOptions'
 import useOperationRecords from '../../hooks/operations/useOperationRecords'
-import useDemoGroup from '../../hooks/groups/useDemoGroup'
 import type { OperationFilter } from '../../types/operations/operation'
 
 import searchIcon from '../../assets/operations/search.svg'
@@ -21,25 +20,13 @@ import * as S from '../../styles/operations/OperationsPage.styles'
 export default function OperationsPage() {
   const navigate = useNavigate()
   const data = useOperationRecords()
-  const { group } = useDemoGroup()
 
   const [modal, setModal] = useState<'create' | 'sort' | null>(null)
 
   return (
     <MainLayout title="운영 공간" showBack={false} headerAlign="left" home>
       <S.Content>
-        <DropdownSelect
-          aria-label="조회할 운영 연도"
-          value={data.year}
-          onChange={(event) => data.setYear(event.target.value)}
-          options={data.years.map((year) => ({
-            value: year,
-            label:
-              year === data.currentYear
-                ? `${group.generation} (${year})`
-                : `${year}년`,
-          }))}
-        />
+        <GroupTermSelect aria-label="조회할 운영 기수" />
 
         <S.Tabs aria-label="운영 기록 기간">
           {[

@@ -10,14 +10,59 @@ import heroBackground from '../../assets/schedules/detail-header.svg'
 import * as S from '../../styles/schedules/ScheduleDetailPage.styles'
 
 export default function ScheduleDetailPage() {
-  const { schedule, countdown } = useScheduleDetail()
+  const {
+    schedule,
+    countdown,
+    loading,
+    refreshing,
+    errorMessage,
+    reload,
+  } = useScheduleDetail()
+
+  if (loading) {
+    return (
+      <S.Page>
+        <S.Notice>
+          <p role="status">
+            일정 정보를 불러오는 중이에요.
+          </p>
+        </S.Notice>
+
+        <Footer />
+      </S.Page>
+    )
+  }
+
+  if (errorMessage) {
+    return (
+      <S.Page>
+        <S.Notice>
+          <h1>일정 정보를 불러오지 못했어요</h1>
+
+          <p role="alert">{errorMessage}</p>
+
+          <button
+            type="button"
+            disabled={refreshing}
+            onClick={() => void reload()}
+          >
+            {refreshing ? '불러오는 중…' : '다시 불러오기'}
+          </button>
+
+          <Link to="/">홈으로 이동</Link>
+        </S.Notice>
+
+        <Footer />
+      </S.Page>
+    )
+  }
 
   if (!schedule) {
     return (
       <S.Page>
         <S.Notice>
           <h1>일정을 찾을 수 없어요</h1>
-          <p>삭제되었거나 현재 저장소에 없는 일정이에요.</p>
+          <p>삭제되었거나 존재하지 않는 일정이에요.</p>
           <Link to="/">홈으로 이동</Link>
         </S.Notice>
 
