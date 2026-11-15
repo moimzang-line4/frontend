@@ -76,8 +76,19 @@ const FooterRoot = styled.footer`
   width: 100%;
   max-width: var(--container-app);
   transform: translateX(-50%);
-  background: var(--color-surface);
+
+  background: transparent;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: env(safe-area-inset-bottom, 0px);
+    background: var(--color-surface);
+    z-index: -1;
+  }
 `
 
 const FooterContent = styled.div`
