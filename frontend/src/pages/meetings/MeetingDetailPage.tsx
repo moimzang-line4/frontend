@@ -162,6 +162,8 @@ export default function MeetingDetailPage() {
     )
   }
 
+  const progress = meeting.progress
+
   return (
     <S.Page>
       <Header title="회의록" onBack={back} />
@@ -177,6 +179,31 @@ export default function MeetingDetailPage() {
               : '진행 중'}
           </p>
         </S.Heading>
+
+        {progress &&
+          typeof progress.doneCount === 'number' &&
+          typeof progress.totalCount === 'number' &&
+          typeof progress.percentage === 'number' && (
+            <S.ProgressCard>
+              <S.ProgressHeading>
+                <h3>안건 진행률</h3>
+
+                <span>
+                  {progress.doneCount}/{progress.totalCount} 완료
+                </span>
+              </S.ProgressHeading>
+
+              <S.Progress
+                aria-label="안건 진행률"
+                value={progress.percentage}
+                max={100}
+              />
+
+              <S.ProgressText>
+                {progress.percentage}%
+              </S.ProgressText>
+            </S.ProgressCard>
+          )}
 
         <MeetingInfoEditor
           key={meeting.meetingId}
@@ -207,47 +234,16 @@ export default function MeetingDetailPage() {
           </div>
         )}
 
-        {meeting.agendas.map((agenda, index) => (
-          <S.RunCard key={agenda.agendaId}>
-            <S.RunHeading>
-              <h3>안건 {index + 1}</h3>
-
-              <S.Status
-                $done={agenda.status === 'COMPLETED'}
-              >
-                {agenda.status === 'COMPLETED'
-                  ? '완료'
-                  : agenda.status === 'IN_PROGRESS'
-                    ? '진행 중'
-                    : '대기'}
-              </S.Status>
-            </S.RunHeading>
-
-            <S.Preparation>
-              {agenda.content}
-            </S.Preparation>
-
-            <S.RunField>
-              논의 내용
-
-              <S.Textarea
-                aria-label={`안건 ${index + 1} 논의 내용`}
-                value={agenda.discussionNote ?? ''}
-                readOnly
-              />
-            </S.RunField>
-
-            <S.RunField>
-              결정 사항
-
-              <S.Textarea
-                aria-label={`안건 ${index + 1} 결정 사항`}
-                value={agenda.decision ?? ''}
-                readOnly
-              />
-            </S.RunField>
-          </S.RunCard>
-        ))}
+        <S.Submit
+  type="button"
+  onClick={() =>
+    navigate(`/meetings/${numericId}/run`)
+  }
+>
+  {meeting.status === 'COMPLETED'
+    ? '회의 내용 보기'
+    : '회의 시작하기'}
+</S.Submit>
       </S.Content>
     </S.Page>
   )

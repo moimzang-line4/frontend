@@ -1,194 +1,374 @@
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
+import { isAxiosError } from 'axios'
 import { Link, useNavigate, useParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 
 import Header from '../../layouts/Header'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 
-import useMeetings, {
-  startMeeting,
-} from '../../hooks/meetings/useMeetings'
-
 import {
-  meetingFinished,
-  meetingListPath,
-  meetingToday,
-} from '../../utils/meetings/store'
+  getGetMeetingDetailQueryKey,
+  getListMeetingsQueryKey,
+  useEndMeeting,
+  useGetMeetingDetail,
+  useUpdateAgendaContent,
+} from '../../api/generated'
 
-import type { Meeting, MeetingAgenda } from '../../types/meetings/meeting'
+import type { getMeetingDetail } from '../../api/generated'
 
-import * as S from '../../styles/meetings/MeetingPage.styles'
+import useOnboarding from '../../hooks/onboarding/useOnboarding'
 
-function AgendaEditor({
-  meeting,
-  agenda,
-  index,
-  onError,
-}: {
-  meeting: Meeting
-  agenda: MeetingAgenda
-  index: number
-  onError: (error: string) => void
-}) {
-  const { saveAgenda } = useMeetings()
+import * as S from '../../styles/meetings/MeetingRunPage.styles'
 
-  const [draft, setDraft] = useState(agenda)
-  const [today] = useState(meetingToday)
+function errorMessage(caught: unknown) {
+  if (isAxiosError<{ message?: unknown }>(caught)) {
+    const message = caught.response?.data?.message
 
-  const readOnly = meetingFinished(meeting, today)
-
-  function change(key: 'discussion' | 'decision', value: string) {
-    const next = { ...draft, [key]: value }
-
-    setDraft(next)
-
-    try {
-      saveAgenda(meeting.id, next)
-      onError('')
-    } catch {
-      onError(
-        '내용을 저장하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 입력해주세요.',
-      )
+    if (typeof message === 'string' && message.trim()) {
+      return message
     }
+
+    return caught.response
+      ? '요청을 처리하지 못했어요.'
+      : '서버에 연결하지 못했어요.'
   }
 
-  return (
-    <S.RunCard>
-      <S.RunHeading>
-        <h3>
-          안건 {index + 1}{' '}
-          {index === 0 && <S.Required>*</S.Required>}
-        </h3>
-
-        <S.Status $done={agenda.completed || readOnly}>
-          {agenda.completed || readOnly ? '완료' : '진행 중'}
-        </S.Status>
-      </S.RunHeading>
-
-      <S.Preparation>
-        {agenda.preparation || '등록된 준비 내용이 없어요.'}
-      </S.Preparation>
-
-      <S.RunField>
-        논의 내용
-
-        <S.Textarea
-          aria-label={`안건 ${index + 1} 논의 내용`}
-          maxLength={10000}
-          readOnly={readOnly}
-          placeholder="회의에서 나온 의견을 기록해주세요."
-          value={draft.discussion}
-          onChange={event => change('discussion', event.target.value)}
-        />
-      </S.RunField>
-
-      <S.RunField>
-        결정 사항
-
-        <S.Textarea
-          aria-label={`안건 ${index + 1} 결정 사항`}
-          maxLength={10000}
-          readOnly={readOnly}
-          placeholder="회의에서 결정된 사항을 작성해주세요."
-          value={draft.decision}
-          onChange={event => change('decision', event.target.value)}
-        />
-      </S.RunField>
-    </S.RunCard>
-  )
+  return caught instanceof Error
+    ? caught.message
+    : '요청을 처리하지 못했어요.'
 }
 
-function MeetingRun({ meeting }: { meeting: Meeting }) {
-  const navigate = useNavigate()
-  const { selectAgenda, completeAgenda } = useMeetings()
+function readMeeting(
+  response: Awaited<ReturnType<typeof getMeetingDetail>>,
+) {
+  const body = response.data
+  const data = body.data
 
-  const [today] = useState(meetingToday)
+  if (
+    body.success !== true ||
+    !data ||
+    typeof data.meetingId !== 'number' ||
+    !Number.isSafeInteger(data.meetingId) ||
+    data.meetingId <= 0 ||
+    typeof data.title !== 'string' ||
+    typeof data.meetingDate !== 'string' ||
+    !Array.isArray(data.agendas) ||
+    data.agendas.length === 0 ||
+    (
+      data.status !== 'IN_PROGRESS' &&
+      data.status !== 'COMPLETED'
+    )
+  ) {
+    throw new Error(
+      body.message || '회의 정보를 확인할 수 없어요.',
+    )
+  }
+
+  const agendas = data.agendas.map(item => {
+    if (
+      typeof item.agendaId !== 'number' ||
+      !Number.isSafeInteger(item.agendaId) ||
+      item.agendaId <= 0 ||
+      typeof item.content !== 'string' ||
+      (
+        item.status !== 'PENDING' &&
+        item.status !== 'IN_PROGRESS' &&
+        item.status !== 'COMPLETED'
+      )
+    ) {
+      throw new Error('안건 정보를 확인할 수 없어요.')
+    }
+
+    return {
+      ...item,
+      agendaId: item.agendaId,
+      content: item.content,
+      status: item.status,
+    }
+  })
+
+  agendas.sort(
+    (a, b) => (a.orderNo ?? 0) - (b.orderNo ?? 0),
+  )
+
+  return {
+    ...data,
+    meetingId: data.meetingId,
+    title: data.title,
+    meetingDate: data.meetingDate,
+    status: data.status,
+    agendas,
+  }
+}
+
+type MeetingData = ReturnType<typeof readMeeting>
+type AgendaData = MeetingData['agendas'][number]
+
+type Draft = {
+  discussionNote: string
+  decision: string
+}
+
+function MeetingRun({
+  meeting,
+  loadError,
+}: {
+  meeting: MeetingData
+  loadError: string
+}) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { group } = useOnboarding()
+
+  const updateMutation = useUpdateAgendaContent({
+    mutation: { retry: false },
+    axios: { timeout: 15000 },
+  })
+
+  const endMutation = useEndMeeting({
+    mutation: { retry: false },
+    axios: { timeout: 15000 },
+  })
+
+  const [activeId, setActiveId] = useState<number | undefined>(
+    () =>
+      meeting.agendas.find(
+        item => item.status !== 'COMPLETED',
+      )?.agendaId ?? meeting.agendas[0]?.agendaId,
+  )
+
+  const [drafts, setDrafts] = useState<Record<number, Draft>>({})
+  const [pending, setPending] = useState(false)
   const [stopOpen, setStopOpen] = useState(false)
   const [error, setError] = useState('')
 
-  const index = Math.max(
-    0,
-    meeting.agendas.findIndex(
-      agenda => agenda.id === meeting.activeAgendaId,
-    ),
+  const busy = useRef(false)
+
+  const agenda =
+    meeting.agendas.find(item => item.agendaId === activeId) ??
+    meeting.agendas[0]
+
+  const finished = meeting.status === 'COMPLETED'
+
+  const index = meeting.agendas.findIndex(
+    item => item.agendaId === agenda?.agendaId,
   )
 
-  const agenda = meeting.agendas[index]
-  const count = meeting.agendas.filter(value => value.completed).length
-  const percent = Math.round((count / meeting.agendas.length) * 100)
-  const finished = meetingFinished(meeting, today)
+  const doneCount =
+    meeting.progress?.doneCount ??
+    meeting.agendas.filter(
+      item => item.status === 'COMPLETED',
+    ).length
 
-  useEffect(() => {
-    if (meeting.status !== 'draft' || finished) return
+  const totalCount =
+    meeting.progress?.totalCount ?? meeting.agendas.length
 
-    let cancelled = false
+  const percentage =
+    meeting.progress?.percentage ??
+    Math.round((doneCount / Math.max(totalCount, 1)) * 100)
 
-    Promise.resolve()
-      .then(() => {
-        if (!cancelled) {
-          startMeeting(meeting.id)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError('회의 진행 상태를 저장하지 못했어요.')
-        }
-      })
+  async function refreshMeeting() {
+    await queryClient.invalidateQueries(
+      {
+        queryKey: getGetMeetingDetailQueryKey(meeting.meetingId),
+      },
+      {
+        throwOnError: true,
+      },
+    )
+  }
 
-    return () => {
-      cancelled = true
-    }
-  }, [meeting.id, meeting.status, finished])
+  async function refreshLists() {
+    const tasks = [
+      queryClient.invalidateQueries({
+        queryKey: ['operation-records'],
+      }),
+    ]
 
-  function complete() {
-    try {
-      completeAgenda(meeting.id, agenda)
-      setError('')
+    const termId = group?.termId
 
-      if (
-        meeting.agendas.every(
-          value => value.completed || value.id === agenda.id,
-        )
-      ) {
-        navigate(
-          meetingListPath({
-            ...meeting,
-            status: 'completed',
-          }),
-          { replace: true },
-        )
-      }
-    } catch {
-      setError(
-        '안건 완료 상태를 저장하지 못했어요. 다시 시도해주세요.',
+    if (
+      typeof termId === 'number' &&
+      Number.isSafeInteger(termId) &&
+      termId > 0
+    ) {
+      tasks.push(
+        queryClient.invalidateQueries({
+          queryKey: getListMeetingsQueryKey(termId),
+        }),
       )
     }
+
+    await Promise.all(tasks)
+  }
+
+  async function persist(item: AgendaData, complete: boolean) {
+    if (finished) return
+
+    const draft = drafts[item.agendaId]
+
+    if (
+      !draft &&
+      (!complete || item.status === 'COMPLETED')
+    ) {
+      return
+    }
+
+    const response = await updateMutation.mutateAsync({
+      agendaId: item.agendaId,
+      data: {
+        discussionNote:
+          draft?.discussionNote ?? item.discussionNote ?? '',
+        decision:
+          draft?.decision ?? item.decision ?? '',
+        ...(complete
+          ? { status: 'COMPLETED' as const }
+          : {}),
+      },
+    })
+
+    const body = response.data
+
+    if (
+      body.success !== true ||
+      body.data?.agendaId !== item.agendaId ||
+      (
+        complete &&
+        body.data.status !== 'COMPLETED'
+      )
+    ) {
+      throw new Error(
+        body.message || '안건을 저장하지 못했어요.',
+      )
+    }
+
+    await refreshMeeting()
+
+    setDrafts(current => {
+      const next = { ...current }
+      delete next[item.agendaId]
+      return next
+    })
+  }
+
+  async function execute(
+    task: () => Promise<void>,
+    showInDialog = false,
+  ) {
+    if (busy.current) return
+
+    busy.current = true
+    setPending(true)
+    setError('')
+
+    try {
+      await task()
+    } catch (caught) {
+      const message = errorMessage(caught)
+      setError(message)
+
+      if (showInDialog) {
+        throw new Error(message)
+      }
+    } finally {
+      busy.current = false
+      setPending(false)
+    }
+  }
+
+  if (!agenda) {
+    return (
+      <S.Page>
+        <Header title="회의 진행" />
+
+        <S.Notice>
+          <p>표시할 안건이 없어요.</p>
+        </S.Notice>
+      </S.Page>
+    )
+  }
+
+  const draft = drafts[agenda.agendaId] ?? {
+    discussionNote: agenda.discussionNote ?? '',
+    decision: agenda.decision ?? '',
+  }
+
+  const nextAgenda = meeting.agendas.find(
+    item =>
+      item.agendaId !== agenda.agendaId &&
+      item.status !== 'COMPLETED',
+  )
+
+  function change(key: keyof Draft, value: string) {
+    setDrafts(current => ({
+      ...current,
+      [agenda.agendaId]: {
+        ...(current[agenda.agendaId] ?? {
+          discussionNote: agenda.discussionNote ?? '',
+          decision: agenda.decision ?? '',
+        }),
+        [key]: value,
+      },
+    }))
+  }
+
+  async function complete() {
+    await persist(agenda, true)
+
+    if (nextAgenda) return
+
+    const response = await endMutation.mutateAsync({
+      meetingId: meeting.meetingId,
+    })
+
+    if (
+      response.data.success !== true ||
+      response.data.data?.meetingId !== meeting.meetingId ||
+      response.data.data.status !== 'COMPLETED'
+    ) {
+      throw new Error(
+        response.data.message || '회의를 종료하지 못했어요.',
+      )
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: getGetMeetingDetailQueryKey(meeting.meetingId),
+      }),
+      refreshLists(),
+    ])
+
+    navigate('/operations?type=minute&period=past', {
+      replace: true,
+    })
   }
 
   return (
     <S.Page>
       <Header
         title="회의 진행"
-        onBack={() =>
-          finished
-            ? navigate(meetingListPath(meeting))
-            : setStopOpen(true)
-        }
+        onBack={() => {
+          if (pending) return
+
+          if (finished) {
+            navigate(`/meetings/${meeting.meetingId}`)
+          } else {
+            setStopOpen(true)
+          }
+        }}
       />
 
       <S.Content>
         <S.Heading>
           <h2>{meeting.title}</h2>
-          <p>{meeting.date}</p>
+          <p>{meeting.meetingDate}</p>
         </S.Heading>
 
         <S.ProgressCard>
           <div>
             <S.ProgressHeading>
               <h3>안건 진행률</h3>
-
-              <span>
-                {count}/{meeting.agendas.length} 완료
-              </span>
+              <span>{doneCount}/{totalCount} 완료</span>
             </S.ProgressHeading>
 
             <S.ProgressText>
@@ -198,81 +378,132 @@ function MeetingRun({ meeting }: { meeting: Meeting }) {
                   : `안건 ${index + 1} 논의 중`}
               </span>
 
-              <strong>{percent}%</strong>
+              <strong>{percentage}%</strong>
             </S.ProgressText>
           </div>
 
           <S.Progress
             aria-label="안건 진행률"
+            value={percentage}
             max={100}
-            value={percent}
           />
         </S.ProgressCard>
 
-        <S.AgendaTabs aria-label="안건 선택">
-          {meeting.agendas.map((value, position) => (
-            <S.AgendaTab
-              key={value.id}
+        <S.Tabs aria-label="안건 선택">
+          {meeting.agendas.map((item, position) => (
+            <S.Tab
+              key={item.agendaId}
               type="button"
-              disabled={!!error}
-              $active={index === position}
-              aria-pressed={index === position}
+              $active={item.agendaId === agenda.agendaId}
+              aria-pressed={item.agendaId === agenda.agendaId}
+              disabled={pending}
               onClick={() => {
-                try {
-                  selectAgenda(meeting.id, value.id)
-                } catch {
-                  setError('안건을 전환하지 못했어요.')
-                }
+                if (item.agendaId === agenda.agendaId) return
+
+                void execute(async () => {
+                  await persist(agenda, false)
+                  setActiveId(item.agendaId)
+                })
               }}
             >
               안건 {position + 1}
-              {value.completed ? ' ✓' : ''}
-            </S.AgendaTab>
+            </S.Tab>
           ))}
-        </S.AgendaTabs>
+        </S.Tabs>
 
-        <AgendaEditor
-          key={agenda.id}
-          meeting={meeting}
-          agenda={agenda}
-          index={index}
-          onError={setError}
-        />
+        <S.AgendaCard>
+          <S.AgendaHeading>
+            <h3>
+              안건 {index + 1}{' '}
+              {index === 0 && <S.Required>*</S.Required>}
+            </h3>
 
-        {error && (
+            <S.Status $done={agenda.status === 'COMPLETED'}>
+              {agenda.status === 'COMPLETED'
+                ? '완료'
+                : '진행 중'}
+            </S.Status>
+          </S.AgendaHeading>
+
+          <S.Preparation>
+            {agenda.content}
+          </S.Preparation>
+
+          <S.Field>
+            논의 내용
+
+            <S.Textarea
+              aria-label={`안건 ${index + 1} 논의 내용`}
+              maxLength={10000}
+              value={draft.discussionNote}
+              readOnly={finished}
+              disabled={pending}
+              onChange={event =>
+                change('discussionNote', event.target.value)
+              }
+            />
+          </S.Field>
+
+          <S.Field>
+            결정 사항
+
+            <S.Textarea
+              aria-label={`안건 ${index + 1} 결정 사항`}
+              maxLength={10000}
+              value={draft.decision}
+              readOnly={finished}
+              disabled={pending}
+              onChange={event =>
+                change('decision', event.target.value)
+              }
+            />
+          </S.Field>
+        </S.AgendaCard>
+
+        {(error || loadError) && (
           <S.Error role="alert">
-            {error}
+            {error || loadError}
           </S.Error>
         )}
 
         {finished ? (
-          <S.Submit
+          <S.Primary
+            type="button"
             onClick={() =>
-              navigate(`/meetings/${encodeURIComponent(meeting.id)}`)
+              navigate(`/meetings/${meeting.meetingId}`)
             }
           >
-            안건 확인 및 수정
-          </S.Submit>
+            회의 정보로 돌아가기
+          </S.Primary>
         ) : (
           <>
-            <S.Submit
-              disabled={!!error}
-              onClick={complete}
-            >
-              {meeting.agendas.every(
-                value => value.completed || value.id === agenda.id,
-              )
-                ? '회의 완료하기'
-                : '다음 안건'}
-            </S.Submit>
+            <S.Primary
+  type="button"
+  disabled={
+    pending ||
+    (
+      agenda.status === 'COMPLETED' &&
+      !!nextAgenda
+    )
+  }
+  onClick={() => void execute(complete)}
+>
+  {pending
+    ? '저장 중…'
+    : nextAgenda
+      ? agenda.status === 'COMPLETED'
+        ? '완료된 안건'
+        : '안건 완료하기'
+      : '회의 완료하기'}
+</S.Primary>
 
-            <S.OutlineButton
-              type="button"
-              $danger
-              onClick={() => setStopOpen(true)}
-            >
-              회의 중단하기
-            </S.OutlineButton>
+            <S.Secondary
+  type="button"
+  disabled={pending}
+  onClick={() => setStopOpen(true)}
+>
+  회의 중단하기
+</S.Secondary>
           </>
         )}
       </S.Content>
@@ -280,18 +511,20 @@ function MeetingRun({ meeting }: { meeting: Meeting }) {
       <ConfirmDialog
         open={stopOpen}
         title="회의를 중단할까요?"
-        description="저장된 논의 내용과 결정 사항은 유지되며, 나중에 회의를 이어갈 수 있어요."
+        description="작성한 논의 내용과 결정 사항을 저장하고 나갑니다. 나중에 회의를 이어갈 수 있어요."
         confirmText="중단하기"
-        onCancel={() => setStopOpen(false)}
-        onConfirm={() => {
-          if (error) {
-            throw new Error(
-              '저장하지 못한 내용이 있어요. 취소 후 저장 공간을 확인해주세요.',
-            )
-          }
-
-          navigate(meetingListPath(meeting), { replace: true })
+        onCancel={() => {
+          if (!pending) setStopOpen(false)
         }}
+        onConfirm={() =>
+          execute(async () => {
+            await persist(agenda, false)
+
+            navigate('/operations?type=minute', {
+              replace: true,
+            })
+          }, true)
+        }
       />
     </S.Page>
   )
@@ -299,21 +532,75 @@ function MeetingRun({ meeting }: { meeting: Meeting }) {
 
 export default function MeetingRunPage() {
   const { meetingId } = useParams()
-  const { meetings } = useMeetings()
+  const navigate = useNavigate()
 
-  const meeting = meetings.find(item => item.id === meetingId)
+  const numericId = Number(meetingId)
+
+  const validId =
+    !!meetingId &&
+    /^\d+$/.test(meetingId) &&
+    Number.isSafeInteger(numericId) &&
+    numericId > 0
+
+  const query = useGetMeetingDetail(validId ? numericId : 0, {
+    query: {
+      enabled: validId,
+      staleTime: 30_000,
+      retry: false,
+      select: readMeeting,
+    },
+    axios: {
+      timeout: 15000,
+    },
+  })
+
+  const meeting =
+    query.data?.meetingId === numericId
+      ? query.data
+      : undefined
 
   if (!meeting) {
     return (
       <S.Page>
-        <Header title="회의 진행" />
+        <Header
+          title="회의 진행"
+          onBack={() =>
+            navigate('/operations?type=minute')
+          }
+        />
 
         <S.Notice>
-          <h1>회의록을 찾을 수 없어요</h1>
+          {query.isLoading ? (
+            <p role="status">
+              회의를 불러오는 중이에요.
+            </p>
+          ) : (
+            <>
+              <h1>회의를 불러오지 못했어요</h1>
 
-          <Link to="/operations?type=minute">
-            회의록 목록으로 이동
-          </Link>
+              <p role="alert">
+                {!validId
+                  ? '올바른 회의 ID가 아니에요.'
+                  : query.error
+                    ? errorMessage(query.error)
+                    : '회의 정보를 확인할 수 없어요.'}
+              </p>
+
+              {validId && (
+                <S.OutlineButton
+                  type="button"
+                  disabled={query.isFetching}
+                  onClick={() => void query.refetch()}
+                >
+                  다시 불러오기
+                </S.OutlineButton>
+              )}
+
+              <Link to="/operations?type=minute">
+                회의록 목록으로 이동
+              </Link>
+            </>
+          )}
         </S.Notice>
       </S.Page>
     )
@@ -321,8 +608,11 @@ export default function MeetingRunPage() {
 
   return (
     <MeetingRun
-      key={meeting.id}
+      key={meeting.meetingId}
       meeting={meeting}
+      loadError={
+        query.error ? errorMessage(query.error) : ''
+      }
     />
   )
 }
