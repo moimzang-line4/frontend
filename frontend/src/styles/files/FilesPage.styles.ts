@@ -13,7 +13,7 @@ export const Content = styled.main`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px;
+  padding: 12px 20px 20px;
 `
 export const SearchRow = styled.div`
   display: flex;
@@ -78,13 +78,6 @@ export const Summary = styled.div`
   gap: 12px;
   strong {
     font-size: 14px;
-  }
-  select {
-    background: transparent;
-    font-size: 12px;
-    color: #17251e;
-    cursor: pointer;
-    min-height: 24px;
   }
 `
 export const DownloadAll = styled.button`
@@ -196,6 +189,6 @@ export const Generation = styled.select`
   text-align: center;
   color: #17251e;
   font-size: 13px;
-  margin-bottom: 0;
+  margin-bottom: -4px;
   cursor: pointer;
 `
