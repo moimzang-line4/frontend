@@ -25,32 +25,6 @@ const slideAppear = keyframes`
   }
 `
 
-export const Root = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  max-width: 390px;
-  min-height: max(844px, 100dvh);
-  margin-inline: auto;
-
-  background:
-    linear-gradient(
-      154deg,
-      #7baea5 10.714%,
-      #b5ddd0 82.143%
-    ) top / 100% 145px no-repeat,
-    white;
-
-  color: #19352e;
-
-  animation: ${onboardingAppear} 650ms
-    cubic-bezier(0.22, 1, 0.36, 1) both;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-`
 const logoAppear = keyframes`
   from {
     opacity: 0;
@@ -136,42 +110,7 @@ export const Splash = styled.div<{
   }
 `
 
-export const TopBar = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
 
-  min-height: 94px;
-  padding: 44px 26px 10px;
-
-  button {
-    min-height: 34px;
-    color: #367d70;
-    font-size: 13px;
-    cursor: pointer;
-  }
-`
-
-export const Panel = styled.main`
-  position: relative;
-
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-
-  min-height: 750px;
-  padding: 36px 26px 27px;
-
-  overflow: hidden;
-  isolation: isolate;
-  border-radius: 28px 28px 0 0;
-
-  background: linear-gradient(
-    115deg,
-    #f8fefb 14.286%,
-    white 85.714%
-  );
-`
 
 export const Wave = styled.img`
   position: absolute;
@@ -180,52 +119,6 @@ export const Wave = styled.img`
   z-index: -1;
 
   max-width: none;
-`
-
-export const Slide = styled.div`
-  animation: ${slideAppear} 500ms
-    cubic-bezier(0.22, 1, 0.36, 1) both;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-`
-
-export const Brand = styled.p`
-  margin-left: 9px;
-
-  color: #3f8275;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 29px;
-`
-
-export const Title = styled.h1`
-  margin: 22px 0 0 9px;
-
-  color: #19352e;
-  font-size: clamp(22px, 6.92vw, 27px);
-  font-weight: 700;
-  line-height: 37px;
-  white-space: pre-line;
-`
-
-export const Description = styled.p`
-  margin: 26px 0 0 9px;
-
-  color: #687d75;
-  font-size: 15px;
-  line-height: 25px;
-  white-space: pre-line;
-`
-
-export const Controls = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
-
-  margin-top: auto;
-  padding-top: 60px;
 `
 
 export const Dots = styled.div`
@@ -309,19 +202,156 @@ export const Error = styled.p`
   line-height: 20px;
 `
 
+export const Root = styled.div`
+  --illustration-scale: 0.9;
+
+  position: fixed;
+  inset: 0;
+
+  display: grid;
+  grid-template-rows: 64px minmax(0, 1fr);
+
+  width: 100%;
+  max-width: 390px;
+  height: 100dvh;
+  min-height: 0;
+  margin-inline: auto;
+
+  box-sizing: border-box;
+  overflow: hidden;
+
+  background: linear-gradient(
+    154deg,
+    #7baea5 10.714%,
+    #b5ddd0 82.143%
+  );
+
+  color: #19352e;
+
+  @media (max-height: 740px) {
+    --illustration-scale: 0.9;
+    grid-template-rows: 52px minmax(0, 1fr);
+  }
+
+  @media (max-height: 660px) {
+    --illustration-scale: 0.9;
+  }
+`
+
+export const TopBar = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  min-height: 0;
+  padding: 0 26px;
+
+  button {
+    min-height: 36px;
+    color: #367d70;
+    font-size: 13px;
+    cursor: pointer;
+  }
+`
+
+export const Panel = styled.main`
+  position: relative;
+
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+
+  min-height: 0;
+  padding: 24px 26px;
+  padding-bottom: max(
+    20px,
+    env(safe-area-inset-bottom, 0px)
+  );
+
+  box-sizing: border-box;
+  overflow: hidden;
+  isolation: isolate;
+
+  border-radius: 28px 28px 0 0;
+
+  background: linear-gradient(
+    115deg,
+    #f8fefb 14.286%,
+    white 85.714%
+  );
+
+  @media (max-height: 660px) {
+    padding-top: 16px;
+  }
+`
+
+export const Slide = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+
+  animation: ${slideAppear} 500ms
+    cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`
+
 export const Illustration = styled.div`
   position: relative;
   flex-shrink: 0;
+  align-self: center;
 
   width: 300px;
-  height: 270px;
-  margin: 58px auto 0;
+  height: calc(270px * var(--illustration-scale));
+  margin: auto 0;
 
-  @media (max-width: 360px) {
-    left: 50%;
-    margin-left: -150px;
-    transform: scale(0.88);
-  }
+  transform: scale(var(--illustration-scale));
+  transform-origin: top center;
+`
+
+export const Controls = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0 0;
+`
+
+export const Brand = styled.p`
+  margin-left: 9px;
+
+  color: #3f8275;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 29px;
+`
+
+export const Title = styled.h1`
+  flex-shrink: 0;
+  margin: clamp(12px, 2.5svh, 22px) 0 0 9px;
+
+  color: #19352e;
+  font-size: clamp(22px, 6.92vw, 27px);
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: pre-line;
+`
+
+export const Description = styled.p`
+  flex-shrink: 0;
+  margin: clamp(12px, 2.5svh, 22px) 0 0 9px;
+
+  color: #687d75;
+  font-size: 15px;
+  line-height: 25px;
+  white-space: pre-line;
 `
 
 export const Halo = styled.img`
