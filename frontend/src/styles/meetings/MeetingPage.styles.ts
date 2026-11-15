@@ -106,3 +106,40 @@ export const RunField = styled.label`
   display: flex; flex-direction: column; gap: 12px; margin-top: 24px; color: #78918c; font-size: 13px; line-height: 18px; font-weight: 700;
   textarea { font-weight: 400; }
 `
+export const DateRow = styled(Row)`
+  position: relative;
+  cursor: pointer;
+
+  > label,
+  ${Picker} {
+    pointer-events: none;
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--color-primary-strong);
+    outline-offset: -2px;
+  }
+`
+
+export const DateInput = styled.input`
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+`

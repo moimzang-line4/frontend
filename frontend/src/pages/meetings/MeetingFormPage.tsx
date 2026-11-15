@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, MouseEvent } from 'react'
 import {
   Link,
   useNavigate,
@@ -23,6 +23,20 @@ import calendarIcon from '../../assets/schedules/calendar.svg'
 import chevronIcon from '../../assets/schedules/date-chevron.svg'
 
 import * as S from '../../styles/meetings/MeetingPage.styles'
+
+function openDatePicker(event: MouseEvent<HTMLInputElement>) {
+  const input = event.currentTarget
+
+  if (typeof input.showPicker !== 'function') return
+
+  try {
+    input.focus()
+    input.showPicker()
+    event.preventDefault()
+  } catch {
+    input.focus()
+  }
+}
 
 function MeetingForm({
   meeting,
@@ -136,12 +150,12 @@ function MeetingForm({
               />
             </S.Row>
 
-            <S.Row>
+            <S.DateRow>
               <label htmlFor="meeting-date">
                 회의 날짜 <S.Required>*</S.Required>
               </label>
 
-              <S.Picker>
+              <S.Picker aria-hidden="true">
                 <span>
                   <img
                     src={calendarIcon}
@@ -158,17 +172,18 @@ function MeetingForm({
                   width={21}
                   height={21}
                 />
-
-                <input
-                  aria-label="회의 날짜"
-                  id="meeting-date"
-                  type="date"
-                  required
-                  value={date}
-                  onChange={event => setDate(event.target.value)}
-                />
               </S.Picker>
-            </S.Row>
+
+              <S.DateInput
+                aria-label="회의 날짜"
+                id="meeting-date"
+                type="date"
+                required
+                value={date}
+                onClick={openDatePicker}
+                onChange={event => setDate(event.target.value)}
+              />
+            </S.DateRow>
 
             <S.Row>
               <span id="meeting-category-label">
