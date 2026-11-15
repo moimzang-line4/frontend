@@ -51,7 +51,7 @@ export default function AssistantPage() {
   }
 
   return (
-    <MainLayout title={ASSISTANT_TEXT.title}>
+    <MainLayout title={ASSISTANT_TEXT.title} showBack={false} headerAlign="left">
       <S.Container>
         <S.Question>{ASSISTANT_TEXT.question}</S.Question>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 
+import useOnboardingSlider from '../../hooks/onboarding/useOnboardingSlider'
 import useOnboarding from '../../hooks/onboarding/useOnboarding'
 import OnboardingIllustration from '../../components/onboarding/OnboardingIllustration'
 
@@ -11,8 +12,7 @@ import * as S from '../../styles/onboarding/OnboardingPage.styles'
 const slides = [
   {
     title: '모임의 모든 일정을\n한눈에 관리해요',
-    description:
-      '공연, MT, 정기회의까지\n캘린더로 한눈에 확인하고 관리해요.',
+    description: '공연, MT, 정기회의까지\n캘린더로 한눈에 확인하고 관리해요.',
   },
   {
     title: '출석과 명단도\n간편하게',
@@ -21,8 +21,7 @@ const slides = [
   },
   {
     title: '정산도, 공지도\nAI로 더 빠르고 똑똑하게',
-    description:
-      '영수증 등록부터 회비 정산,\n공지 작성까지 AI가 도와줘요.',
+    description: '영수증 등록부터 회비 정산,\n공지 작성까지 AI가 도와줘요.',
   },
 ]
 
@@ -37,31 +36,28 @@ export default function OnboardingPage() {
   const [phase, setPhase] = useState<'light' | 'mint' | 'slides'>(
     resumeLastStep ? 'slides' : 'light',
   )
-  const [leaving, setLeaving] = useState(false)
-  const [step, setStep] = useState(resumeLastStep ? 2 : 0)
+  const { step, dragX, dragging, trackRef, goToStep, pointerHandlers } =
+    useOnboardingSlider(slides.length, resumeLastStep ? 2 : 0)
   const [error, setError] = useState('')
 
   useEffect(() => {
-  if (resumeLastStep) return
+    if (resumeLastStep) return
 
-  setPhase('light')
-  setLeaving(false)
+    // 1초부터 초록 배경으로 부드럽게 전환
+    const mintTimer = window.setTimeout(() => {
+      setPhase('mint')
+    }, 1000)
 
-  // 1초부터 초록 배경으로 부드럽게 전환
-  const mintTimer = window.setTimeout(() => {
-    setPhase('mint')
-  }, 1000)
+    // 총 2초 후 온보딩으로 이동
+    const slidesTimer = window.setTimeout(() => {
+      setPhase('slides')
+    }, 2000)
 
-  // 총 2초 후 온보딩으로 이동
-  const slidesTimer = window.setTimeout(() => {
-    setPhase('slides')
-  }, 2000)
-
-  return () => {
-    window.clearTimeout(mintTimer)
-    window.clearTimeout(slidesTimer)
-  }
-}, [resumeLastStep])
+    return () => {
+      window.clearTimeout(mintTimer)
+      window.clearTimeout(slidesTimer)
+    }
+  }, [resumeLastStep])
 
   function finish() {
     try {
@@ -77,19 +73,14 @@ export default function OnboardingPage() {
   }
 
   if (onboarding.completed && !replay) {
-    return (
-      <Navigate
-        to={onboarding.group ? '/' : '/groups/new'}
-        replace
-      />
-    )
+    return <Navigate to={onboarding.group ? '/' : '/groups/new'} replace />
   }
 
   if (phase !== 'slides') {
     return (
       <S.Splash
         $mint={phase === 'mint'}
-        $leaving={leaving}
+        $leaving={false}
         aria-label="moimzang 시작 화면"
       >
         <h1>
@@ -108,26 +99,43 @@ export default function OnboardingPage() {
       </S.TopBar>
 
       <S.Panel aria-label={`온보딩 ${step + 1}단계`}>
-        <S.Wave
-          src={wave}
-          alt=""
-          width={460}
-          height={150}
-        />
+        <S.Wave src={wave} alt="" width={460} height={150} draggable={false} />
 
-        <S.Slide key={step} aria-live="polite">
-          <S.Brand>moimzang</S.Brand>
-
-          <S.Title tabIndex={-1}>
-            {slides[step].title}
-          </S.Title>
-
-          <S.Description>
-            {slides[step].description}
-          </S.Description>
-
-          <OnboardingIllustration step={step} />
-        </S.Slide>
+        <S.Viewport
+          {...pointerHandlers}
+          role="region"
+          aria-roledescription="슬라이드"
+          aria-label="온보딩 소개"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+              event.preventDefault()
+              goToStep(step + (event.key === 'ArrowRight' ? 1 : -1))
+            }
+          }}
+          onDragStart={(event) => event.preventDefault()}
+        >
+          <S.Track
+            ref={trackRef}
+            $dragging={dragging}
+            style={{
+              transform: `translate3d(calc(${-step * 100}% + ${dragX}px), 0, 0)`,
+            }}
+          >
+            {slides.map((slide, index) => (
+              <S.Slide
+                key={slide.title}
+                aria-hidden={step !== index}
+                inert={step !== index}
+              >
+                <S.Brand>moimzang</S.Brand>
+                <S.Title>{slide.title}</S.Title>
+                <S.Description>{slide.description}</S.Description>
+                <OnboardingIllustration step={index} />
+              </S.Slide>
+            ))}
+          </S.Track>
+        </S.Viewport>
 
         <S.Controls>
           <S.Dots aria-label="온보딩 단계">
@@ -138,7 +146,7 @@ export default function OnboardingPage() {
                 aria-label={`온보딩 ${index + 1}단계로 이동`}
                 aria-current={step === index ? 'step' : undefined}
                 $active={step === index}
-                onClick={() => setStep(index)}
+                onClick={() => goToStep(index)}
               />
             ))}
           </S.Dots>
@@ -152,18 +160,14 @@ export default function OnboardingPage() {
                 return
               }
 
-              setStep(value => Math.min(value + 1, 2))
+              goToStep(step + 1)
             }}
           >
             {step === 2 ? '지금 시작하기' : '다음'}
           </S.Next>
         </S.Controls>
 
-        {error && (
-          <S.Error role="alert">
-            {error}
-          </S.Error>
-        )}
+        {error && <S.Error role="alert">{error}</S.Error>}
       </S.Panel>
     </S.Root>
   )

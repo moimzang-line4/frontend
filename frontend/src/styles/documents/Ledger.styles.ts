@@ -96,6 +96,26 @@ export const Entries = styled.div`
   box-shadow: var(--shadow-app-bar);
 `
 
+export const InitialEmpty = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 296px;
+  text-align: center;
+  strong {
+    color: #78918c;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  p {
+    color: #91a39f;
+    font-size: 12px;
+    line-height: 20px;
+  }
+`
+
 const entryColumns = css`
   display: grid;
   grid-template-columns: minmax(0, 1fr) 112px 44px;

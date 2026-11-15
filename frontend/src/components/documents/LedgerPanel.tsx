@@ -1,5 +1,3 @@
-import LedgerRequiredDialog from './LedgerRequiredDialog'
-import LedgerSourceCard from './LedgerSourceCard'
 import entryChevron from '../../assets/files/entry-chevron.svg'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -14,7 +12,8 @@ export default function LedgerPanel({ scopeId, search }: Props) {
   const navigate = useNavigate()
   const { ledger, loading, error, reload } = useLedger(scopeId)
   const [filter, setFilter] = useState('all')
-  const [missing, setMissing] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState('')
   const totals = ledger ? ledgerTotals(ledger) : null
   const entries =
     ledger?.entries
@@ -27,7 +26,44 @@ export default function LedgerPanel({ scopeId, search }: Props) {
 
   return (
     <S.Panel aria-label="기수 장부">
-      {ledger && <LedgerSourceCard ledger={ledger} />}
+      {ledger && (
+        <S.SourceHeader>
+          <button
+            type="button"
+            onClick={() => navigate('/files/ledger/initial')}
+          >
+            초기 금액 수정
+          </button>
+          <button
+            type="button"
+            disabled={downloading}
+            onClick={async () => {
+              setDownloading(true)
+              setDownloadError('')
+              try {
+                const { exportLedger } =
+                  await import('../../utils/documents/exportLedger')
+                await exportLedger(ledger)
+              } catch {
+                setDownloadError(
+                  '내역을 다운로드하지 못했어요. 다시 시도해주세요.',
+                )
+              } finally {
+                setDownloading(false)
+              }
+            }}
+          >
+            {downloading ? '처리 중…' : '내역 다운로드'}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/files/ledger/delete')}
+          >
+            장부 삭제
+          </button>
+        </S.SourceHeader>
+      )}
+      {downloadError && <ErrorText role="alert">{downloadError}</ErrorText>}
       <S.Balance>
         <S.BalanceHeader>
           <span>현재 잔액</span>
@@ -71,7 +107,7 @@ export default function LedgerPanel({ scopeId, search }: Props) {
         type="button"
         disabled={loading || !!error}
         onClick={() =>
-          ledger ? navigate('/files/ledger/new') : setMissing(true)
+          navigate(ledger ? '/files/ledger/new' : '/files/ledger/initial')
         }
       >
         +직접 입력
@@ -80,6 +116,15 @@ export default function LedgerPanel({ scopeId, search }: Props) {
       <S.Entries>
         {loading ? (
           <Empty role="status">장부를 불러오는 중이에요.</Empty>
+        ) : !ledger && !error ? (
+          <S.InitialEmpty>
+            <strong>초기 금액을 설정해주세요</strong>
+            <p>
+              직접 입력을 눌러 현재 보유한 금액을 설정하면
+              <br />
+              수입과 지출을 기록할 수 있어요.
+            </p>
+          </S.InitialEmpty>
         ) : (
           ledger && (
             <>
@@ -125,11 +170,6 @@ export default function LedgerPanel({ scopeId, search }: Props) {
           )
         )}
       </S.Entries>
-      <LedgerRequiredDialog
-        open={missing && !ledger}
-        onCancel={() => setMissing(false)}
-        onUpload={() => navigate('/files/ledger/upload')}
-      />
     </S.Panel>
   )
 }
