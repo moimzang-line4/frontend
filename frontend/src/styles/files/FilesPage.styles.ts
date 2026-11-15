@@ -13,7 +13,7 @@ export const Content = styled.main`
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 20px;
+  padding: 12px 20px 20px;
 `
 export const SearchRow = styled.div`
   display: flex;
@@ -178,4 +178,17 @@ export const Action = styled.button<{ $danger?: boolean }>`
     width: 20px;
     height: 20px;
   }
+`
+
+export const Generation = styled.select`
+  width: 100%;
+  min-height: 33px;
+  border: 1px solid #d9d9d9;
+  border-radius: 999px;
+  background: #e7e7e7;
+  text-align: center;
+  color: #17251e;
+  font-size: 13px;
+  margin-bottom: -4px;
+  cursor: pointer;
 `
