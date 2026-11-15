@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void
 }
 
-export default function CategorySheet({
+export default function MeetingCategorySheet({
   selectedId,
   selectedName,
   onSelect,
@@ -49,9 +49,12 @@ export default function CategorySheet({
       '(prefers-reduced-motion: reduce)',
     ).matches
 
-    const timer = window.setTimeout(() => {
-      ref.current?.close()
-    }, reduced ? 0 : 180)
+    const timer = window.setTimeout(
+      () => {
+        ref.current?.close()
+      },
+      reduced ? 0 : 180,
+    )
 
     return () => window.clearTimeout(timer)
   }, [closing])
@@ -110,12 +113,7 @@ export default function CategorySheet({
           disabled={pending}
           onClick={close}
         >
-          <img
-            src={closeIcon}
-            alt=""
-            width={20}
-            height={20}
-          />
+          <img src={closeIcon} alt="" width={20} height={20} />
         </S.CloseButton>
       </S.Header>
 
@@ -125,9 +123,7 @@ export default function CategorySheet({
         </S.EmptyState>
       ) : categoriesApi.errorMessage ? (
         <>
-          <S.Error role="alert">
-            {categoriesApi.errorMessage}
-          </S.Error>
+          <S.Error role="alert">{categoriesApi.errorMessage}</S.Error>
 
           {categoriesApi.canRetry && (
             <S.AddButton
@@ -147,8 +143,7 @@ export default function CategorySheet({
         <S.Options aria-label="카테고리 목록">
           {categories.map(option => {
             const selected =
-              selectedId === option.id ||
-              selectedName === option.label
+              selectedId === option.id || selectedName === option.label
 
             return (
               <S.Option
@@ -162,12 +157,7 @@ export default function CategorySheet({
                 <span>{option.label}</span>
 
                 {selected && (
-                  <img
-                    src={checkIcon}
-                    alt=""
-                    width={22}
-                    height={22}
-                  />
+                  <img src={checkIcon} alt="" width={22} height={22} />
                 )}
               </S.Option>
             )
@@ -227,9 +217,7 @@ export default function CategorySheet({
         <S.AddButton
           type="button"
           disabled={
-            categoriesApi.loading ||
-            !!categoriesApi.errorMessage ||
-            closing
+            categoriesApi.loading || !!categoriesApi.errorMessage || closing
           }
           onClick={() => {
             setAdding(true)

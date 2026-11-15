@@ -21,7 +21,7 @@ function toOption(item: MeetingCategoryResponse): CategoryOption {
     typeof item.name !== 'string' ||
     !item.name.trim()
   ) {
-    throw new Error('회의 카테고리 정보를 확인할 수 없어요.')
+    throw new Error('카테고리 정보를 확인할 수 없어요.')
   }
 
   return {
@@ -40,13 +40,13 @@ function getErrorMessage(caught: unknown) {
     }
 
     return caught.response
-      ? '회의 카테고리 요청을 처리하지 못했어요.'
+      ? '카테고리 요청을 처리하지 못했어요.'
       : '서버에 연결하지 못했어요.'
   }
 
   return caught instanceof Error
     ? caught.message
-    : '회의 카테고리 요청을 처리하지 못했어요.'
+    : '카테고리 요청을 처리하지 못했어요.'
 }
 
 export default function useMeetingCategoriesApi() {
@@ -59,9 +59,7 @@ export default function useMeetingCategoriesApi() {
   const termId = group?.termId
 
   const hasTermId =
-    typeof termId === 'number' &&
-    Number.isSafeInteger(termId) &&
-    termId > 0
+    typeof termId === 'number' && Number.isSafeInteger(termId) && termId > 0
 
   const query = useListCategories(hasTermId ? termId : 0, {
     query: {
@@ -72,13 +70,8 @@ export default function useMeetingCategoriesApi() {
       select: response => {
         const body = response.data
 
-        if (
-          body.success !== true ||
-          !Array.isArray(body.data?.categories)
-        ) {
-          throw new Error(
-            body.message || '회의 카테고리를 불러오지 못했어요.',
-          )
+        if (body.success !== true || !Array.isArray(body.data?.categories)) {
+          throw new Error(body.message || '카테고리를 불러오지 못했어요.')
         }
 
         return body.data.categories.map(toOption)
@@ -112,9 +105,7 @@ export default function useMeetingCategoriesApi() {
       throw new Error('카테고리 이름을 1~50자로 입력해주세요.')
     }
 
-    const existing = query.data?.find(
-      category => category.label === name,
-    )
+    const existing = query.data?.find(category => category.label === name)
 
     if (existing) return existing
 
@@ -130,9 +121,7 @@ export default function useMeetingCategoriesApi() {
       const body = response.data
 
       if (body.success !== true || !body.data) {
-        throw new Error(
-          body.message || '회의 카테고리를 추가하지 못했어요.',
-        )
+        throw new Error(body.message || '카테고리를 추가하지 못했어요.')
       }
 
       const option = toOption(body.data)

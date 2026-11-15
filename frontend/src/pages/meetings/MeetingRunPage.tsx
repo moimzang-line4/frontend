@@ -121,13 +121,23 @@ function MeetingRun({
   const { group } = useOnboarding()
 
   const updateMutation = useUpdateAgendaContent({
-    mutation: { retry: false },
-    axios: { timeout: 15000 },
+    mutation: {
+      retry: false,
+    },
+
+    axios: {
+      timeout: 15000,
+    },
   })
 
   const endMutation = useEndMeeting({
-    mutation: { retry: false },
-    axios: { timeout: 15000 },
+    mutation: {
+      retry: false,
+    },
+
+    axios: {
+      timeout: 15000,
+    },
   })
 
   const [activeId, setActiveId] = useState<number | undefined>(
@@ -145,8 +155,9 @@ function MeetingRun({
   const busy = useRef(false)
 
   const agenda =
-    meeting.agendas.find(item => item.agendaId === activeId) ??
-    meeting.agendas[0]
+    meeting.agendas.find(
+      item => item.agendaId === activeId,
+    ) ?? meeting.agendas[0]
 
   const finished = meeting.status === 'COMPLETED'
 
@@ -170,7 +181,9 @@ function MeetingRun({
   async function refreshMeeting() {
     await queryClient.invalidateQueries(
       {
-        queryKey: getGetMeetingDetailQueryKey(meeting.meetingId),
+        queryKey: getGetMeetingDetailQueryKey(
+          meeting.meetingId,
+        ),
       },
       {
         throwOnError: true,
@@ -202,7 +215,10 @@ function MeetingRun({
     await Promise.all(tasks)
   }
 
-  async function persist(item: AgendaData, complete: boolean) {
+  async function persist(
+    item: AgendaData,
+    complete: boolean,
+  ) {
     if (finished) return
 
     const draft = drafts[item.agendaId]
@@ -216,11 +232,18 @@ function MeetingRun({
 
     const response = await updateMutation.mutateAsync({
       agendaId: item.agendaId,
+
       data: {
         discussionNote:
-          draft?.discussionNote ?? item.discussionNote ?? '',
+          draft?.discussionNote ??
+          item.discussionNote ??
+          '',
+
         decision:
-          draft?.decision ?? item.decision ?? '',
+          draft?.decision ??
+          item.decision ??
+          '',
+
         ...(complete
           ? { status: 'COMPLETED' as const }
           : {}),
@@ -246,7 +269,9 @@ function MeetingRun({
 
     setDrafts(current => {
       const next = { ...current }
+
       delete next[item.agendaId]
+
       return next
     })
   }
@@ -265,6 +290,7 @@ function MeetingRun({
       await task()
     } catch (caught) {
       const message = errorMessage(caught)
+
       setError(message)
 
       if (showInDialog) {
@@ -302,11 +328,13 @@ function MeetingRun({
   function change(key: keyof Draft, value: string) {
     setDrafts(current => ({
       ...current,
+
       [agenda.agendaId]: {
         ...(current[agenda.agendaId] ?? {
           discussionNote: agenda.discussionNote ?? '',
           decision: agenda.decision ?? '',
         }),
+
         [key]: value,
       },
     }))
@@ -333,8 +361,11 @@ function MeetingRun({
 
     await Promise.all([
       queryClient.invalidateQueries({
-        queryKey: getGetMeetingDetailQueryKey(meeting.meetingId),
+        queryKey: getGetMeetingDetailQueryKey(
+          meeting.meetingId,
+        ),
       }),
+
       refreshLists(),
     ])
 
@@ -368,7 +399,10 @@ function MeetingRun({
           <div>
             <S.ProgressHeading>
               <h3>안건 진행률</h3>
-              <span>{doneCount}/{totalCount} 완료</span>
+
+              <span>
+                {doneCount}/{totalCount} 완료
+              </span>
             </S.ProgressHeading>
 
             <S.ProgressText>
@@ -418,7 +452,9 @@ function MeetingRun({
               {index === 0 && <S.Required>*</S.Required>}
             </h3>
 
-            <S.Status $done={agenda.status === 'COMPLETED'}>
+            <S.Status
+              $done={agenda.status === 'COMPLETED'}
+            >
               {agenda.status === 'COMPLETED'
                 ? '완료'
                 : '진행 중'}
@@ -439,7 +475,10 @@ function MeetingRun({
               readOnly={finished}
               disabled={pending}
               onChange={event =>
-                change('discussionNote', event.target.value)
+                change(
+                  'discussionNote',
+                  event.target.value,
+                )
               }
             />
           </S.Field>
@@ -478,32 +517,32 @@ function MeetingRun({
         ) : (
           <>
             <S.Primary
-  type="button"
-  disabled={
-    pending ||
-    (
-      agenda.status === 'COMPLETED' &&
-      !!nextAgenda
-    )
-  }
-  onClick={() => void execute(complete)}
->
-  {pending
-    ? '저장 중…'
-    : nextAgenda
-      ? agenda.status === 'COMPLETED'
-        ? '완료된 안건'
-        : '안건 완료하기'
-      : '회의 완료하기'}
-</S.Primary>
+              type="button"
+              disabled={
+                pending ||
+                (
+                  agenda.status === 'COMPLETED' &&
+                  !!nextAgenda
+                )
+              }
+              onClick={() => void execute(complete)}
+            >
+              {pending
+                ? '저장 중…'
+                : nextAgenda
+                  ? agenda.status === 'COMPLETED'
+                    ? '완료된 안건'
+                    : '안건 완료하기'
+                  : '회의 완료하기'}
+            </S.Primary>
 
             <S.Secondary
-  type="button"
-  disabled={pending}
-  onClick={() => setStopOpen(true)}
->
-  회의 중단하기
-</S.Secondary>
+              type="button"
+              disabled={pending}
+              onClick={() => setStopOpen(true)}
+            >
+              회의 중단하기
+            </S.Secondary>
           </>
         )}
       </S.Content>
@@ -542,17 +581,21 @@ export default function MeetingRunPage() {
     Number.isSafeInteger(numericId) &&
     numericId > 0
 
-  const query = useGetMeetingDetail(validId ? numericId : 0, {
-    query: {
-      enabled: validId,
-      staleTime: 30_000,
-      retry: false,
-      select: readMeeting,
+  const query = useGetMeetingDetail(
+    validId ? numericId : 0,
+    {
+      query: {
+        enabled: validId,
+        staleTime: 30_000,
+        retry: false,
+        select: readMeeting,
+      },
+
+      axios: {
+        timeout: 15000,
+      },
     },
-    axios: {
-      timeout: 15000,
-    },
-  })
+  )
 
   const meeting =
     query.data?.meetingId === numericId
@@ -611,7 +654,9 @@ export default function MeetingRunPage() {
       key={meeting.meetingId}
       meeting={meeting}
       loadError={
-        query.error ? errorMessage(query.error) : ''
+        query.error
+          ? errorMessage(query.error)
+          : ''
       }
     />
   )
