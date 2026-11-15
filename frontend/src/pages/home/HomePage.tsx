@@ -112,18 +112,37 @@ export default function HomePage() {
           />
         ))}
 
-        {calendar.upcoming.length === 0 && (
+        {!calendar.loading &&
+  !calendar.errorMessage &&
+  calendar.upcoming.length === 0 && (
           <S.EmptyMessage>
             예정된 운영 일정이 없어요.
           </S.EmptyMessage>
         )}
 
-        {calendar.storageError && (
-          <S.StorageNotice role="status">
-            브라우저 저장 공간에 접근할 수 없어 변경 내용은
-            새로고침하면 사라질 수 있어요.
-          </S.StorageNotice>
-        )}
+        {calendar.loading && (
+  <S.EmptyMessage role="status">
+    일정을 불러오는 중이에요.
+  </S.EmptyMessage>
+)}
+
+{calendar.errorMessage && (
+  <div>
+    <S.StorageNotice role="alert">
+      {calendar.errorMessage}
+    </S.StorageNotice>
+
+    {calendar.canRetry && (
+      <S.AddButton
+        type="button"
+        disabled={calendar.refreshing}
+        onClick={() => void calendar.reload()}
+      >
+        {calendar.refreshing ? '불러오는 중…' : '일정 다시 불러오기'}
+      </S.AddButton>
+    )}
+  </div>
+)}
       </S.Content>
 
       {dateSheetOpen && (
