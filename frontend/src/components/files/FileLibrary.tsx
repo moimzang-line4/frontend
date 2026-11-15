@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
 import FileThumbnail from './FileThumbnail'
 import { previewKind } from '../../utils/files/preview'
-import listIcon from '../../assets/files/view-list.svg'
-import gridIcon from '../../assets/files/view-grid.svg'
+import FileViewIcon from './FileViewIcon'
 import pictureIcon from '../../assets/files/picture.svg'
 import pictureSmallIcon from '../../assets/files/picture-small.svg'
 import DropdownSelect from '../common/DropdownSelect'
@@ -173,10 +172,10 @@ export default function FileLibrary({
                 <S.ViewOptions role="group" aria-label="보기 형태">
                   {(
                     [
-                      ['list', '목록 보기', listIcon],
-                      ['grid', '격자 보기', gridIcon],
+                      ['list', '목록 보기'],
+                      ['grid', '격자 보기'],
                     ] as const
-                  ).map(([value, label, icon]) => (
+                  ).map(([value, label]) => (
                     <S.ViewButton
                       key={value}
                       type="button"
@@ -184,7 +183,7 @@ export default function FileLibrary({
                       aria-pressed={view === value}
                       onClick={() => setView(value)}
                     >
-                      <img src={icon} alt="" width={28} height={28} />
+                      <FileViewIcon view={value} />
                     </S.ViewButton>
                   ))}
                 </S.ViewOptions>

@@ -122,10 +122,15 @@ export const ViewOptions = styled.div`
 export const ViewButton = styled.button`
   display: grid;
   place-items: center;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
+  background: #d9d9d9;
+  color: #000;
   cursor: pointer;
-  &[aria-pressed='false'] {
-    opacity: 0.55;
+  &[aria-pressed='true'] {
+    background: #5aa997;
+    color: #fff;
   }
   &:focus-visible {
     outline: 2px solid #367d70;
