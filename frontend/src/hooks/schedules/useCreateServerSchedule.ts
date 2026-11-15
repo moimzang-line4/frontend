@@ -180,6 +180,9 @@ export default function useCreateServerSchedule() {
         queryClient.invalidateQueries({
           queryKey: getListCategories1QueryKey(termId),
         }),
+        queryClient.invalidateQueries({
+  queryKey: ['operation-records', termId],
+}),
       ])
 
       return scheduleId

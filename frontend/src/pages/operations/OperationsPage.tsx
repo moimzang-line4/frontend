@@ -98,7 +98,7 @@ export default function OperationsPage() {
               : data.filter === 'schedule'
                 ? '일정 운영'
                 : '전체'}{' '}
-            {data.records.length}
+            {data.totalCount}
           </h2>
 
           <button
@@ -114,55 +114,84 @@ export default function OperationsPage() {
           </button>
         </S.Heading>
 
-        {data.records.length ? (
-          <S.Records aria-label="운영 기록 목록">
-            {data.records.map((record) => {
-              if (record.kind === 'minute') {
-                const meeting = data.minutes.find(
-                  (item) => item.id === record.id,
-                )
+        {data.errorMessage && (
+  <div>
+    <p role="alert">{data.errorMessage}</p>
 
-                return meeting ? (
-                  <li key={`minute-${record.id}`}>
-                    <MeetingCard meeting={meeting} finished={record.past} />
-                  </li>
-                ) : null
-              }
+    {data.canRetry && (
+      <button
+        type="button"
+        disabled={data.refreshing}
+        onClick={() => void data.reload()}
+      >
+        {data.refreshing ? '불러오는 중…' : '다시 불러오기'}
+      </button>
+    )}
+  </div>
+)}
 
-              return (
-                <li key={`schedule-${record.id}`}>
-                  <S.Record
-                    type="button"
-                    onClick={() =>
-                      navigate(`/schedules/${encodeURIComponent(record.id)}`)
-                    }
-                  >
-                    <div>
-                      <S.Badge $minute={false}>일정 운영</S.Badge>
+{data.loading ? (
+  <S.Empty role="status">
+    운영 기록을 불러오는 중이에요.
+  </S.Empty>
+) : data.records.length > 0 ? (
+  <S.Records aria-label="운영 기록 목록">
+    {data.records.map(record => (
+      <li key={`${record.kind}-${record.id}`}>
+        <S.Record
+          type="button"
+          onClick={() =>
+            navigate(
+              record.kind === 'schedule'
+                ? `/schedules/${encodeURIComponent(record.id)}`
+                : `/meetings/${encodeURIComponent(record.id)}`,
+            )
+          }
+        >
+          <div>
+            <S.Badge $minute={record.kind === 'minute'}>
+              {record.kind === 'minute'
+                ? '회의록'
+                : '일정 운영'}
+            </S.Badge>
 
-                      <div>
-                        <h3>{record.title}</h3>
+            <div>
+              <h3>{record.title}</h3>
 
-                        <p>
-                          {record.date.replaceAll('-', '.')} ·{' '}
-                          {record.past ? '지난 기록' : '진행 중'}
-                        </p>
-                      </div>
-                    </div>
+              <p>
+                {record.date.replaceAll('-', '.')} ·{' '}
+                {record.past ? '지난 기록' : '진행 중'}
+              </p>
+            </div>
+          </div>
 
-                    <img src={chevronIcon} alt="" width={24} height={24} />
-                  </S.Record>
-                </li>
-              )
-            })}
-          </S.Records>
-        ) : (
-          <S.Empty>
-            {data.query
-              ? '검색 결과가 없어요.'
-              : '아직 운영 기록이 없어요. 새로운 기록을 추가해 보세요.'}
-          </S.Empty>
-        )}
+          <img
+            src={chevronIcon}
+            alt=""
+            width={24}
+            height={24}
+          />
+        </S.Record>
+      </li>
+    ))}
+  </S.Records>
+) : !data.errorMessage ? (
+  <S.Empty>
+    {data.query.trim()
+      ? '검색 결과가 없어요.'
+      : '아직 운영 기록이 없어요.'}
+  </S.Empty>
+) : null}
+
+{data.hasMore && (
+  <S.Sort
+    type="button"
+    disabled={data.refreshing}
+    onClick={() => void data.loadMore()}
+  >
+    {data.loadingMore ? '불러오는 중…' : '더 보기'}
+  </S.Sort>
+)}
       </S.Content>
 
       {modal === 'sort' && (
