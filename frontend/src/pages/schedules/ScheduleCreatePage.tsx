@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useNavigate } from 'react-router'
+import { isAxiosError } from 'axios'
+import useCreateServerSchedule from '../../hooks/schedules/useCreateServerSchedule'
 
 import Header from '../../layouts/Header'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -19,7 +21,7 @@ export default function ScheduleCreatePage({
   initialSchedule?: Schedule
 }) {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
+  const serverSchedule = useCreateServerSchedule()
 
   const {
     draft,
@@ -30,7 +32,6 @@ export default function ScheduleCreatePage({
   } = useScheduleForm(initialSchedule)
 
   const {
-    addSchedule,
     updateSchedule,
     deleteSchedule,
   } = useSchedules()
@@ -47,37 +48,62 @@ export default function ScheduleCreatePage({
 
       <S.Form
         id="schedule-create-form"
-        onSubmit={event => {
-          event.preventDefault()
+        onSubmit={async event => {
+  event.preventDefault()
 
-          const schedule = toSchedule()
+  if (serverSchedule.pending) return
 
-          if (!schedule) return
+  const schedule = toSchedule()
 
-          try {
-            if (initialSchedule) {
-              updateSchedule(initialSchedule.id, schedule)
+  if (!schedule) return
 
-              navigate(
-                `/schedules/${encodeURIComponent(initialSchedule.id)}`,
-                { replace: true },
-              )
-            } else {
-              addSchedule(schedule)
+  setError('')
 
-              navigate(
-                params.get('from') === 'operations'
-                  ? '/operations'
-                  : `/?date=${schedule.date}`,
-                { replace: true },
-              )
-            }
-          } catch {
-            setError(
-              '일정을 저장하지 못했어요. 브라우저 저장 공간을 확인하고 다시 시도해주세요.',
-            )
-          }
-        }}
+  try {
+    if (initialSchedule) {
+      // 일정 수정은 다음 단계에서 서버에 연결합니다.
+      updateSchedule(initialSchedule.id, schedule)
+
+      navigate(
+        `/schedules/${encodeURIComponent(initialSchedule.id)}`,
+        { replace: true },
+      )
+
+      return
+    }
+
+    const scheduleId = await serverSchedule.save(
+      schedule,
+      draft.category?.label,
+    )
+
+    if (!scheduleId) return
+
+    // 등록한 일정이 있는 달의 홈 화면으로 이동
+    navigate(
+      `/?date=${schedule.date}`,
+      { replace: true },
+    )
+  } catch (caught) {
+    if (isAxiosError<{ message?: unknown }>(caught)) {
+      const message = caught.response?.data?.message
+
+      setError(
+        typeof message === 'string' && message.trim()
+          ? message
+          : caught.response
+            ? '일정을 등록하지 못했어요.'
+            : '서버에 연결하지 못했어요. 네트워크 상태를 확인해주세요.',
+      )
+    } else {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : '일정을 등록하지 못했어요.',
+      )
+    }
+  }
+}}
       >
         <S.Field>
           <S.Label htmlFor="schedule-title">
@@ -216,12 +242,16 @@ export default function ScheduleCreatePage({
 
       <S.ActionBar>
         <S.SubmitButton
-          type="submit"
-          form="schedule-create-form"
-          disabled={!canSubmit}
-        >
-          {initialSchedule ? '수정하기' : '일정 등록하기'}
-        </S.SubmitButton>
+  type="submit"
+  form="schedule-create-form"
+  disabled={!canSubmit || serverSchedule.pending}
+>
+  {serverSchedule.pending
+    ? '등록 중…'
+    : initialSchedule
+      ? '수정하기'
+      : '일정 등록하기'}
+</S.SubmitButton>
       </S.ActionBar>
 
       <ConfirmDialog

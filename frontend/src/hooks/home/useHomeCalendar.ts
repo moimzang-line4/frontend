@@ -11,6 +11,7 @@ import {
 import type { ScheduleSummaryResponse } from '../../api/models/scheduleSummaryResponse'
 import type { UpcomingScheduleResponse } from '../../api/models/upcomingScheduleResponse'
 import type { Schedule } from '../../types/schedules/schedule'
+import { toScreenColor } from '../../utils/schedules/apiColors'
 
 import useTodayDate from './useTodayDate'
 import useOnboarding from '../onboarding/useOnboarding'
@@ -90,7 +91,7 @@ function toCalendarSchedule(item: ScheduleSummaryResponse): Schedule {
   return {
     ...schedule,
     allDay: item.isAllDay,
-    color: item.color ?? undefined,
+    color: toScreenColor(item.color),
     startTime: item.isAllDay ? undefined : schedule.startTime,
     endTime: item.isAllDay ? undefined : endTime,
     endDate,
