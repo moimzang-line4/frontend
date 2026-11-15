@@ -117,20 +117,17 @@ export default function FileLibrary({
             />
           </S.Search>
 
-          <S.Attach
-            type="button"
-            disabled={loading || !!error}
-            onClick={() =>
-              navigate(
-                documentView && category === '장부'
-                  ? '/files/ledger/upload'
-                  : `${listPath}/new`,
-                { state: { category } },
-              )
-            }
-          >
-            ＋ 파일 첨부
-          </S.Attach>
+          {!(documentView && category === '장부') && (
+            <S.Attach
+              type="button"
+              disabled={loading || !!error}
+              onClick={() =>
+                navigate(`${listPath}/new`, { state: { category } })
+              }
+            >
+              ＋ 파일 첨부
+            </S.Attach>
+          )}
         </S.SearchRow>
 
         <S.Tabs role="group" aria-label="자료 분류">
