@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
+import DropdownSelect from '../../components/common/DropdownSelect'
 import MainLayout from '../../layouts/MainLayout'
 import CreateOperationSheet from '../../components/operations/CreateOperationSheet'
 import SortOperationSheet from '../../components/operations/SortOperationSheet'
@@ -25,41 +26,26 @@ export default function OperationsPage() {
   const [modal, setModal] = useState<'create' | 'sort' | null>(null)
 
   return (
-    <MainLayout
-      title="운영 공간"
-      showBack={false}
-      headerAlign="left"
-      home
-    >
+    <MainLayout title="운영 공간" showBack={false} headerAlign="left" home>
       <S.Content>
-        <S.Generation>
-          <select
-            aria-label="조회할 운영 연도"
-            value={data.year}
-            onChange={event => data.setYear(event.target.value)}
-          >
-            {data.years.map(year => (
-              <option key={year} value={year}>
-                {year === data.currentYear
-                  ? `${group.generation} (${year})`
-                  : `${year}년`}
-              </option>
-            ))}
-          </select>
-
-          <img
-            src={caretIcon}
-            alt=""
-            width={12}
-            height={12}
-          />
-        </S.Generation>
+        <DropdownSelect
+          aria-label="조회할 운영 연도"
+          value={data.year}
+          onChange={(event) => data.setYear(event.target.value)}
+          options={data.years.map((year) => ({
+            value: year,
+            label:
+              year === data.currentYear
+                ? `${group.generation} (${year})`
+                : `${year}년`,
+          }))}
+        />
 
         <S.Tabs aria-label="운영 기록 기간">
           {[
             { value: false, label: '진행 중' },
             { value: true, label: '지난 기록' },
-          ].map(tab => (
+          ].map((tab) => (
             <S.Tab
               key={tab.label}
               type="button"
@@ -74,19 +60,14 @@ export default function OperationsPage() {
 
         <S.SearchRow>
           <S.Search>
-            <img
-              src={searchIcon}
-              alt=""
-              width={20}
-              height={20}
-            />
+            <img src={searchIcon} alt="" width={20} height={20} />
 
             <input
               type="search"
               aria-label="일정·회의록 검색"
               placeholder="일정·회의록 검색"
               value={data.query}
-              onChange={event => data.setQuery(event.target.value)}
+              onChange={(event) => data.setQuery(event.target.value)}
             />
           </S.Search>
 
@@ -99,12 +80,7 @@ export default function OperationsPage() {
           >
             {sortLabels[data.sort]}
 
-            <img
-              src={caretIcon}
-              alt=""
-              width={12}
-              height={12}
-            />
+            <img src={caretIcon} alt="" width={12} height={12} />
           </S.Sort>
         </S.SearchRow>
 
@@ -140,9 +116,7 @@ export default function OperationsPage() {
 
           <button
             type="button"
-            aria-haspopup={
-              data.filter === 'minute' ? undefined : 'dialog'
-            }
+            aria-haspopup={data.filter === 'minute' ? undefined : 'dialog'}
             onClick={() =>
               data.filter === 'minute'
                 ? navigate('/meetings/new')
@@ -155,18 +129,15 @@ export default function OperationsPage() {
 
         {data.records.length ? (
           <S.Records aria-label="운영 기록 목록">
-            {data.records.map(record => {
+            {data.records.map((record) => {
               if (record.kind === 'minute') {
                 const meeting = data.minutes.find(
-                  item => item.id === record.id,
+                  (item) => item.id === record.id,
                 )
 
                 return meeting ? (
                   <li key={`minute-${record.id}`}>
-                    <MeetingCard
-                      meeting={meeting}
-                      finished={record.past}
-                    />
+                    <MeetingCard meeting={meeting} finished={record.past} />
                   </li>
                 ) : null
               }
@@ -176,15 +147,11 @@ export default function OperationsPage() {
                   <S.Record
                     type="button"
                     onClick={() =>
-                      navigate(
-                        `/schedules/${encodeURIComponent(record.id)}`,
-                      )
+                      navigate(`/schedules/${encodeURIComponent(record.id)}`)
                     }
                   >
                     <div>
-                      <S.Badge $minute={false}>
-                        일정 운영
-                      </S.Badge>
+                      <S.Badge $minute={false}>일정 운영</S.Badge>
 
                       <div>
                         <h3>{record.title}</h3>
@@ -196,12 +163,7 @@ export default function OperationsPage() {
                       </div>
                     </div>
 
-                    <img
-                      src={chevronIcon}
-                      alt=""
-                      width={24}
-                      height={24}
-                    />
+                    <img src={chevronIcon} alt="" width={24} height={24} />
                   </S.Record>
                 </li>
               )
@@ -227,9 +189,7 @@ export default function OperationsPage() {
       {modal === 'create' && (
         <CreateOperationSheet
           onClose={() => setModal(null)}
-          onSchedule={() =>
-            navigate('/schedules/new?from=operations')
-          }
+          onSchedule={() => navigate('/schedules/new?from=operations')}
           onMinute={() => navigate('/meetings/new')}
         />
       )}
