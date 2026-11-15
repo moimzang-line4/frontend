@@ -1,6 +1,7 @@
+import { ledgerIdentity } from '../../utils/documents/ledgerIdentity'
 import { useMatch, useNavigate, useParams } from 'react-router'
 import Header from '../../layouts/Header'
-import LedgerRequiredDialog from '../../components/documents/LedgerRequiredDialog'
+import { Navigate } from 'react-router'
 import LedgerEntryDeleteDialog from '../../components/documents/LedgerEntryDeleteDialog'
 import LedgerEntryForm from '../../components/documents/LedgerEntryForm'
 import useFileScope from '../../hooks/files/useFileScope'
@@ -29,20 +30,14 @@ export default function LedgerEntryPage() {
           <S.ErrorText role="alert">{error}</S.ErrorText>
         </S.Content>
       ) : !ledger ? (
-        <LedgerRequiredDialog
-          open
-          onCancel={() =>
-            navigate('/files', { replace: true, state: { tab: '장부' } })
-          }
-          onUpload={() => navigate('/files/ledger/upload', { replace: true })}
-        />
+        <Navigate to="/files/ledger/initial" replace />
       ) : entryId && !entry ? (
         <S.Content>
           <S.Empty>삭제되었거나 이 장부에 없는 내역이에요.</S.Empty>
         </S.Content>
       ) : (
         <LedgerEntryForm
-          key={`${ledger.file.id}:${entryId ?? 'new'}`}
+          key={`${ledgerIdentity(ledger)}:${entryId ?? 'new'}`}
           initial={entry}
           onDelete={
             entry
@@ -53,7 +48,12 @@ export default function LedgerEntryPage() {
               : undefined
           }
           onSave={async (input) => {
-            await saveLedgerEntry(scope.id, input, ledger.file.id, entryId)
+            await saveLedgerEntry(
+              scope.id,
+              input,
+              ledgerIdentity(ledger),
+              entryId,
+            )
             back()
           }}
         />

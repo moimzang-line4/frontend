@@ -11,9 +11,10 @@ export type LedgerEntry = {
 }
 
 export type Ledger = {
+  id?: string
   scopeId: string
   initialBalance: number
-  file: ScheduleFile
+  file?: ScheduleFile
   entries: LedgerEntry[]
   updatedAt: number
 }

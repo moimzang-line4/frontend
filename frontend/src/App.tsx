@@ -44,6 +44,7 @@ import { showAlert } from './hooks/useAlert'
 const LedgerEntryPage = lazy(() => import('./pages/documents/LedgerEntryPage'))
 const LedgerSourcePage = lazy(() => import('./pages/documents/LedgerSourcePage'))
 const LedgerDeletePage = lazy(() => import('./pages/documents/LedgerDeletePage'))
+const LedgerInitialBalancePage = lazy(() => import('./pages/documents/LedgerInitialBalancePage'))
 const LedgerUploadPage = lazy(() => import('./pages/documents/LedgerUploadPage'))
 const DocumentsPage = lazy(() => import('./pages/documents/DocumentsPage'))
 const FilePreviewPage = lazy(() => import('./pages/files/FilePreviewPage'))
@@ -240,6 +241,7 @@ export default function App() {
           </Suspense>
         }
       />
+      <Route path="/files/ledger/initial" element={<Suspense fallback={<Placeholder>장부를 불러오는 중이에요.</Placeholder>}><LedgerInitialBalancePage /></Suspense>} />
       <Route
         path="/files/ledger/new"
         element={

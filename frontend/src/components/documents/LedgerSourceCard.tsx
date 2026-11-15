@@ -16,6 +16,8 @@ export default function LedgerSourceCard({ ledger }: { ledger: Ledger }) {
   const [error, setError] = useState('')
   const file = ledger.file
 
+  if (!file) return null
+
   return (
     <>
       <L.SourceHeader>
@@ -36,9 +38,6 @@ export default function LedgerSourceCard({ ledger }: { ledger: Ledger }) {
           }}
         >
           {pending ? '처리 중…' : '내역 다운로드'}
-        </button>
-        <button type="button" onClick={() => navigate('/files/ledger/upload')}>
-          장부 교체
         </button>
       </L.SourceHeader>
       {error && <S.ErrorText role="alert">{error}</S.ErrorText>}
