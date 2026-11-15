@@ -90,6 +90,9 @@ export default function useServerScheduleActions() {
       queryClient.invalidateQueries({
         queryKey: getListUpcomingSchedulesQueryKey(termId),
       }),
+      queryClient.invalidateQueries({
+  queryKey: ['operation-records', termId],
+}),
     ])
   }
 

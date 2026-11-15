@@ -290,10 +290,11 @@ const busy =
 
       {categoryOpen && (
         <CategorySheet
-          selectedId={draft.category?.id}
-          onSelect={category => update('category', category)}
-          onClose={() => setCategoryOpen(false)}
-        />
+  selectedId={draft.category?.id}
+  selectedName={draft.category?.label}
+  onSelect={category => update('category', category)}
+  onClose={() => setCategoryOpen(false)}
+/>
       )}
     </S.Page>
   )
