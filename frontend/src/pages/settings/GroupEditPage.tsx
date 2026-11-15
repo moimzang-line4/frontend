@@ -41,12 +41,7 @@ export default function GroupEditPage() {
       <Header title="그룹 정보 수정" onBack={backToSettings} />
 
       <S.Content>
-        <S.GroupInfo>
-          <h2>새로운 모임을 만들어보세요</h2>
-          <p>그룹 정보를 입력하면 운영 공간이 생성돼요</p>
-        </S.GroupInfo>
-
-        <M.EditForm id="group-edit" onSubmit={submit}>
+        <M.EditForm id="group-edit" onSubmit={submit} style={{ marginTop: 0 }}>
           <label>
             <div>
               그룹명 <span aria-hidden="true">*</span>
