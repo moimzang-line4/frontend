@@ -10,10 +10,10 @@ import DateTimeRow from '../../components/schedules/DateTimeRow'
 import CategorySheet from '../../components/schedules/CategorySheet'
 
 import useScheduleForm from '../../hooks/schedules/useScheduleForm'
-import useSchedules from '../../hooks/schedules/useSchedules'
 import type { Schedule } from '../../types/schedules/schedule'
 
 import * as S from '../../styles/schedules/ScheduleCreatePage.styles'
+import useServerScheduleActions from '../../hooks/schedules/useServerScheduleActions'
 
 export default function ScheduleCreatePage({
   initialSchedule,
@@ -30,11 +30,12 @@ export default function ScheduleCreatePage({
     invalidRange,
     toSchedule,
   } = useScheduleForm(initialSchedule)
+  
+  const scheduleActions = useServerScheduleActions()
 
-  const {
-    updateSchedule,
-    deleteSchedule,
-  } = useSchedules()
+const busy =
+  serverSchedule.pending ||
+  scheduleActions.pending
 
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -51,7 +52,7 @@ export default function ScheduleCreatePage({
         onSubmit={async event => {
   event.preventDefault()
 
-  if (serverSchedule.pending) return
+  if (busy) return
 
   const schedule = toSchedule()
 
@@ -61,8 +62,13 @@ export default function ScheduleCreatePage({
 
   try {
     if (initialSchedule) {
-      // 일정 수정은 다음 단계에서 서버에 연결합니다.
-      updateSchedule(initialSchedule.id, schedule)
+      const saved = await scheduleActions.save(
+        initialSchedule,
+        schedule,
+        draft.category?.label,
+      )
+
+      if (!saved) return
 
       navigate(
         `/schedules/${encodeURIComponent(initialSchedule.id)}`,
@@ -79,7 +85,6 @@ export default function ScheduleCreatePage({
 
     if (!scheduleId) return
 
-    // 등록한 일정이 있는 달의 홈 화면으로 이동
     navigate(
       `/?date=${schedule.date}`,
       { replace: true },
@@ -92,14 +97,14 @@ export default function ScheduleCreatePage({
         typeof message === 'string' && message.trim()
           ? message
           : caught.response
-            ? '일정을 등록하지 못했어요.'
-            : '서버에 연결하지 못했어요. 네트워크 상태를 확인해주세요.',
+            ? '일정을 저장하지 못했어요.'
+            : '서버에 연결하지 못했어요.',
       )
     } else {
       setError(
         caught instanceof Error
           ? caught.message
-          : '일정을 등록하지 못했어요.',
+          : '일정을 저장하지 못했어요.',
       )
     }
   }
@@ -214,6 +219,13 @@ export default function ScheduleCreatePage({
                   !draft.createOperationSpace,
                 )
               }
+              disabled={
+  busy ||
+  (
+    !!initialSchedule &&
+    initialSchedule.operationMenuCount !== undefined
+  )
+}
             />
           </S.ToggleRow>
 
@@ -227,6 +239,7 @@ export default function ScheduleCreatePage({
         {initialSchedule && (
           <S.DeleteButton
             type="button"
+            disabled={busy}
             onClick={() => setDeleteOpen(true)}
           >
             일정 삭제하기
@@ -244,10 +257,10 @@ export default function ScheduleCreatePage({
         <S.SubmitButton
   type="submit"
   form="schedule-create-form"
-  disabled={!canSubmit || serverSchedule.pending}
+  disabled={!canSubmit || busy}
 >
-  {serverSchedule.pending
-    ? '등록 중…'
+  {busy
+    ? '저장 중…'
     : initialSchedule
       ? '수정하기'
       : '일정 등록하기'}
@@ -255,18 +268,25 @@ export default function ScheduleCreatePage({
       </S.ActionBar>
 
       <ConfirmDialog
-        open={deleteOpen}
-        title="일정을 삭제할까요?"
-        description="삭제한 일정은 복구할 수 없어요."
-        confirmText="삭제하기"
-        onCancel={() => setDeleteOpen(false)}
-        onConfirm={() => {
-          if (!initialSchedule) return
+  open={deleteOpen}
+  title="일정을 삭제할까요?"
+  description="일정과 연결된 운영 데이터, 이 일정에서 만든 회의록도 함께 삭제돼요."
+  confirmText="삭제하기"
+  onCancel={() => {
+    if (!busy) setDeleteOpen(false)
+  }}
+  onConfirm={async () => {
+    if (!initialSchedule || busy) return
 
-          deleteSchedule(initialSchedule.id)
-          navigate('/', { replace: true })
-        }}
-      />
+    const deleted = await scheduleActions.remove(
+      initialSchedule.id,
+    )
+
+    if (!deleted) return
+
+    navigate('/', { replace: true })
+  }}
+/>
 
       {categoryOpen && (
         <CategorySheet

@@ -21,7 +21,17 @@ export default function useScheduleForm(initialSchedule?: Schedule) {
   const [draft, setDraft] = useState<Draft>(() => initialSchedule ? {
     title: initialSchedule.title,
     color: initialSchedule.color ?? scheduleColors[0].value,
-    category: categories.find(item => item.label === initialSchedule.categoryName || (!initialSchedule.categoryName && item.kind === initialSchedule.category)) ?? { id: initialSchedule.category, kind: initialSchedule.category, label: initialSchedule.categoryName ?? ({ meeting: '정기회의', session: '세션', performance: '공연', newcomer: '신입공연', afterparty: '뒤풀이', custom: '일정' })[initialSchedule.category] },
+    category: initialSchedule.categoryName
+  ? (
+      categories.find(
+        item => item.label === initialSchedule.categoryName,
+      ) ?? {
+        id: initialSchedule.categoryName,
+        kind: 'custom',
+        label: initialSchedule.categoryName,
+      }
+    )
+  : null,
     allDay: initialSchedule.allDay ?? false,
     date: initialSchedule.date, endDate: initialSchedule.endDate ?? initialSchedule.date,
     startTime: initialSchedule.startTime ?? '', endTime: initialSchedule.endTime ?? '',

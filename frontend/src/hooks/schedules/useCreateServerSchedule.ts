@@ -23,7 +23,10 @@ function validId(value: unknown): value is number {
   )
 }
 
-async function findOrCreateCategory(termId: number, name: string) {
+export async function findOrCreateCategory(
+  termId: number,
+  name: string,
+) {
   const response = await listCategories1(termId, {
     timeout: 15000,
   })
