@@ -103,6 +103,119 @@ export const List = styled.ul`
   flex-direction: column;
   gap: 14px;
 `
+
+export const ViewToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  > button:last-child {
+    margin-left: auto;
+  }
+`
+
+export const ViewOptions = styled.div`
+  display: flex;
+  gap: 7px;
+`
+
+export const ViewButton = styled.button`
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  cursor: pointer;
+  &[aria-pressed='false'] {
+    opacity: 0.55;
+  }
+  &:focus-visible {
+    outline: 2px solid #367d70;
+    outline-offset: 3px;
+  }
+`
+
+export const Grid = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 10px;
+`
+
+export const GridCard = styled.li`
+  position: relative;
+  min-width: 0;
+`
+
+export const GridFileButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  cursor: pointer;
+  strong {
+    width: 100%;
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  small {
+    color: #253f3b;
+    font-size: 10px;
+  }
+`
+
+export const Thumbnail = styled.span`
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 170 / 102;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e7eeeb;
+`
+
+export const ThumbnailImage = styled.img`
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`
+
+export const ThumbnailFallback = styled.span`
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+`
+
+export const ThumbnailLabel = styled.span`
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  background: rgb(0 0 0 / 50%);
+  color: #dfdfdf;
+  font-size: 8px;
+`
+
+export const GridMore = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 50%);
+  cursor: pointer;
+`
 export const Card = styled.li`
   display: flex;
   align-items: center;
