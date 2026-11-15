@@ -114,7 +114,7 @@ const MenuLink = styled(NavLink)<{ $elevated: boolean }>`
   justify-content: center;
   ${({ $elevated }) => $elevated ? css`
     position: relative;
-    top: calc(-1 * var(--spacing-footer-offset));
+    top: calc(-1 * var(--spacing-footer-offset) + 4px);
     width: var(--spacing-ai-button);
     height: var(--spacing-ai-button);
     justify-self: center;
