@@ -2,6 +2,8 @@ import { isAxiosError } from 'axios'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import Header from '../../layouts/Header'
+import MeetingInfoEditor from '../../components/meetings/MeetingInfoEditor'
+
 import { useGetMeetingDetail } from '../../api/generated'
 import useMeetingCategoriesApi from '../../hooks/meetings/useMeetingCategoriesApi'
 
@@ -106,14 +108,6 @@ export default function MeetingDetailPage() {
       ? getErrorMessage(caught)
       : ''
 
-  const category = categoriesApi.categories.find(
-    item => item.id === String(meeting?.categoryId),
-  )
-
-  const categoryName = categoriesApi.loading
-    ? '불러오는 중…'
-    : category?.label ?? '카테고리 정보를 확인할 수 없어요'
-
   function back() {
     navigate(
       meeting?.status === 'COMPLETED'
@@ -128,7 +122,9 @@ export default function MeetingDetailPage() {
         <Header title="회의록" onBack={back} />
 
         <S.Notice>
-          <p role="status">회의록을 불러오는 중이에요.</p>
+          <p role="status">
+            회의록을 불러오는 중이에요.
+          </p>
         </S.Notice>
       </S.Page>
     )
@@ -182,55 +178,16 @@ export default function MeetingDetailPage() {
           </p>
         </S.Heading>
 
-        <S.Card>
-          <S.Row>
-            <label htmlFor="detail-meeting-title">
-              회의 제목
-            </label>
-
-            <input
-              id="detail-meeting-title"
-              value={meeting.title}
-              readOnly
-            />
-          </S.Row>
-
-          <S.Row>
-            <label htmlFor="detail-meeting-date">
-              회의 날짜
-            </label>
-
-            <input
-              id="detail-meeting-date"
-              value={meeting.meetingDate}
-              readOnly
-            />
-          </S.Row>
-
-          <S.Row>
-            <label htmlFor="detail-meeting-category">
-              카테고리
-            </label>
-
-            <input
-              id="detail-meeting-category"
-              value={categoryName}
-              readOnly
-            />
-          </S.Row>
-
-          <S.Row>
-            <label htmlFor="detail-meeting-attendees">
-              참석자
-            </label>
-
-            <input
-              id="detail-meeting-attendees"
-              value={meeting.attendees ?? ''}
-              readOnly
-            />
-          </S.Row>
-        </S.Card>
+        <MeetingInfoEditor
+          key={meeting.meetingId}
+          meetingId={numericId}
+          meeting={meeting}
+          onDeleted={() =>
+            navigate('/operations?type=minute', {
+              replace: true,
+            })
+          }
+        />
 
         {categoriesApi.errorMessage && (
           <div>
