@@ -1,4 +1,3 @@
-import { exportLedger } from '../../utils/documents/exportLedger'
 import entryChevron from '../../assets/files/entry-chevron.svg'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -42,6 +41,8 @@ export default function LedgerPanel({ scopeId, search }: Props) {
               setDownloading(true)
               setDownloadError('')
               try {
+                const { exportLedger } =
+                  await import('../../utils/documents/exportLedger')
                 await exportLedger(ledger)
               } catch {
                 setDownloadError(
