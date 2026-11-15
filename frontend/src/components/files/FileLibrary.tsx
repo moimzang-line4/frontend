@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import DropdownSelect from '../common/DropdownSelect'
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
@@ -88,13 +89,14 @@ export default function FileLibrary({
 
       <S.Content aria-label={documentView ? '문서함 자료' : '일정 자료'}>
         {documentView && (
-          <S.Generation
+          <DropdownSelect
             aria-label="자료실 기수"
             value={scheduleId}
             onChange={() => {}}
-          >
-            <option value={scheduleId}>{generationLabel}</option>
-          </S.Generation>
+            options={[
+              { value: scheduleId, label: generationLabel ?? scheduleTitle },
+            ]}
+          />
         )}
         <S.SearchRow>
           <S.Search>
@@ -149,15 +151,17 @@ export default function FileLibrary({
           <>
             <S.Summary>
               <strong aria-live="polite">총 {visible.length}개</strong>
-              <select
+              <DropdownSelect
+                variant="inline"
                 aria-label="자료 정렬"
                 value={sort}
                 onChange={(event) => setSort(event.target.value)}
-              >
-                <option value="newest">최신순</option>
-                <option value="oldest">오래된순</option>
-                <option value="name">이름순</option>
-              </select>
+                options={[
+                  { value: 'newest', label: '최신순' },
+                  { value: 'oldest', label: '오래된순' },
+                  { value: 'name', label: '이름순' },
+                ]}
+              />
             </S.Summary>
 
             <S.DownloadAll

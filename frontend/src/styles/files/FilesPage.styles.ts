@@ -79,13 +79,6 @@ export const Summary = styled.div`
   strong {
     font-size: 14px;
   }
-  select {
-    background: transparent;
-    font-size: 12px;
-    color: #17251e;
-    cursor: pointer;
-    min-height: 24px;
-  }
 `
 export const DownloadAll = styled.button`
   display: flex;
@@ -185,17 +178,4 @@ export const Action = styled.button<{ $danger?: boolean }>`
     width: 20px;
     height: 20px;
   }
-`
-
-export const Generation = styled.select`
-  width: 100%;
-  min-height: 33px;
-  border: 1px solid #d9d9d9;
-  border-radius: 999px;
-  background: #e7e7e7;
-  text-align: center;
-  color: #17251e;
-  font-size: 13px;
-  margin-bottom: 0;
-  cursor: pointer;
 `
