@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router'
 import MainLayout from '../../layouts/MainLayout'
 import CreateOperationSheet from '../../components/operations/CreateOperationSheet'
 import SortOperationSheet from '../../components/operations/SortOperationSheet'
-import MeetingCard from '../../components/meetings/MeetingCard'
 import GroupTermSelect from '../../components/groups/GroupTermSelect'
 
 import { sortLabels } from '../../constants/operations/sortOptions'
