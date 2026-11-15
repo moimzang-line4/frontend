@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
+import ServerMeetingCard from '../../components/meetings/ServerMeetingCard'
+import useMeetingCardSummaries from '../../hooks/meetings/useMeetingCardSummaries'
+import useOnboarding from '../../hooks/onboarding/useOnboarding'
+
 import MainLayout from '../../layouts/MainLayout'
 import CreateOperationSheet from '../../components/operations/CreateOperationSheet'
 import SortOperationSheet from '../../components/operations/SortOperationSheet'
@@ -8,6 +12,7 @@ import GroupTermSelect from '../../components/groups/GroupTermSelect'
 
 import { sortLabels } from '../../constants/operations/sortOptions'
 import useOperationRecords from '../../hooks/operations/useOperationRecords'
+
 import type { OperationFilter } from '../../types/operations/operation'
 
 import searchIcon from '../../assets/operations/search.svg'
@@ -19,11 +24,25 @@ import * as S from '../../styles/operations/OperationsPage.styles'
 export default function OperationsPage() {
   const navigate = useNavigate()
   const data = useOperationRecords()
+  const { group } = useOnboarding()
 
-  const [modal, setModal] = useState<'create' | 'sort' | null>(null)
+  const summaries = useMeetingCardSummaries(
+    data.records.some(record => record.kind === 'minute')
+      ? group?.termId
+      : undefined,
+  )
+
+  const [modal, setModal] = useState<'create' | 'sort' | null>(
+    null,
+  )
 
   return (
-    <MainLayout title="운영 공간" showBack={false} headerAlign="left" home>
+    <MainLayout
+      title="운영 공간"
+      showBack={false}
+      headerAlign="left"
+      home
+    >
       <S.Content>
         <GroupTermSelect aria-label="조회할 운영 기수" />
 
@@ -31,7 +50,7 @@ export default function OperationsPage() {
           {[
             { value: false, label: '진행 중' },
             { value: true, label: '지난 기록' },
-          ].map((tab) => (
+          ].map(tab => (
             <S.Tab
               key={tab.label}
               type="button"
@@ -46,14 +65,21 @@ export default function OperationsPage() {
 
         <S.SearchRow>
           <S.Search>
-            <img src={searchIcon} alt="" width={20} height={20} />
+            <img
+              src={searchIcon}
+              alt=""
+              width={20}
+              height={20}
+            />
 
             <input
               type="search"
               aria-label="일정·회의록 검색"
               placeholder="일정·회의록 검색"
               value={data.query}
-              onChange={(event) => data.setQuery(event.target.value)}
+              onChange={event =>
+                data.setQuery(event.target.value)
+              }
             />
           </S.Search>
 
@@ -66,7 +92,12 @@ export default function OperationsPage() {
           >
             {sortLabels[data.sort]}
 
-            <img src={caretIcon} alt="" width={12} height={12} />
+            <img
+              src={caretIcon}
+              alt=""
+              width={12}
+              height={12}
+            />
           </S.Sort>
         </S.SearchRow>
 
@@ -102,95 +133,129 @@ export default function OperationsPage() {
 
           <button
             type="button"
-            aria-haspopup={data.filter === 'minute' ? undefined : 'dialog'}
+            aria-haspopup={
+              data.filter === 'minute'
+                ? undefined
+                : 'dialog'
+            }
             onClick={() =>
               data.filter === 'minute'
                 ? navigate('/meetings/new')
                 : setModal('create')
             }
           >
-            {data.filter === 'minute' ? '＋ 새 메모' : '＋ 만들기'}
+            {data.filter === 'minute'
+              ? '＋ 새 메모'
+              : '＋ 만들기'}
           </button>
         </S.Heading>
 
         {data.errorMessage && (
-  <div>
-    <p role="alert">{data.errorMessage}</p>
-
-    {data.canRetry && (
-      <button
-        type="button"
-        disabled={data.refreshing}
-        onClick={() => void data.reload()}
-      >
-        {data.refreshing ? '불러오는 중…' : '다시 불러오기'}
-      </button>
-    )}
-  </div>
-)}
-
-{data.loading ? (
-  <S.Empty role="status">
-    운영 기록을 불러오는 중이에요.
-  </S.Empty>
-) : data.records.length > 0 ? (
-  <S.Records aria-label="운영 기록 목록">
-    {data.records.map(record => (
-      <li key={`${record.kind}-${record.id}`}>
-        <S.Record
-          type="button"
-          onClick={() =>
-            navigate(
-              record.kind === 'schedule'
-                ? `/schedules/${encodeURIComponent(record.id)}`
-                : `/meetings/${encodeURIComponent(record.id)}`,
-            )
-          }
-        >
           <div>
-            <S.Badge $minute={record.kind === 'minute'}>
-              {record.kind === 'minute'
-                ? '회의록'
-                : '일정 운영'}
-            </S.Badge>
+            <p role="alert">
+              {data.errorMessage}
+            </p>
 
-            <div>
-              <h3>{record.title}</h3>
-
-              <p>
-                {record.date.replaceAll('-', '.')} ·{' '}
-                {record.past ? '지난 기록' : '진행 중'}
-              </p>
-            </div>
+            {data.canRetry && (
+              <button
+                type="button"
+                disabled={data.refreshing}
+                onClick={() => void data.reload()}
+              >
+                {data.refreshing
+                  ? '불러오는 중…'
+                  : '다시 불러오기'}
+              </button>
+            )}
           </div>
+        )}
 
-          <img
-            src={chevronIcon}
-            alt=""
-            width={24}
-            height={24}
-          />
-        </S.Record>
-      </li>
-    ))}
-  </S.Records>
-) : !data.errorMessage ? (
-  <S.Empty>
-    {data.query.trim()
-      ? '검색 결과가 없어요.'
-      : '아직 운영 기록이 없어요.'}
-  </S.Empty>
-) : null}
+        {data.loading ? (
+          <S.Empty role="status">
+            운영 기록을 불러오는 중이에요.
+          </S.Empty>
+        ) : data.records.length > 0 ? (
+          <S.Records aria-label="운영 기록 목록">
+            {data.records.map(record => (
+              <li key={`${record.kind}-${record.id}`}>
+                {record.kind === 'minute' ? (
+                  <ServerMeetingCard
+                    id={record.id}
+                    title={record.title}
+                    date={record.date}
+                    meeting={summaries.data?.get(
+                      Number(record.id),
+                    )}
+                    loading={summaries.isFetching}
+                    failed={
+                      summaries.isError ||
+                      (
+                        !summaries.isPending &&
+                        !summaries.data?.has(
+                          Number(record.id),
+                        )
+                      )
+                    }
+                    onRetry={() => {
+                      void summaries.refetch()
+                    }}
+                  />
+                ) : (
+                  <S.Record
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        `/schedules/${encodeURIComponent(record.id)}`,
+                      )
+                    }
+                  >
+                    <div>
+                      <S.Badge $minute={false}>
+                        일정 운영
+                      </S.Badge>
 
-{data.hasMore && (
-  <S.Sort
-    type="button"
-    disabled={data.refreshing}
-    onClick={() => void data.loadMore()}
-  >
-    {data.loadingMore ? '불러오는 중…' : '더 보기'}
-  </S.Sort>
-)}
+                      <div>
+                        <h3>{record.title}</h3>
+
+                        <p>
+                          {record.date.replaceAll('-', '.')} ·{' '}
+                          {record.past
+                            ? '지난 기록'
+                            : '진행 중'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <img
+                      src={chevronIcon}
+                      alt=""
+                      width={24}
+                      height={24}
+                    />
+                  </S.Record>
+                )}
+              </li>
+            ))}
+          </S.Records>
+        ) : !data.errorMessage ? (
+          <S.Empty>
+            {data.query.trim()
+              ? '검색 결과가 없어요.'
+              : '아직 운영 기록이 없어요.'}
+          </S.Empty>
+        ) : null}
+
+        {data.hasMore && (
+          <S.Sort
+            type="button"
+            disabled={data.refreshing}
+            onClick={() => void data.loadMore()}
+          >
+            {data.loadingMore
+              ? '불러오는 중…'
+              : '더 보기'}
+          </S.Sort>
+        )}
       </S.Content>
 
       {modal === 'sort' && (
@@ -204,7 +269,9 @@ export default function OperationsPage() {
       {modal === 'create' && (
         <CreateOperationSheet
           onClose={() => setModal(null)}
-          onSchedule={() => navigate('/schedules/new?from=operations')}
+          onSchedule={() =>
+            navigate('/schedules/new?from=operations')
+          }
           onMinute={() => navigate('/meetings/new')}
         />
       )}
