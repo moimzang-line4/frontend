@@ -17,6 +17,7 @@ import ConfirmDialog from '../../components/common/ConfirmDialog'
 import useMeetings from '../../hooks/meetings/useMeetings'
 import useCreateServerMeeting from '../../hooks/meetings/useCreateServerMeeting'
 import useMeetingCategoriesApi from '../../hooks/meetings/useMeetingCategoriesApi'
+import MeetingDetailPage from './MeetingDetailPage'
 
 import {
   meetingListPath,
@@ -415,8 +416,14 @@ function MeetingForm({
 
 export default function MeetingFormPage() {
   const { meetingId } = useParams()
+
+  return meetingId
+    ? <MeetingDetailPage />
+    : <NewMeetingRoute />
+}
+
+function NewMeetingRoute() {
   const [params] = useSearchParams()
-  const { meetings } = useMeetings()
 
   const sourceScheduleId =
     params.get('scheduleId') || undefined
@@ -440,10 +447,6 @@ export default function MeetingFormPage() {
         timeout: 15000,
       },
     },
-  )
-
-  const meeting = meetings.find(
-    item => item.id === meetingId,
   )
 
   if (sourceScheduleId && sourceQuery.isLoading) {
@@ -484,26 +487,9 @@ export default function MeetingFormPage() {
     )
   }
 
-  if (meetingId && !meeting) {
-    return (
-      <S.Page>
-        <Header title="회의 만들기" />
-
-        <S.Notice>
-          <h1>회의록을 찾을 수 없어요</h1>
-
-          <Link to="/operations?type=minute">
-            회의록 목록으로 이동
-          </Link>
-        </S.Notice>
-      </S.Page>
-    )
-  }
-
   return (
     <MeetingForm
-      key={meetingId ?? sourceScheduleId ?? 'new'}
-      meeting={meeting}
+      key={sourceScheduleId ?? 'new'}
       sourceScheduleId={sourceScheduleId}
     />
   )
