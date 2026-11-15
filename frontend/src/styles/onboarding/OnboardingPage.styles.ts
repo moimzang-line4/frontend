@@ -1,17 +1,5 @@
 import styled, { keyframes } from 'styled-components'
 
-const slideAppear = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`
-
 const logoAppear = keyframes`
   from {
     opacity: 0;
@@ -51,17 +39,11 @@ export const Splash = styled.div<{
     inset: 0;
     z-index: -1;
 
-    background: linear-gradient(
-      135deg,
-      #3f8275 0%,
-      #72aa99 50%,
-      #a7cfbb 100%
-    );
+    background: linear-gradient(135deg, #3f8275 0%, #72aa99 50%, #a7cfbb 100%);
 
     opacity: ${({ $mint }) => ($mint ? 1 : 0)};
 
-    transition: opacity 800ms
-      cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 800ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   h1 {
@@ -74,15 +56,13 @@ export const Splash = styled.div<{
     line-height: 1.2;
     letter-spacing: 0.3px;
 
-    transition: color 800ms
-      cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 800ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   span {
     display: block;
 
-    animation: ${logoAppear} 700ms
-      cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: ${logoAppear} 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -96,8 +76,6 @@ export const Splash = styled.div<{
     }
   }
 `
-
-
 
 export const Wave = styled.img`
   position: absolute;
@@ -133,8 +111,7 @@ export const Dot = styled.button<{ $active: boolean }>`
     height: 7px;
     border-radius: 4px;
 
-    background: ${({ $active }) =>
-      $active ? '#348b74' : '#d6e2dc'};
+    background: ${({ $active }) => ($active ? '#348b74' : '#d6e2dc')};
 
     transition:
       width 250ms ease,
@@ -171,8 +148,7 @@ export const Next = styled.button<{ $primary: boolean }>`
       ? 'linear-gradient(168deg, #5aa997 10.714%, #438b7e 82.143%)'
       : 'white'};
 
-  color: ${({ $primary }) =>
-    $primary ? 'white' : '#348b74'};
+  color: ${({ $primary }) => ($primary ? 'white' : '#348b74')};
 
   font-size: 18px;
   font-weight: 700;
@@ -207,11 +183,7 @@ export const Root = styled.div`
   box-sizing: border-box;
   overflow: hidden;
 
-  background: linear-gradient(
-    154deg,
-    #7baea5 10.714%,
-    #b5ddd0 82.143%
-  );
+  background: linear-gradient(154deg, #7baea5 10.714%, #b5ddd0 82.143%);
 
   color: #19352e;
 
@@ -250,10 +222,7 @@ export const Panel = styled.main`
 
   min-height: 0;
   padding: 24px 26px;
-  padding-bottom: max(
-    20px,
-    env(safe-area-inset-bottom, 0px)
-  );
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
 
   box-sizing: border-box;
   overflow: hidden;
@@ -261,31 +230,51 @@ export const Panel = styled.main`
 
   border-radius: 28px 28px 0 0;
 
-  background: linear-gradient(
-    115deg,
-    #f8fefb 14.286%,
-    white 85.714%
-  );
+  background: linear-gradient(115deg, #f8fefb 14.286%, white 85.714%);
 
   @media (max-height: 660px) {
     padding-top: 16px;
   }
 `
 
+export const Viewport = styled.div`
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  cursor: grab;
+  &:active {
+    cursor: grabbing;
+  }
+  &:focus-visible {
+    outline: 2px solid #3f8275;
+    outline-offset: 2px;
+  }
+`
+
+export const Track = styled.div<{ $dragging: boolean }>`
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: ${({ $dragging }) => ($dragging ? 'none' : 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1)')};
+  will-change: ${({ $dragging }) => ($dragging ? 'transform' : 'auto')};
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
 export const Slide = styled.div`
   display: flex;
+  flex: 0 0 100%;
   flex-direction: column;
-
+  width: 100%;
+  height: 100%;
+  min-width: 0;
   min-height: 0;
-  overflow: auto;
+  box-sizing: border-box;
+  overflow: hidden auto;
   overscroll-behavior: contain;
-
-  animation: ${slideAppear} 500ms
-    cubic-bezier(0.22, 1, 0.36, 1) both;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
 `
 
 export const Illustration = styled.div`
@@ -356,11 +345,7 @@ export const Calendar = styled.div`
   height: 235px;
   border-radius: 25px;
 
-  background: linear-gradient(
-    131deg,
-    white 14.286%,
-    #c8eadb 85.714%
-  );
+  background: linear-gradient(131deg, white 14.286%, #c8eadb 85.714%);
 
   box-shadow: 0 14px 28px rgb(31 107 87 / 20%);
 
@@ -373,11 +358,7 @@ export const Calendar = styled.div`
     height: 59px;
     border-radius: 22px;
 
-    background: linear-gradient(
-      164deg,
-      #77cbb0 14.286%,
-      #238e70 85.714%
-    );
+    background: linear-gradient(164deg, #77cbb0 14.286%, #238e70 85.714%);
   }
 `
 
@@ -415,11 +396,7 @@ export const CalendarBadge = styled.div`
   height: 53px;
   border-radius: 20px;
 
-  background: linear-gradient(
-    154deg,
-    white 14.286%,
-    #e9f8f0 85.714%
-  );
+  background: linear-gradient(154deg, white 14.286%, #e9f8f0 85.714%);
 
   box-shadow: 0 10px 20px rgb(31 107 87 / 17%);
 
@@ -449,11 +426,7 @@ export const AttendanceCard = styled.div`
 
   border-radius: 20px;
 
-  background: linear-gradient(
-    164deg,
-    white 14.286%,
-    #e9f8f0 85.714%
-  );
+  background: linear-gradient(164deg, white 14.286%, #e9f8f0 85.714%);
 
   box-shadow: 0 10px 20px rgb(31 107 87 / 17%);
 
@@ -463,11 +436,7 @@ export const AttendanceCard = styled.div`
 
     border-radius: 18px;
 
-    background: linear-gradient(
-      131deg,
-      #c9ebdd 14.286%,
-      #78c8aa 85.714%
-    );
+    background: linear-gradient(131deg, #c9ebdd 14.286%, #78c8aa 85.714%);
   }
 
   > span:nth-child(2) {
@@ -488,11 +457,7 @@ export const AttendanceCard = styled.div`
 
     border-radius: 16px;
 
-    background: linear-gradient(
-      134deg,
-      #72c9a9 14.286%,
-      #168f6b 85.714%
-    );
+    background: linear-gradient(134deg, #72c9a9 14.286%, #168f6b 85.714%);
 
     color: white;
     font-size: 19px;
@@ -516,11 +481,7 @@ export const Receipt = styled.div`
 
   border-radius: 22px;
 
-  background: linear-gradient(
-    125deg,
-    white 14.286%,
-    #c8eadb 85.714%
-  );
+  background: linear-gradient(125deg, white 14.286%, #c8eadb 85.714%);
 
   box-shadow: 0 14px 28px rgb(31 107 87 / 20%);
 
