@@ -1,20 +1,26 @@
 import entryChevron from '../../assets/files/entry-chevron.svg'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { ledgerTotals, won } from '../../utils/documents/ledgerMath'
+import { won } from '../../utils/documents/ledgerMath'
 import useLedger from '../../hooks/documents/useLedger'
+import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import * as S from '../../styles/documents/Ledger.styles'
 import { Empty, ErrorText } from '../../styles/files/FilesPage.styles'
 
-type Props = { scopeId: string; search: string }
+type Props = { search: string }
 
-export default function LedgerPanel({ scopeId, search }: Props) {
+// 기수 장부 (서버 API). 잔액·누적 금액은 그룹 전체 기준
+export default function LedgerPanel({ search }: Props) {
   const navigate = useNavigate()
-  const { ledger, loading, error, reload } = useLedger(scopeId)
+  const { ledger, loading, error, sync, download } = useLedger()
   const [filter, setFilter] = useState('all')
   const [downloading, setDownloading] = useState(false)
+  const [syncing, setSyncing] = useState(false)
   const [downloadError, setDownloadError] = useState('')
-  const totals = ledger ? ledgerTotals(ledger) : null
+  const totals = ledger
+  // 내역이 하나도 없으면 초기 금액부터 설정
+  const empty = !!ledger && ledger.entries.length === 0
   const entries =
     ledger?.entries
       .filter(
@@ -41,12 +47,10 @@ export default function LedgerPanel({ scopeId, search }: Props) {
               setDownloading(true)
               setDownloadError('')
               try {
-                const { exportLedger } =
-                  await import('../../utils/documents/exportLedger')
-                await exportLedger(ledger)
-              } catch {
+                await download()
+              } catch (caught) {
                 setDownloadError(
-                  '내역을 다운로드하지 못했어요. 다시 시도해주세요.',
+                  getApiErrorMessage(caught, '내역을 다운로드하지 못했어요. 다시 시도해주세요.'),
                 )
               } finally {
                 setDownloading(false)
@@ -55,20 +59,32 @@ export default function LedgerPanel({ scopeId, search }: Props) {
           >
             {downloading ? '처리 중…' : '내역 다운로드'}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate('/files/ledger/delete')}
-          >
-            장부 삭제
-          </button>
         </S.SourceHeader>
       )}
       {downloadError && <ErrorText role="alert">{downloadError}</ErrorText>}
       <S.Balance>
         <S.BalanceHeader>
           <span>현재 잔액</span>
-          <button type="button" onClick={() => void reload()}>
-            ↻ 정산 내역 새로고침
+          <button
+            type="button"
+            disabled={syncing || !ledger}
+            onClick={async () => {
+              setSyncing(true)
+              try {
+                const result = await sync()
+                const changed = result.created + result.updated + result.deleted
+                showAlert(
+                  changed ? '정산 내역을 장부에 반영했어요.' : '새로 반영할 정산 내역이 없어요.',
+                  changed ? { description: `추가 ${result.created}건 · 변경 ${result.updated}건 · 삭제 ${result.deleted}건` } : undefined,
+                )
+              } catch (caught) {
+                showAlert(getApiErrorMessage(caught, '정산 내역을 새로고침하지 못했어요.'))
+              } finally {
+                setSyncing(false)
+              }
+            }}
+          >
+            {syncing ? '반영 중…' : '↻ 정산 내역 새로고침'}
           </button>
         </S.BalanceHeader>
         <S.Total>{totals ? won(totals.balance) : '-원'}</S.Total>
@@ -107,7 +123,7 @@ export default function LedgerPanel({ scopeId, search }: Props) {
         type="button"
         disabled={loading || !!error}
         onClick={() =>
-          navigate(ledger ? '/files/ledger/new' : '/files/ledger/initial')
+          navigate(empty ? '/files/ledger/initial' : '/files/ledger/new')
         }
       >
         +직접 입력
@@ -116,7 +132,7 @@ export default function LedgerPanel({ scopeId, search }: Props) {
       <S.Entries>
         {loading ? (
           <Empty role="status">장부를 불러오는 중이에요.</Empty>
-        ) : !ledger && !error ? (
+        ) : empty ? (
           <S.InitialEmpty>
             <strong>초기 금액을 설정해주세요</strong>
             <p>
