@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router'
 import MainLayout from '../../layouts/MainLayout'
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
@@ -8,23 +8,19 @@ import AttendanceAddSheet from '../../components/attendance/AttendanceAddSheet'
 import AttendanceToast from '../../components/attendance/AttendanceToast'
 import MemberSearchBar from '../../components/members/MemberSearchBar'
 import MemberDeleteModal from '../../components/members/MemberDeleteModal'
-import useAttendance, { getExtraField, getRosterGroup } from '../../hooks/attendance/useAttendance'
-import type { MemberGroup } from '../../types/members/member'
+import SegmentTabs from '../../components/SegmentTabs'
+import useAttendanceApi, { useAttendanceRounds } from '../../hooks/attendance/useAttendanceApi'
 import type { Schedule } from '../../types/schedules/schedule'
-import type { AttendanceFilter, Participant } from '../../types/attendance/attendance'
+import type { AttendanceExtraField, AttendanceFilter, Participant } from '../../types/attendance/attendance'
 import { AddButton, EmptyText, MemberCount, TopRow } from '../../styles/members/MemberDetailPage.styles'
-import {
-  CardDescription,
-  CardTitle,
-  CopyButton,
-  LinkBox,
-  LinkCard,
-  LinkText,
-} from '../../styles/members/MemberLinkPage.styles'
 import * as S from '../../styles/attendance/AttendancePage.styles'
 import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 
 type Props = { schedule: Schedule }
+
+// 서버 현장 추가 API는 전화번호 뒤 4자리를 필수로 받음
+const PHONE_FIELD: AttendanceExtraField = { key: 'phone', label: '전화번호 뒤 4자리', placeholder: '예: 4827' }
 
 const PAGE_SIZE = 10
 
@@ -49,7 +45,15 @@ function subtitleOf(item: Participant, filter: AttendanceFilter) {
 
 // 일정 운영 메뉴 > 참석·출석 (/schedules/:scheduleId/operations/attendance)
 export default function AttendancePage() {
-  const { schedule } = useScheduleDetail()
+  const { schedule, loading } = useScheduleDetail()
+
+  if (loading) {
+    return (
+      <MainLayout title="참석·출석">
+        <S.Notice><p>일정 정보를 불러오는 중이에요.</p></S.Notice>
+      </MainLayout>
+    )
+  }
 
   if (!schedule || schedule.operationMenuCount === undefined) {
     return (
@@ -65,28 +69,44 @@ export default function AttendancePage() {
   return <AttendanceScreen key={schedule.id} schedule={schedule} />
 }
 
-// 홈에서 모임(방)을 고르고 들어오므로, 출석 명단은 그 모임의 명단방을 그대로 사용
+// 출석은 차수 단위: 기본은 1차, 차수가 2개 이상이면 위에 차수 탭 표시
 function AttendanceScreen({ schedule }: Props) {
-  const [rosterGroup] = useState(() => getRosterGroup(schedule.id))
+  const { rounds, loading, error, reload } = useAttendanceRounds(Number(schedule.id))
+  const [selected, setSelected] = useState<string>('')
+  const round = rounds.find(item => String(item.id) === selected) ?? rounds[0]
 
   return (
     <MainLayout title="참석·출석" showFooter={false}>
       <S.Container>
-        {rosterGroup ? (
-          <AttendanceRoster key={rosterGroup.id} schedule={schedule} rosterGroup={rosterGroup} />
-        ) : (
+        {loading ? (
+          <S.Notice><p>차수 정보를 불러오는 중이에요.</p></S.Notice>
+        ) : error ? (
           <S.Notice>
-            <p>아직 부원 명단이 없어요.</p>
-            <Link to="/members">부원 명단 만들러 가기</Link>
+            <p>{error}</p>
+            <button type="button" onClick={() => void reload()}>다시 불러오기</button>
           </S.Notice>
+        ) : !round ? (
+          <S.Notice><p>이 일정에 출석을 받을 차수가 없어요.</p></S.Notice>
+        ) : (
+          <>
+            {rounds.length > 1 && (
+              <SegmentTabs
+                label="차수"
+                tabs={rounds.map(item => ({ id: String(item.id), label: item.label }))}
+                value={String(round.id)}
+                onChange={setSelected}
+              />
+            )}
+            <AttendanceRoster key={round.id} schedule={schedule} roundId={round.id} />
+          </>
         )}
       </S.Container>
     </MainLayout>
   )
 }
 
-function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: MemberGroup }) {
-  const { participants, attendedCount, setAttended, removeParticipant, addParticipant } = useAttendance(schedule.id, rosterGroup.id)
+function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
+  const { participants, attendedCount, loading, error, reload, setAttended, removeParticipant, addParticipant } = useAttendanceApi(roundId)
 
   const [filter, setFilter] = useState<AttendanceFilter>('absent')
   const [search, setSearch] = useState('')
@@ -95,11 +115,14 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
   const [deleteTarget, setDeleteTarget] = useState<Participant | null>(null)
   const [showAddSheet, setShowAddSheet] = useState(false)
   const [toast, setToast] = useState<{ title: string; description: string } | null>(null)
-  const [copied, setCopied] = useState(false)
-  const copyTimer = useRef<number | undefined>(undefined)
 
-  useEffect(() => () => window.clearTimeout(copyTimer.current), [])
   const closeToast = useCallback(() => setToast(null), [])
+
+  const changeAttended = (id: string, attended: boolean) => {
+    setAttended(id, attended).catch(caught => {
+      showAlert(getApiErrorMessage(caught, '출석 상태를 바꾸지 못했어요.'))
+    })
+  }
 
   const keyword = search.trim().toLowerCase()
   const filtered = participants.filter(item => {
@@ -121,20 +144,17 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
     setOpenId(null)
   }
 
-  const registerLink = rosterGroup ? `${window.location.origin}/members/register/${rosterGroup.id}` : ''
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(registerLink)
-      setCopied(true)
-      window.clearTimeout(copyTimer.current)
-      copyTimer.current = window.setTimeout(() => setCopied(false), 2000)
-    } catch {
-      showAlert('링크 복사에 실패했어요.', { description: '잠시 후 다시 시도해주세요.' })
-    }
-  }
-
   const countLabel = filter === 'absent' ? '미출석' : filter === 'attended' ? '출석 완료' : '전체'
+
+  if (loading) return <S.Notice><p>출석 명단을 불러오는 중이에요.</p></S.Notice>
+  if (error) {
+    return (
+      <S.Notice>
+        <p>{error}</p>
+        <button type="button" onClick={() => void reload()}>다시 불러오기</button>
+      </S.Notice>
+    )
+  }
 
   return (
     <>
@@ -172,10 +192,10 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
                 subtitle={subtitleOf(item, filter)}
                 open={openId === item.id}
                 onOpenChange={open => setOpenId(open ? item.id : null)}
-                onAttend={() => { setAttended(item.id, true); setOpenId(null) }}
+                onAttend={() => { changeAttended(item.id, true); setOpenId(null) }}
                 onSwipeAction={() => {
                   setOpenId(null)
-                  if (item.attendedAt !== null) setAttended(item.id, false)
+                  if (item.attendedAt !== null) changeAttended(item.id, false)
                   else setDeleteTarget(item)
                 }}
               />
@@ -189,7 +209,7 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
                 ? '모든 인원이 출석했어요.'
                 : filter === 'attended'
                   ? '아직 출석한 인원이 없어요.'
-                  : '출석 명단이 비어 있어요.'}
+                  : '출석 명단이 비어 있어요. + 인원 추가로 참가자를 넣어 주세요.'}
           </EmptyText>
         )}
       </S.ListSection>
@@ -200,26 +220,20 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
         </S.MoreButton>
       )}
 
-      {filter === 'absent' && rosterGroup && (
-        <LinkCard>
-          <CardTitle>부원 등록 링크</CardTitle>
-          <LinkBox title={registerLink}>
-            <LinkText>{registerLink.replace(/^https?:\/\//, '')}</LinkText>
-          </LinkBox>
-          <CopyButton type="button" onClick={handleCopy}>
-            {copied ? '복사 완료!' : '링크 복사하기'}
-          </CopyButton>
-          <CardDescription>복사한 링크를 부원에게 보내 등록을 받아보세요.</CardDescription>
-        </LinkCard>
-      )}
-
       {showAddSheet && (
         <AttendanceAddSheet
           participants={participants}
-          extraField={getExtraField(rosterGroup)}
+          extraField={PHONE_FIELD}
           onClose={() => setShowAddSheet(false)}
-          onAdd={input => {
-            addParticipant(input)
+          onAdd={async (input, allowSameName) => {
+            let result: 'added' | 'duplicate'
+            try {
+              result = await addParticipant(input, allowSameName)
+            } catch (caught) {
+              showAlert(getApiErrorMessage(caught, '인원을 추가하지 못했어요.'))
+              return 'failed'
+            }
+            if (result === 'duplicate') return 'duplicate'
             setShowAddSheet(false)
             changeFilter('all')
             setSearch('')
@@ -227,6 +241,7 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
               title: `${input.name}님을 추가했어요`,
               description: [input.department, input.extra, '미출석'].filter(Boolean).join(' · '),
             })
+            return 'added'
           }}
         />
       )}
@@ -237,9 +252,14 @@ function AttendanceRoster({ schedule, rosterGroup }: Props & { rosterGroup: Memb
           description={`${deleteTarget.name} 님이 이번 일정의 출석 명단에서 빠져요.\n부원 명단에서는 삭제되지 않아요.`}
           confirmText="삭제"
           onCancel={() => setDeleteTarget(null)}
-          onConfirm={() => {
-            removeParticipant(deleteTarget.id)
+          onConfirm={async () => {
+            const target = deleteTarget
             setDeleteTarget(null)
+            try {
+              await removeParticipant(target.id)
+            } catch (caught) {
+              showAlert(getApiErrorMessage(caught, '참가자를 제외하지 못했어요.'))
+            }
           }}
         />
       )}

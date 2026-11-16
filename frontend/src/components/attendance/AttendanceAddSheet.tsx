@@ -12,7 +12,8 @@ import * as S from '../../styles/attendance/AttendanceAddSheet.styles'
 type Props = {
   participants: Participant[]
   extraField?: AttendanceExtraField
-  onAdd: (input: NewParticipant) => void
+  // 서버 결과: 추가됨 / 같은 이름 있음(다시 확인 필요) / 실패
+  onAdd: (input: NewParticipant, allowSameName: boolean) => Promise<'added' | 'duplicate' | 'failed'>
   onClose: () => void
 }
 
@@ -21,6 +22,7 @@ const lastFour = (value: string) => value.replace(/\D/g, '').slice(-4)
 export default function AttendanceAddSheet({ participants, extraField, onAdd, onClose }: Props) {
   const [form, setForm] = useState<NewParticipant>({ name: '', department: '', extra: '' })
   const [step, setStep] = useState<'form' | 'duplicate'>('form')
+  const [pending, setPending] = useState(false)
 
   const name = form.name.trim()
   const department = form.department.trim()
@@ -29,13 +31,20 @@ export default function AttendanceAddSheet({ participants, extraField, onAdd, on
 
   const duplicates = participants.filter(item => item.name === name)
 
-  const submit = (force = false) => {
-    if (!canSubmit) return
+  const submit = async (force = false) => {
+    if (!canSubmit || pending) return
     if (!force && duplicates.length > 0) {
       setStep('duplicate')
       return
     }
-    onAdd({ name, department, extra: form.extra })
+    setPending(true)
+    try {
+      // 같은 일정의 다른 차수에 같은 이름이 있으면 서버가 알려줌 → 확인 단계로
+      const result = await onAdd({ name, department, extra: form.extra }, force)
+      if (result === 'duplicate') setStep('duplicate')
+    } finally {
+      setPending(false)
+    }
   }
 
   if (step === 'duplicate') {
@@ -50,6 +59,10 @@ export default function AttendanceAddSheet({ participants, extraField, onAdd, on
         )}
         onClose={onClose}
       >
+        {duplicates.length === 0 && (
+          <S.Hint>이 일정의 다른 차수에 같은 이름의 참가자가 있어요.</S.Hint>
+        )}
+
         <S.DuplicateList>
           {duplicates.map(item => {
             const contact = item.extra ?? (item.phone ? lastFour(item.phone) : '')
@@ -68,7 +81,7 @@ export default function AttendanceAddSheet({ participants, extraField, onAdd, on
         </S.DuplicateList>
 
         <S.Hint>같은 이름이지만 다른 사람인가요?</S.Hint>
-        <Button onClick={() => submit(true)}>다른 사람으로 새로 추가</Button>
+        <Button onClick={() => void submit(true)} disabled={pending}>다른 사람으로 새로 추가</Button>
       </BottomSheet>
     )
   }
@@ -81,7 +94,7 @@ export default function AttendanceAddSheet({ participants, extraField, onAdd, on
       description={<>이름이 같은 사람도 구분할 수 있도록<br />{descriptionTarget} 함께 입력해 주세요.</>}
       onClose={onClose}
     >
-      <S.Form onSubmit={event => { event.preventDefault(); submit() }}>
+      <S.Form onSubmit={event => { event.preventDefault(); void submit() }}>
         <FormGroup>
           <Label htmlFor="onsite-name">이름 <S.Required>*</S.Required></Label>
           <Input
@@ -118,7 +131,7 @@ export default function AttendanceAddSheet({ participants, extraField, onAdd, on
         )}
 
         <S.SubmitArea>
-          <Button type="submit" disabled={!canSubmit}>추가하기</Button>
+          <Button type="submit" disabled={!canSubmit || pending}>{pending ? '추가하는 중…' : '추가하기'}</Button>
         </S.SubmitArea>
       </S.Form>
     </BottomSheet>
