@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useLocation} from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import styled from 'styled-components'
 
@@ -53,6 +53,11 @@ function Editor({ meeting }: { meeting: ServerMeeting }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const categoriesApi = useMeetingCategoriesApi()
+  const location = useLocation()
+
+const returnTo = (
+  location.state as { returnTo?: unknown } | null
+)?.returnTo
 
   const [title, setTitle] = useState(meeting.title)
   const [date, setDate] = useState(meeting.meetingDate)
@@ -107,7 +112,10 @@ function Editor({ meeting }: { meeting: ServerMeeting }) {
   )
 
   const backPath =
-    finished
+  typeof returnTo === 'string' &&
+  /^\/schedules\/[1-9]\d*$/.test(returnTo)
+    ? returnTo
+    : meeting.status === 'COMPLETED'
       ? '/operations?type=minute&period=past'
       : '/operations?type=minute'
 

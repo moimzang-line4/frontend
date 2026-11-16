@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router'
 import styled from 'styled-components'
 
 import type { AttachmentMeeting } from '../../hooks/meetings/useScheduleMeetingAttachments'
@@ -40,6 +41,8 @@ const Action = styled(Base.Action)`
 export default function ScheduleMeetingPreview({
   meeting,
 }: Props) {
+  const location = useLocation()
+
   const path =
     `/meetings/${encodeURIComponent(meeting.id)}`
 
@@ -49,6 +52,7 @@ export default function ScheduleMeetingPreview({
     <Card>
       <Base.MainLink
         to={path}
+        state={{ returnTo: location.pathname }}
         aria-label={`${meeting.title} 회의 정보 및 안건 확인`}
       >
         <Base.Top>
