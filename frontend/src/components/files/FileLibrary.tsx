@@ -161,40 +161,39 @@ export default function FileLibrary({
             </S.Summary>
 
             <S.ViewToolbar>
-              {documentView && (
-                <S.ViewOptions role="group" aria-label="보기 형태">
-                  {(
-                    [
-                      ['list', '목록 보기'],
-                      ['grid', '격자 보기'],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <S.ViewButton
-                      key={value}
-                      type="button"
-                      aria-label={label}
-                      aria-pressed={view === value}
-                      onClick={() => setView(value)}
-                    >
-                      <FileViewIcon view={value} />
-                    </S.ViewButton>
-                  ))}
-                </S.ViewOptions>
-              )}
-              <S.DownloadAll
-                type="button"
-                disabled={!visible.length}
-                onClick={() =>
-                  setDownloadSelection({
-                    files: visible,
-                    label: category === '전체' ? '전체 자료' : category,
-                  })
-                }
-              >
-                <img src={downloadIcon} alt="" />
-                전체 다운로드({visible.length})
-              </S.DownloadAll>
-            </S.ViewToolbar>
+  <S.ViewOptions role="group" aria-label="보기 형태">
+    {(
+      [
+        ['list', '목록 보기'],
+        ['grid', '격자 보기'],
+      ] as const
+    ).map(([value, label]) => (
+      <S.ViewButton
+        key={value}
+        type="button"
+        aria-label={label}
+        aria-pressed={view === value}
+        onClick={() => setView(value)}
+      >
+        <FileViewIcon view={value} />
+      </S.ViewButton>
+    ))}
+  </S.ViewOptions>
+
+  <S.DownloadAll
+    type="button"
+    disabled={!visible.length}
+    onClick={() =>
+      setDownloadSelection({
+        files: visible,
+        label: category === '전체' ? '전체 자료' : category,
+      })
+    }
+  >
+    <img src={downloadIcon} alt="" />
+    전체 다운로드({visible.length})
+  </S.DownloadAll>
+</S.ViewToolbar>
 
             {error && (
               <>
@@ -213,7 +212,7 @@ export default function FileLibrary({
                   ? '검색 조건에 맞는 자료가 없어요.'
                   : '등록된 자료가 없어요. 파일을 첨부해보세요.'}
               </S.Empty>
-            ) : documentView && view === 'grid' ? (
+            ) : view === 'grid' ? (
               <S.Grid>
                 {visible.map((file) => (
                   <S.GridCard key={file.id}>
