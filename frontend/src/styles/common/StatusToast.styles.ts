@@ -6,8 +6,8 @@ const enter = keyframes`
 `
 
 const countdown = keyframes`
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 `
 
 export const Progress = styled.div<{ $duration: number }>`

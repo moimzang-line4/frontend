@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 
-import type { ScheduleFile } from '../../types/files/file'
 import type { OfficePreview as OfficeContent } from '../../types/files/preview'
 import { readOfficePreview } from '../../utils/files/officePreview'
 
 import * as S from '../../styles/files/FilePreviewPage.styles'
 
 export default function OfficePreview({
-  file,
+  name,
+  blob,
 }: {
-  file: ScheduleFile
+  name: string
+  blob: Blob
 }) {
   const [content, setContent] = useState<OfficeContent | null>(null)
   const [error, setError] = useState('')
@@ -19,8 +20,8 @@ export default function OfficePreview({
     let active = true
 
     void readOfficePreview(
-      file.blob,
-      file.name.split('.').pop()?.toLowerCase() ?? '',
+      blob,
+      name.split('.').pop()?.toLowerCase() ?? '',
     )
       .then(value => {
         if (active) {
@@ -40,7 +41,7 @@ export default function OfficePreview({
     return () => {
       active = false
     }
-  }, [file])
+  }, [blob, name])
 
   if (error) {
     return <S.Notice role="alert">{error}</S.Notice>

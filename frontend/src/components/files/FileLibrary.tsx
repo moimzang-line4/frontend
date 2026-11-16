@@ -231,7 +231,7 @@ export default function FileLibrary({
                             height={12}
                           />
                           {file.name.split('.').pop()?.toUpperCase()} ·{' '}
-                          {sizeLabel(file.blob.size)}
+                          {sizeLabel(file.size)}
                         </S.ThumbnailLabel>
                       </S.Thumbnail>
                       <strong>{file.name}</strong>
@@ -272,7 +272,7 @@ export default function FileLibrary({
                         <strong>{file.name}</strong>
                         <small>
                           {file.category} · {dateLabel(file.createdAt)} ·{' '}
-                          {sizeLabel(file.blob.size)}
+                          {sizeLabel(file.size)}
                         </small>
                       </span>
                     </S.FileButton>

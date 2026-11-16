@@ -53,7 +53,7 @@ export default function LedgerSourceCard({ ledger }: { ledger: Ledger }) {
               <strong>{file.name}</strong>
               <small>
                 장부 · {fileDateLabel(file.createdAt)} ·{' '}
-                {fileSizeLabel(file.blob.size)}
+                {fileSizeLabel(file.size)}
               </small>
             </span>
           </S.FileButton>

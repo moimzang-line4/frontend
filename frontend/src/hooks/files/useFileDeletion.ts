@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { ScheduleFile } from '../../types/files/file'
-import { saveFiles } from '../../utils/files/storage'
+import { restoreFile } from '../../api/generated'
+import { notifyFilesChanged } from '../../utils/files/remote'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 
 type DeletionState = {
   file: ScheduleFile | null
@@ -55,14 +57,15 @@ export async function undoFileDeletion(token: string) {
   useFileDeletion.setState({ restoring: true, error: '' })
 
   try {
-    await saveFiles([state.file])
+    const response = await restoreFile(Number(state.file.id), { timeout: 15000 })
+    if (response.data.success !== true) throw new Error(response.data.message || '파일을 복구하지 못했어요.')
     clearFileDeletion(token)
+    notifyFilesChanged()
   } catch (cause) {
     if (useFileDeletion.getState().token !== token) return
     useFileDeletion.setState({
       restoring: false,
-      error:
-        cause instanceof Error ? cause.message : '파일을 복구하지 못했어요.',
+      error: getApiErrorMessage(cause, '파일을 복구하지 못했어요.'),
     })
   }
 }
