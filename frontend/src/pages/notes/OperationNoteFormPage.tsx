@@ -8,10 +8,12 @@ import NoteTypeSheet from '../../components/notes/NoteTypeSheet'
 import NoteUnavailable from '../../components/notes/NoteUnavailable'
 
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
-import useOperationNotes from '../../hooks/notes/useOperationNotes'
+import useServerOperationNotes from '../../hooks/notes/useServerOperationNotes'
 import useCreateServerNote from '../../hooks/notes/useCreateServerNote'
+import useServerNoteActions from '../../hooks/notes/useServerNoteActions'
 
 import { noteTypeInfo } from '../../constants/notes/noteTypes'
+
 import type {
   NoteType,
   OperationNote,
@@ -29,10 +31,23 @@ function NoteForm({
   note?: OperationNote
 }) {
   const navigate = useNavigate()
-  const { update, remove } = useOperationNotes(scheduleId)
-  const { save, pending } = useCreateServerNote(scheduleId)
 
-  const [type, setType] = useState<NoteType | undefined>(note?.type)
+  const {
+    save,
+    pending: creating,
+  } = useCreateServerNote(scheduleId)
+
+  const {
+    update,
+    remove,
+    pending: changing,
+  } = useServerNoteActions(scheduleId)
+
+  const pending = creating || changing
+
+  const [type, setType] = useState<NoteType | undefined>(
+    note?.type,
+  )
   const [title, setTitle] = useState(note?.title ?? '')
   const [assignee, setAssignee] = useState(note?.assignee ?? '')
   const [content, setContent] = useState(note?.content ?? '')
@@ -44,150 +59,172 @@ function NoteForm({
   const listPath =
     `/schedules/${encodeURIComponent(scheduleId)}/operations/notes`
 
-  const canSubmit = !!(type && title.trim() && content.trim())
+  const canSubmit = !!(
+    type &&
+    title.trim() &&
+    content.trim()
+  )
 
   async function submit(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault()
+    event.preventDefault()
 
-  if (!type || !canSubmit || pending) return
+    if (!type || !canSubmit || pending) return
 
-  setError('')
+    setError('')
 
-  try {
-    const values = {
-      type,
-      title,
-      assignee,
-      content,
+    try {
+      const values = {
+        type,
+        title,
+        assignee,
+        content,
+      }
+
+      if (note) {
+        await update(note, values)
+      } else {
+        await save(values)
+      }
+
+      navigate(listPath, { replace: true })
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : '메모를 저장하지 못했어요.',
+      )
     }
-
-    if (note) {
-      update(note.id, values)
-    } else {
-      await save(values)
-    }
-
-    navigate(listPath, { replace: true })
-  } catch (caught) {
-    setError(
-      caught instanceof Error
-        ? caught.message
-        : '메모를 저장하지 못했어요.',
-    )
   }
-}
 
   return (
     <S.Page>
       <Header
         title="메모 작성"
-        onBack={() => navigate(listPath)}
+        onBack={() => {
+          if (!pending) navigate(listPath)
+        }}
       />
 
       <S.FormContent>
-        <S.Form onSubmit={submit}>
-          <S.FormCard>
-            <S.Row>
-              <span>
-                메모 유형 <S.Required>*</S.Required>
-              </span>
+        <S.Form
+          onSubmit={event => void submit(event)}
+          aria-busy={pending}
+        >
+          <fieldset
+            disabled={pending}
+            style={{ display: 'contents' }}
+          >
+            <S.FormCard>
+              <S.Row>
+                <span>
+                  메모 유형 <S.Required>*</S.Required>
+                </span>
 
-              <S.TypeButton
-                type="button"
-                aria-label={`메모 유형: ${
-                  type ? noteTypeInfo(type).label : '선택해 주세요'
-                }`}
-                aria-haspopup="dialog"
-                aria-expanded={typeOpen}
-                onClick={() => setTypeOpen(true)}
-              >
-                {type ? noteTypeInfo(type).label : '선택해 주세요'}
+                <S.TypeButton
+                  type="button"
+                  aria-label={`메모 유형: ${
+                    type
+                      ? noteTypeInfo(type).label
+                      : '선택해 주세요'
+                  }`}
+                  aria-haspopup="dialog"
+                  aria-expanded={typeOpen}
+                  onClick={() => setTypeOpen(true)}
+                >
+                  {type
+                    ? noteTypeInfo(type).label
+                    : '선택해 주세요'}
 
-                <img
-                  src={chevronIcon}
-                  alt=""
-                  width={24}
-                  height={24}
-                />
-              </S.TypeButton>
-            </S.Row>
+                  <img
+                    src={chevronIcon}
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
+                </S.TypeButton>
+              </S.Row>
 
-            <S.Row>
-              <label htmlFor="note-title">
-                제목 <S.Required>*</S.Required>
-              </label>
-
-              <input
-                id="note-title"
-                aria-label="제목"
-                required
-                maxLength={50}
-                placeholder="메모 제목을 입력해주세요"
-                value={title}
-                onChange={event => setTitle(event.target.value)}
-              />
-            </S.Row>
-
-            <S.Row>
-              <label htmlFor="note-assignee">
-                담당자
-              </label>
-
-              <input
-                id="note-assignee"
-                maxLength={100}
-                placeholder="예: 김가은, 홍보팀"
-                value={assignee}
-                onChange={event => setAssignee(event.target.value)}
-              />
-            </S.Row>
-
-            <S.BodyField>
-              <S.BodyHeading>
-                <label htmlFor="note-content">
-                  내용 <S.Required>*</S.Required>
+              <S.Row>
+                <label htmlFor="note-title">
+                  제목 <S.Required>*</S.Required>
                 </label>
 
-                <span>{content.length}/100</span>
-              </S.BodyHeading>
+                <input
+                  id="note-title"
+                  aria-label="제목"
+                  required
+                  maxLength={100}
+                  value={title}
+                  onChange={event =>
+                    setTitle(event.target.value)
+                  }
+                />
+              </S.Row>
 
-              <S.Textarea
-                id="note-content"
-                aria-label="내용"
-                required
-                maxLength={100}
-                placeholder="준비 사항, 아이디어, 결정 사항을 자유롭게 기록해 주세요."
-                value={content}
-                onChange={event => setContent(event.target.value)}
-              />
-            </S.BodyField>
-          </S.FormCard>
+              <S.Row>
+                <label htmlFor="note-assignee">
+                  담당자
+                </label>
 
-          {error && (
-            <S.Error role="alert">
-              {error}
-            </S.Error>
-          )}
+                <input
+                  id="note-assignee"
+                  maxLength={50}
+                  value={assignee}
+                  onChange={event =>
+                    setAssignee(event.target.value)
+                  }
+                />
+              </S.Row>
 
-          <S.Submit
-  type="submit"
-  disabled={!canSubmit || pending}
->
-  {pending
-    ? '저장 중…'
-    : note
-      ? '수정하기'
-      : '등록하기'}
-</S.Submit>
+              <S.BodyField>
+                <S.BodyHeading>
+                  <label htmlFor="note-content">
+                    내용 <S.Required>*</S.Required>
+                  </label>
 
-          {note && (
-            <S.Delete
-              type="button"
-              onClick={() => setDeleteOpen(true)}
+                  <span>{content.length}/100</span>
+                </S.BodyHeading>
+
+                <S.Textarea
+                  id="note-content"
+                  aria-label="내용"
+                  required
+                  maxLength={100}
+                  value={content}
+                  onChange={event =>
+                    setContent(event.target.value)
+                  }
+                />
+              </S.BodyField>
+            </S.FormCard>
+
+            {error && (
+              <S.Error role="alert">
+                {error}
+              </S.Error>
+            )}
+
+            <S.Submit
+              type="submit"
+              disabled={!canSubmit || pending}
             >
-              삭제하기
-            </S.Delete>
-          )}
+              {pending
+                ? '저장 중…'
+                : note
+                  ? '수정하기'
+                  : '등록하기'}
+            </S.Submit>
+
+            {note && (
+              <S.Delete
+                type="button"
+                disabled={pending}
+                onClick={() => setDeleteOpen(true)}
+              >
+                삭제하기
+              </S.Delete>
+            )}
+          </fieldset>
         </S.Form>
       </S.FormContent>
 
@@ -204,11 +241,13 @@ function NoteForm({
         title="메모를 삭제할까요?"
         description="삭제한 메모는 복구할 수 없어요."
         confirmText="삭제하기"
-        onCancel={() => setDeleteOpen(false)}
-        onConfirm={() => {
-          if (note) {
-            remove(note.id)
-          }
+        onCancel={() => {
+          if (!pending) setDeleteOpen(false)
+        }}
+        onConfirm={async () => {
+          if (!note || pending) return
+
+          await remove(note.id)
 
           navigate(listPath, { replace: true })
         }}
@@ -218,11 +257,59 @@ function NoteForm({
 }
 
 export default function OperationNoteFormPage() {
+  const navigate = useNavigate()
   const { noteId } = useParams()
-  const { schedule } = useScheduleDetail()
-  const { notes } = useOperationNotes(schedule?.id ?? '')
 
-  if (!schedule || schedule.operationMenuCount === undefined) {
+  const detail = useScheduleDetail()
+  const { schedule } = detail
+
+  const data = useServerOperationNotes(
+    noteId && schedule?.operationMenuCount !== undefined
+      ? schedule.id
+      : '',
+    'all',
+    '',
+  )
+
+  const listPath = schedule
+    ? `/schedules/${encodeURIComponent(schedule.id)}/operations/notes`
+    : '/operations'
+
+  if (!schedule) {
+    return (
+      <S.Page>
+        <Header
+          title="메모 작성"
+          onBack={() => navigate('/operations')}
+        />
+
+        <S.Notice>
+          {detail.loading ? (
+            <p role="status">
+              일정을 불러오는 중이에요.
+            </p>
+          ) : (
+            <>
+              <S.Error role="alert">
+                {detail.errorMessage ||
+                  '일정을 찾을 수 없어요.'}
+              </S.Error>
+
+              <S.Delete
+                type="button"
+                disabled={detail.refreshing}
+                onClick={() => void detail.reload()}
+              >
+                다시 불러오기
+              </S.Delete>
+            </>
+          )}
+        </S.Notice>
+      </S.Page>
+    )
+  }
+
+  if (schedule.operationMenuCount === undefined) {
     return (
       <NoteUnavailable
         title="메모 작성"
@@ -232,17 +319,50 @@ export default function OperationNoteFormPage() {
     )
   }
 
-  const note = notes.find(item => item.id === noteId)
+  if (noteId && data.loading) {
+    return (
+      <S.Page>
+        <Header
+          title="메모 작성"
+          onBack={() => navigate(listPath)}
+        />
+
+        <S.Notice>
+          <p role="status">
+            메모를 불러오는 중이에요.
+          </p>
+        </S.Notice>
+      </S.Page>
+    )
+  }
+
+  const note = noteId
+    ? data.notes.find(item => item.id === noteId)
+    : undefined
 
   if (noteId && !note) {
     return (
-      <NoteUnavailable
-        title="메모 작성"
-        message="메모를 찾을 수 없어요"
-        backPath={
-          `/schedules/${encodeURIComponent(schedule.id)}/operations/notes`
-        }
-      />
+      <S.Page>
+        <Header
+          title="메모 작성"
+          onBack={() => navigate(listPath)}
+        />
+
+        <S.Notice>
+          <S.Error role="alert">
+            {data.errorMessage ||
+              '삭제되었거나 존재하지 않는 메모예요.'}
+          </S.Error>
+
+          <S.Delete
+            type="button"
+            disabled={data.refreshing}
+            onClick={() => void data.reload()}
+          >
+            다시 불러오기
+          </S.Delete>
+        </S.Notice>
+      </S.Page>
     )
   }
 
