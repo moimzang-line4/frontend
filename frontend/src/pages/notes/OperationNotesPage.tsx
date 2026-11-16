@@ -1,13 +1,18 @@
 import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+} from 'react-router'
 
 import Header from '../../layouts/Header'
 import Footer from '../../layouts/Footer'
+
 import OperationNoteCard from '../../components/notes/OperationNoteCard'
 import NoteUnavailable from '../../components/notes/NoteUnavailable'
 
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
-import useOperationNotes from '../../hooks/notes/useOperationNotes'
+import useServerOperationNotes from '../../hooks/notes/useServerOperationNotes'
 
 import { noteTypes } from '../../constants/notes/noteTypes'
 import searchIcon from '../../assets/notes/search.svg'
@@ -16,19 +21,65 @@ import * as S from '../../styles/notes/NotesPage.styles'
 
 export default function OperationNotesPage() {
   const navigate = useNavigate()
-  const { schedule } = useScheduleDetail()
-  const { notes } = useOperationNotes(schedule?.id ?? '')
+  const detail = useScheduleDetail()
+  const { schedule } = detail
 
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState('')
 
-  const selectedType = noteTypes.some(
-    type => type.value === params.get('type'),
-  )
-    ? params.get('type')!
-    : 'all'
+  const selectedType =
+    noteTypes.find(
+      type => type.value === params.get('type'),
+    )?.value ?? 'all'
 
-  if (!schedule || schedule.operationMenuCount === undefined) {
+  const data = useServerOperationNotes(
+    schedule?.operationMenuCount !== undefined
+      ? schedule.id
+      : '',
+    selectedType,
+    query,
+  )
+
+  if (!schedule) {
+    return (
+      <S.Page $footer>
+        <Header
+          title="운영 메모"
+          onBack={() => navigate('/operations')}
+        />
+
+        <S.Notice>
+          {detail.loading ? (
+            <p role="status">
+              일정을 불러오는 중이에요.
+            </p>
+          ) : (
+            <>
+              <S.Error role="alert">
+                {detail.errorMessage ||
+                  '일정을 찾을 수 없어요.'}
+              </S.Error>
+
+              <S.Filter
+                type="button"
+                $active={false}
+                disabled={detail.refreshing}
+                onClick={() => void detail.reload()}
+              >
+                {detail.refreshing
+                  ? '불러오는 중…'
+                  : '다시 불러오기'}
+              </S.Filter>
+            </>
+          )}
+        </S.Notice>
+
+        <Footer />
+      </S.Page>
+    )
+  }
+
+  if (schedule.operationMenuCount === undefined) {
     return (
       <NoteUnavailable
         title="운영 메모"
@@ -40,22 +91,6 @@ export default function OperationNotesPage() {
 
   const basePath =
     `/schedules/${encodeURIComponent(schedule.id)}/operations/notes`
-
-  const keyword = query.trim().toLocaleLowerCase()
-
-  const filtered = notes
-    .filter(
-      note =>
-        (selectedType === 'all' || note.type === selectedType) &&
-        `${note.title} ${note.content} ${note.assignee}`
-          .toLocaleLowerCase()
-          .includes(keyword),
-    )
-    .sort(
-      (a, b) =>
-        b.updatedAt.localeCompare(a.updatedAt) ||
-        a.title.localeCompare(b.title, 'ko'),
-    )
 
   function selectType(type: string) {
     setParams(
@@ -79,7 +114,9 @@ export default function OperationNotesPage() {
       <Header
         title="운영 메모장"
         onBack={() =>
-          navigate(`/schedules/${encodeURIComponent(schedule.id)}`)
+          navigate(
+            `/schedules/${encodeURIComponent(schedule.id)}`,
+          )
         }
       />
 
@@ -97,12 +134,17 @@ export default function OperationNotesPage() {
             aria-label="메모 검색"
             placeholder="메모 제목, 내용, 담당자 검색"
             value={query}
-            onChange={event => setQuery(event.target.value)}
+            onChange={event =>
+              setQuery(event.target.value)
+            }
           />
         </S.Search>
 
         <S.Filters aria-label="메모 유형 필터">
-          {[{ value: 'all', label: '전체' }, ...noteTypes].map(type => (
+          {[
+            { value: 'all', label: '전체' },
+            ...noteTypes,
+          ].map(type => (
             <S.Filter
               key={type.value}
               type="button"
@@ -116,16 +158,39 @@ export default function OperationNotesPage() {
         </S.Filters>
 
         <S.Heading>
-          <h2>메모 목록 {filtered.length}</h2>
+          <h2>메모 목록 {data.totalCount}</h2>
 
           <Link to={`${basePath}/new`}>
             + 새 메모
           </Link>
         </S.Heading>
 
-        {filtered.length ? (
+        {data.errorMessage && (
+          <div>
+            <S.Error role="alert">
+              {data.errorMessage}
+            </S.Error>
+
+            <S.Filter
+              type="button"
+              $active={false}
+              disabled={data.refreshing}
+              onClick={() => void data.reload()}
+            >
+              {data.refreshing
+                ? '불러오는 중…'
+                : '다시 불러오기'}
+            </S.Filter>
+          </div>
+        )}
+
+        {data.loading ? (
+          <S.Empty role="status">
+            운영 메모를 불러오는 중이에요.
+          </S.Empty>
+        ) : data.notes.length ? (
           <S.List aria-label="운영 메모 목록">
-            {filtered.map(note => (
+            {data.notes.map(note => (
               <li key={note.id}>
                 <OperationNoteCard
                   note={note}
@@ -134,15 +199,15 @@ export default function OperationNotesPage() {
               </li>
             ))}
           </S.List>
-        ) : (
+        ) : !data.errorMessage ? (
           <S.Empty>
-            {keyword
+            {query.trim()
               ? '검색 결과가 없어요.'
               : selectedType === 'all'
-                ? '아직 등록된 운영 메모가 없어요. 새 메모를 작성해 보세요.'
+                ? '아직 등록된 운영 메모가 없어요.'
                 : '이 유형의 운영 메모가 없어요.'}
           </S.Empty>
-        )}
+        ) : null}
       </S.ListContent>
 
       <Footer />

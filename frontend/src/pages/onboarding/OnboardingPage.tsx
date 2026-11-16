@@ -4,6 +4,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import useOnboardingSlider from '../../hooks/onboarding/useOnboardingSlider'
 import useOnboarding from '../../hooks/onboarding/useOnboarding'
 import OnboardingIllustration from '../../components/onboarding/OnboardingIllustration'
+import hasServerGroup from '../../utils/groups/hasServerGroup'
 
 import wave from '../../assets/onboarding/wave.svg'
 
@@ -73,9 +74,17 @@ export default function OnboardingPage() {
   }
 
   if (onboarding.completed && !replay) {
-    return <Navigate to={onboarding.group ? '/' : '/groups/new'} replace />
-  }
-
+  return (
+    <Navigate
+      to={
+        hasServerGroup(onboarding.group)
+          ? '/'
+          : '/groups/new'
+      }
+      replace
+    />
+  )
+}
   if (phase !== 'slides') {
     return (
       <S.Splash
