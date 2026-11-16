@@ -8,6 +8,12 @@ import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
 import * as S from '../../styles/settings/SettingsPage.styles'
 
+const menuArrow = (
+  <S.MenuArrow width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+    <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </S.MenuArrow>
+)
+
 type Modal = 'leave' | null
 
 export default function SettingsPage() {
@@ -46,6 +52,7 @@ export default function SettingsPage() {
               }
             >
               그룹 정보 수정
+              {menuArrow}
             </S.MenuButton>
 
             <S.MenuButton
@@ -57,6 +64,7 @@ export default function SettingsPage() {
               }
             >
               운영진 관리
+              {menuArrow}
             </S.MenuButton>
 
             <S.MenuButton
@@ -68,6 +76,7 @@ export default function SettingsPage() {
               }
             >
               초대 링크 관리
+              {menuArrow}
             </S.MenuButton>
           </S.Menu>
         </S.Section>

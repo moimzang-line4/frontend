@@ -77,7 +77,7 @@ export default function OperationNotesPage() {
   return (
     <S.Page $footer>
       <Header
-        title="운영 메모"
+        title="운영 메모장"
         onBack={() =>
           navigate(`/schedules/${encodeURIComponent(schedule.id)}`)
         }

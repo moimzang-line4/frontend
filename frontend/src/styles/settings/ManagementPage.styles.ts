@@ -74,6 +74,7 @@ export const More = styled.button`
   width: 44px;
   height: 44px;
   margin: -10px -15px -10px 0;
+  flex-shrink: 0;
   cursor: pointer;
 `
 export const SheetActions = styled.div`

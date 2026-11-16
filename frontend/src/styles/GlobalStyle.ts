@@ -103,6 +103,8 @@ export const GlobalStyle = createGlobalStyle`
     tab-size: 4;
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
+    /* 시트·모달이 열려 스크롤이 잠겨도 스크롤바 자리를 남겨 화면이 옆으로 밀리지 않게 */
+    scrollbar-gutter: stable;
   }
   h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
   a { color: inherit; text-decoration: inherit; }

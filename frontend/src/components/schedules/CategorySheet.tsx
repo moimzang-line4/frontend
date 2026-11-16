@@ -11,8 +11,11 @@ export default function CategorySheet({ selectedId, onSelect, onClose }: Props) 
   const nameRef = useRef<HTMLInputElement>(null)
   const [closing, setClosing] = useState(false)
   const [adding, setAdding] = useState(false)
+  // 이름 수정 중인 카테고리 id
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const editRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState('')
-  const { categories, addCategory } = useCategories()
+  const { categories, addCategory, renameCategory } = useCategories()
 
   useEffect(() => {
     ref.current?.showModal()
@@ -27,6 +30,7 @@ export default function CategorySheet({ selectedId, onSelect, onClose }: Props) 
     return () => window.clearTimeout(timer)
   }, [closing])
   useEffect(() => { if (adding) nameRef.current?.focus() }, [adding])
+  useEffect(() => { if (editingId) editRef.current?.select() }, [editingId])
 
   function choose(option: CategoryOption) {
     if (closing) return
@@ -46,10 +50,37 @@ export default function CategorySheet({ selectedId, onSelect, onClose }: Props) 
         <strong>새 카테고리를 추가해주세요</strong>
         <p>모임에 맞는 카테고리를 추가해 보세요.</p>
       </S.EmptyState> : <S.Options aria-label="카테고리 목록">
-        {categories.map(option => (
-          <S.Option key={option.id} type="button" $selected={selectedId === option.id} aria-pressed={selectedId === option.id} onClick={() => choose(option)}>
-            <span>{option.label}</span>{selectedId === option.id && <img src={checkIcon} alt="" width={22} height={22} />}
-          </S.Option>
+        {categories.map(option => editingId === option.id ? (
+          <S.EditRow key={option.id} onSubmit={event => {
+            event.preventDefault()
+            const name = editRef.current?.value.trim()
+            if (!name) return
+            try {
+              const renamed = renameCategory(option.id, name)
+              // 선택된 카테고리를 고쳤으면 폼에 보이는 이름도 바로 바꾸기
+              if (selectedId === option.id) onSelect(renamed)
+              setEditingId(null)
+              setError('')
+            } catch (err) {
+              setError(err instanceof Error && err.message ? err.message : '카테고리를 저장하지 못했어요.')
+            }
+          }}>
+            <input ref={editRef} aria-label={`${option.label} 카테고리 이름 수정`} defaultValue={option.label} required maxLength={30} />
+            <button type="submit">저장</button>
+            <button type="button" onClick={() => { setEditingId(null); setError('') }}>취소</button>
+          </S.EditRow>
+        ) : (
+          <S.OptionRow key={option.id} $selected={selectedId === option.id}>
+            <S.Option type="button" $selected={selectedId === option.id} aria-pressed={selectedId === option.id} onClick={() => choose(option)}>
+              <span>{option.label}</span>{selectedId === option.id && <img src={checkIcon} alt="" width={22} height={22} />}
+            </S.Option>
+            <S.EditButton type="button" aria-label={`${option.label} 카테고리 이름 수정`} onClick={() => { setAdding(false); setError(''); setEditingId(option.id) }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 20h4L18.5 9.5a2.83 2.83 0 0 0-4-4L4 16v4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+            </S.EditButton>
+          </S.OptionRow>
         ))}
       </S.Options>}
       {adding ? <S.AddForm onSubmit={event => {
@@ -62,7 +93,7 @@ export default function CategorySheet({ selectedId, onSelect, onClose }: Props) 
         <input ref={nameRef} aria-label="새 카테고리 이름" placeholder="카테고리 이름" required maxLength={30} />
         <button type="submit">추가</button>
         <button type="button" onClick={() => setAdding(false)}>취소</button>
-      </S.AddForm> : <S.AddButton type="button" onClick={() => setAdding(true)}>＋ 새 카테고리 추가</S.AddButton>}
+      </S.AddForm> : <S.AddButton type="button" onClick={() => { setEditingId(null); setAdding(true) }}>＋ 새 카테고리 추가</S.AddButton>}
       {error && <S.Error role="alert">{error}</S.Error>}
     </S.Sheet>
   )
