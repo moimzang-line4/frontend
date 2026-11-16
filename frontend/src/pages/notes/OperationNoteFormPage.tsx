@@ -9,6 +9,7 @@ import NoteUnavailable from '../../components/notes/NoteUnavailable'
 
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
 import useOperationNotes from '../../hooks/notes/useOperationNotes'
+import useCreateServerNote from '../../hooks/notes/useCreateServerNote'
 
 import { noteTypeInfo } from '../../constants/notes/noteTypes'
 import type {
@@ -28,7 +29,8 @@ function NoteForm({
   note?: OperationNote
 }) {
   const navigate = useNavigate()
-  const { create, update, remove } = useOperationNotes(scheduleId)
+  const { update, remove } = useOperationNotes(scheduleId)
+  const { save, pending } = useCreateServerNote(scheduleId)
 
   const [type, setType] = useState<NoteType | undefined>(note?.type)
   const [title, setTitle] = useState(note?.title ?? '')
@@ -44,29 +46,36 @@ function NoteForm({
 
   const canSubmit = !!(type && title.trim() && content.trim())
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function submit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault()
 
-    if (!type || !canSubmit) return
+  if (!type || !canSubmit || pending) return
 
-    try {
-      const values = { type, title, assignee, content }
+  setError('')
 
-      if (note) {
-        update(note.id, values)
-      } else {
-        create(values)
-      }
-
-      navigate(listPath, { replace: true })
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : '메모를 저장하지 못했어요. 다시 시도해주세요.',
-      )
+  try {
+    const values = {
+      type,
+      title,
+      assignee,
+      content,
     }
+
+    if (note) {
+      update(note.id, values)
+    } else {
+      await save(values)
+    }
+
+    navigate(listPath, { replace: true })
+  } catch (caught) {
+    setError(
+      caught instanceof Error
+        ? caught.message
+        : '메모를 저장하지 못했어요.',
+    )
   }
+}
 
   return (
     <S.Page>
@@ -112,7 +121,7 @@ function NoteForm({
                 id="note-title"
                 aria-label="제목"
                 required
-                maxLength={80}
+                maxLength={50}
                 placeholder="메모 제목을 입력해주세요"
                 value={title}
                 onChange={event => setTitle(event.target.value)}
@@ -161,11 +170,15 @@ function NoteForm({
           )}
 
           <S.Submit
-            type="submit"
-            disabled={!canSubmit}
-          >
-            {note ? '수정하기' : '등록하기'}
-          </S.Submit>
+  type="submit"
+  disabled={!canSubmit || pending}
+>
+  {pending
+    ? '저장 중…'
+    : note
+      ? '수정하기'
+      : '등록하기'}
+</S.Submit>
 
           {note && (
             <S.Delete
