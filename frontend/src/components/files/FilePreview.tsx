@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 
 import type { ScheduleFile } from '../../types/files/file'
 import { previewKind } from '../../utils/files/preview'
+import useFileBlob from '../../hooks/files/useFileBlob'
 
 import * as S from '../../styles/files/FilePreviewPage.styles'
 
@@ -14,8 +15,31 @@ export default function FilePreview({
   file: ScheduleFile
 }) {
   const kind = previewKind(file)
+  const supported = kind !== 'unsupported' && !(kind === 'text' && file.size > TEXT_LIMIT)
+  // 미리보기 가능한 형식만 서버에서 내용을 받아옴
+  const { blob, error } = useFileBlob(file, supported)
 
-  if (kind === 'pdf') {
+  if (kind === 'text' && file.size > TEXT_LIMIT) {
+    return (
+      <S.Notice>
+        2MB가 넘는 텍스트 파일은 다운로드해서 확인해주세요.
+      </S.Notice>
+    )
+  }
+
+  if (supported && error) {
+    return <S.Notice role="alert">{error}</S.Notice>
+  }
+
+  if (supported && !blob) {
+    return (
+      <S.Notice role="status">
+        자료를 불러오는 중이에요.
+      </S.Notice>
+    )
+  }
+
+  if (kind === 'pdf' && blob) {
     return (
       <Suspense
         fallback={
@@ -24,12 +48,12 @@ export default function FilePreview({
           </S.Notice>
         }
       >
-        <PdfPreview blob={file.blob} />
+        <PdfPreview blob={blob} />
       </Suspense>
     )
   }
 
-  if (kind === 'office') {
+  if (kind === 'office' && blob) {
     return (
       <Suspense
         fallback={
@@ -38,21 +62,22 @@ export default function FilePreview({
           </S.Notice>
         }
       >
-        <OfficePreview file={file} />
+        <OfficePreview name={file.name} blob={blob} />
       </Suspense>
     )
   }
 
-  if (kind === 'text') {
-    return <TextPreview file={file} />
+  if (kind === 'text' && blob) {
+    return <TextPreview name={file.name} blob={blob} />
   }
 
   if (
-    kind === 'image' ||
-    kind === 'audio' ||
-    kind === 'video'
+    (kind === 'image' ||
+      kind === 'audio' ||
+      kind === 'video') &&
+    blob
   ) {
-    return <MediaPreview file={file} kind={kind} />
+    return <MediaPreview name={file.name} blob={blob} kind={kind} />
   }
 
   return (
@@ -63,18 +88,20 @@ export default function FilePreview({
   )
 }
 
-function TextPreview({ file }: { file: ScheduleFile }) {
+const TEXT_LIMIT = 2 * 1024 * 1024
+
+function TextPreview({ name, blob }: { name: string; blob: Blob }) {
   const [text, setText] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
 
-    if (file.blob.size <= 2 * 1024 * 1024) {
-      void file.blob
+    if (blob.size <= TEXT_LIMIT) {
+      void blob
         .text()
         .then(value => {
-          if (file.name.toLowerCase().endsWith('.json')) {
+          if (name.toLowerCase().endsWith('.json')) {
             try {
               value = JSON.stringify(JSON.parse(value), null, 2)
             } catch {
@@ -98,9 +125,9 @@ function TextPreview({ file }: { file: ScheduleFile }) {
     return () => {
       active = false
     }
-  }, [file])
+  }, [blob, name])
 
-  if (file.blob.size > 2 * 1024 * 1024) {
+  if (blob.size > TEXT_LIMIT) {
     return (
       <S.Notice>
         2MB가 넘는 텍스트 파일은 다운로드해서 확인해주세요.
@@ -132,10 +159,12 @@ function TextPreview({ file }: { file: ScheduleFile }) {
 }
 
 function MediaPreview({
-  file,
+  name,
+  blob,
   kind,
 }: {
-  file: ScheduleFile
+  name: string
+  blob: Blob
   kind: 'image' | 'audio' | 'video'
 }) {
   const imageRef = useRef<HTMLImageElement>(null)
@@ -145,7 +174,7 @@ function MediaPreview({
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const url = URL.createObjectURL(file.blob)
+    const url = URL.createObjectURL(blob)
     const media =
       kind === 'audio' ? audioRef.current : videoRef.current
 
@@ -164,7 +193,7 @@ function MediaPreview({
 
       URL.revokeObjectURL(url)
     }
-  }, [file, kind])
+  }, [blob, kind])
 
   const failed = () => {
     setError(
@@ -178,7 +207,7 @@ function MediaPreview({
         {kind === 'image' ? (
           <img
             ref={imageRef}
-            alt={file.name}
+            alt={name}
             onError={failed}
           />
         ) : kind === 'audio' ? (
@@ -186,7 +215,7 @@ function MediaPreview({
             ref={audioRef}
             controls
             preload="metadata"
-            aria-label={file.name}
+            aria-label={name}
             onError={failed}
           />
         ) : (
@@ -195,7 +224,7 @@ function MediaPreview({
             controls
             playsInline
             preload="metadata"
-            aria-label={file.name}
+            aria-label={name}
             onError={failed}
           />
         )}

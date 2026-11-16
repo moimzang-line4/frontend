@@ -2,7 +2,9 @@ import { useState } from 'react'
 import FilePreview from './FilePreview'
 import FileActionsSheet from './FileActionsSheet'
 import type { ScheduleFile } from '../../types/files/file'
-import { downloadBlob } from '../../utils/files/download'
+import { downloadRemoteFile } from '../../utils/files/remote'
+import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import { fileSizeLabel } from '../../utils/files/format'
 import backIcon from '../../assets/navigation/back.svg'
 import downloadIcon from '../../assets/files/preview-download.svg'
@@ -39,7 +41,11 @@ export default function FileViewer({
             <S.IconButton
               type="button"
               aria-label="파일 다운로드"
-              onClick={() => downloadBlob(file.blob, file.name)}
+              onClick={() => {
+                downloadRemoteFile(file).catch(caught => {
+                  showAlert(getApiErrorMessage(caught, '파일을 다운로드하지 못했어요.'))
+                })
+              }}
             >
               <img src={downloadIcon} alt="" width={22} height={22} />
             </S.IconButton>
@@ -71,7 +77,7 @@ export default function FileViewer({
               {file.name.includes('.')
                 ? file.name.split('.').pop()?.toUpperCase()
                 : '파일'}{' '}
-              · {fileSizeLabel(file.blob.size)}
+              · {fileSizeLabel(file.size)}
             </S.Info>
             <FilePreview key={file.id} file={file} />
           </>

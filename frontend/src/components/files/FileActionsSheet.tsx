@@ -1,6 +1,8 @@
 import BottomSheet from '../BottomSheet'
 import type { ScheduleFile } from '../../types/files/file'
-import { downloadBlob } from '../../utils/files/download'
+import { downloadRemoteFile } from '../../utils/files/remote'
+import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 
 import previewIcon from '../../assets/files/preview.svg'
 import downloadIcon from '../../assets/files/download.svg'
@@ -38,7 +40,9 @@ export default function FileActionsSheet({
           <S.Action
             type="button"
             onClick={() => {
-              downloadBlob(file.blob, file.name)
+              downloadRemoteFile(file).catch(caught => {
+                showAlert(getApiErrorMessage(caught, '파일을 다운로드하지 못했어요.'))
+              })
               close()
             }}
           >
