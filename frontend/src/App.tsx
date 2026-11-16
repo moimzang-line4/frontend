@@ -37,6 +37,8 @@ import MemberEditPage from './pages/members/MemberEditPage'
 import useMemberGroups from './hooks/members/useMemberGroups'
 import useMembers from './hooks/members/useMembers'
 
+import hasServerGroup from './utils/groups/hasServerGroup'
+
 import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
 import { showAlert } from './hooks/useAlert'
@@ -150,9 +152,18 @@ function OperationsRoute() {
 function GroupHomeRoute() {
   const { isMember } = useDemoGroup()
   const onboarding = useOnboarding()
-  if (!onboarding.completed) return <Navigate to="/onboarding" replace />
-  if (!onboarding.group) return <Navigate to="/groups/new" replace />
-  return isMember ? <HomePage /> : <Navigate to="/groups" replace />
+
+  if (!onboarding.completed) {
+    return <Navigate to="/onboarding" replace />
+  }
+
+  if (!hasServerGroup(onboarding.group)) {
+    return <Navigate to="/groups/new" replace />
+  }
+
+  return isMember
+    ? <HomePage />
+    : <Navigate to="/groups" replace />
 }
 
 // 영수증 수정: 영수증·재촬영마다 화면 상태를 새로 시작
