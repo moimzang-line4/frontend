@@ -1,9 +1,15 @@
 import type { ReactNode } from 'react'
+import FileThumbnail from './FileThumbnail'
+import { previewKind } from '../../utils/files/preview'
+import FileViewIcon from './FileViewIcon'
+import pictureIcon from '../../assets/files/picture.svg'
+import pictureSmallIcon from '../../assets/files/picture-small.svg'
 import DropdownSelect from '../common/DropdownSelect'
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
 import Footer from '../../layouts/Footer'
+import GroupTermSelect from '../groups/GroupTermSelect'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import FileActionsSheet from '../../components/files/FileActionsSheet'
 import FileDeletionToast from './FileDeletionToast'
@@ -36,7 +42,6 @@ export default function FileLibrary({
   scheduleTitle,
   listPath = `/schedules/${encodeURIComponent(scheduleId)}/operations/files`,
   documentView = false,
-  generationLabel,
   ledgerContent,
 }: FileListProps) {
   const navigate = useNavigate()
@@ -49,6 +54,7 @@ export default function FileLibrary({
     () => (location.state?.tab === '장부' ? '장부' : '전체'),
   )
   const [sort, setSort] = useState('newest')
+  const [view, setView] = useState<'list' | 'grid'>('list')
   const [menu, setMenu] = useState<ScheduleFile | null>(null)
   const [deleting, setDeleting] = useState<ScheduleFile | null>(null)
   const [downloadSelection, setDownloadSelection] = useState<{
@@ -89,15 +95,8 @@ export default function FileLibrary({
 
       <S.Content aria-label={documentView ? '문서함 자료' : '일정 자료'}>
         {documentView && (
-          <DropdownSelect
-            aria-label="자료실 기수"
-            value={scheduleId}
-            onChange={() => {}}
-            options={[
-              { value: scheduleId, label: generationLabel ?? scheduleTitle },
-            ]}
-          />
-        )}
+  <GroupTermSelect aria-label="자료실 기수" />
+)}
         <S.SearchRow>
           <S.Search>
             <img src={searchIcon} alt="" width={20} height={20} />
@@ -110,20 +109,17 @@ export default function FileLibrary({
             />
           </S.Search>
 
-          <S.Attach
-            type="button"
-            disabled={loading || !!error}
-            onClick={() =>
-              navigate(
-                documentView && category === '장부'
-                  ? '/files/ledger/upload'
-                  : `${listPath}/new`,
-                { state: { category } },
-              )
-            }
-          >
-            ＋ 파일 첨부
-          </S.Attach>
+          {!(documentView && category === '장부') && (
+            <S.Attach
+              type="button"
+              disabled={loading || !!error}
+              onClick={() =>
+                navigate(`${listPath}/new`, { state: { category } })
+              }
+            >
+              ＋ 파일 첨부
+            </S.Attach>
+          )}
         </S.SearchRow>
 
         <S.Tabs role="group" aria-label="자료 분류">
@@ -164,19 +160,41 @@ export default function FileLibrary({
               />
             </S.Summary>
 
-            <S.DownloadAll
-              type="button"
-              disabled={!visible.length}
-              onClick={() =>
-                setDownloadSelection({
-                  files: visible,
-                  label: category === '전체' ? '전체 자료' : category,
-                })
-              }
-            >
-              <img src={downloadIcon} alt="" />
-              전체 다운로드({visible.length})
-            </S.DownloadAll>
+            <S.ViewToolbar>
+              {documentView && (
+                <S.ViewOptions role="group" aria-label="보기 형태">
+                  {(
+                    [
+                      ['list', '목록 보기'],
+                      ['grid', '격자 보기'],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <S.ViewButton
+                      key={value}
+                      type="button"
+                      aria-label={label}
+                      aria-pressed={view === value}
+                      onClick={() => setView(value)}
+                    >
+                      <FileViewIcon view={value} />
+                    </S.ViewButton>
+                  ))}
+                </S.ViewOptions>
+              )}
+              <S.DownloadAll
+                type="button"
+                disabled={!visible.length}
+                onClick={() =>
+                  setDownloadSelection({
+                    files: visible,
+                    label: category === '전체' ? '전체 자료' : category,
+                  })
+                }
+              >
+                <img src={downloadIcon} alt="" />
+                전체 다운로드({visible.length})
+              </S.DownloadAll>
+            </S.ViewToolbar>
 
             {error && (
               <>
@@ -195,6 +213,43 @@ export default function FileLibrary({
                   ? '검색 조건에 맞는 자료가 없어요.'
                   : '등록된 자료가 없어요. 파일을 첨부해보세요.'}
               </S.Empty>
+            ) : documentView && view === 'grid' ? (
+              <S.Grid>
+                {visible.map((file) => (
+                  <S.GridCard key={file.id}>
+                    <S.GridFileButton
+                      type="button"
+                      onClick={() => previewFile(file)}
+                      aria-label={`${file.name} 미리보기`}
+                    >
+                      <S.Thumbnail>
+                        <FileThumbnail file={file} />
+                        <S.ThumbnailLabel>
+                          <img
+                            src={pictureSmallIcon}
+                            alt=""
+                            width={12}
+                            height={12}
+                          />
+                          {file.name.split('.').pop()?.toUpperCase()} ·{' '}
+                          {sizeLabel(file.blob.size)}
+                        </S.ThumbnailLabel>
+                      </S.Thumbnail>
+                      <strong>{file.name}</strong>
+                      <small>
+                        {file.category} · {dateLabel(file.createdAt)}
+                      </small>
+                    </S.GridFileButton>
+                    <S.GridMore
+                      type="button"
+                      aria-label={`${file.name} 더보기`}
+                      onClick={() => setMenu(file)}
+                    >
+                      <img src={moreIcon} alt="" width={16} height={16} />
+                    </S.GridMore>
+                  </S.GridCard>
+                ))}
+              </S.Grid>
             ) : (
               <S.List>
                 {visible.map((file) => (
@@ -204,7 +259,16 @@ export default function FileLibrary({
                       onClick={() => previewFile(file)}
                       aria-label={`${file.name} 미리보기`}
                     >
-                      <img src={paperIcon} alt="" width={20} height={20} />
+                      <img
+                        src={
+                          previewKind(file) === 'image'
+                            ? pictureIcon
+                            : paperIcon
+                        }
+                        alt=""
+                        width={20}
+                        height={20}
+                      />
                       <span>
                         <strong>{file.name}</strong>
                         <small>

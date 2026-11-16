@@ -1,3 +1,4 @@
+import { ledgerIdentity } from '../../utils/documents/ledgerIdentity'
 import ConfirmDialog from '../common/ConfirmDialog'
 import type { Ledger, LedgerEntry } from '../../types/documents/ledger'
 import { deleteLedgerEntry } from '../../utils/documents/ledgerEntries'
@@ -29,7 +30,11 @@ export default function LedgerEntryDeleteDialog({
       confirmText="삭제"
       onCancel={onCancel}
       onConfirm={async () => {
-        await deleteLedgerEntry(ledger.scopeId, entry.id, ledger.file.id)
+        await deleteLedgerEntry(
+          ledger.scopeId,
+          entry.id,
+          ledgerIdentity(ledger),
+        )
         onDeleted()
       }}
     />

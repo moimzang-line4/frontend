@@ -53,6 +53,6 @@ export async function exportLedger(ledger: Ledger) {
     new Blob([archive], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     }),
-    `${splitFileName(ledger.file.name).name}-현재내역.xlsx`,
+    `${splitFileName(ledger.file?.name ?? '장부').name}-현재내역.xlsx`,
   )
 }

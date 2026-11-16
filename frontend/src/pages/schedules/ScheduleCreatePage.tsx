@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useNavigate } from 'react-router'
+import { isAxiosError } from 'axios'
+import useCreateServerSchedule from '../../hooks/schedules/useCreateServerSchedule'
 
 import Header from '../../layouts/Header'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -8,10 +10,10 @@ import DateTimeRow from '../../components/schedules/DateTimeRow'
 import CategorySheet from '../../components/schedules/CategorySheet'
 
 import useScheduleForm from '../../hooks/schedules/useScheduleForm'
-import useSchedules from '../../hooks/schedules/useSchedules'
 import type { Schedule } from '../../types/schedules/schedule'
 
 import * as S from '../../styles/schedules/ScheduleCreatePage.styles'
+import useServerScheduleActions from '../../hooks/schedules/useServerScheduleActions'
 
 export default function ScheduleCreatePage({
   initialSchedule,
@@ -19,7 +21,7 @@ export default function ScheduleCreatePage({
   initialSchedule?: Schedule
 }) {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
+  const serverSchedule = useCreateServerSchedule()
 
   const {
     draft,
@@ -28,12 +30,12 @@ export default function ScheduleCreatePage({
     invalidRange,
     toSchedule,
   } = useScheduleForm(initialSchedule)
+  
+  const scheduleActions = useServerScheduleActions()
 
-  const {
-    addSchedule,
-    updateSchedule,
-    deleteSchedule,
-  } = useSchedules()
+const busy =
+  serverSchedule.pending ||
+  scheduleActions.pending
 
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -47,37 +49,66 @@ export default function ScheduleCreatePage({
 
       <S.Form
         id="schedule-create-form"
-        onSubmit={event => {
-          event.preventDefault()
+        onSubmit={async event => {
+  event.preventDefault()
 
-          const schedule = toSchedule()
+  if (busy) return
 
-          if (!schedule) return
+  const schedule = toSchedule()
 
-          try {
-            if (initialSchedule) {
-              updateSchedule(initialSchedule.id, schedule)
+  if (!schedule) return
 
-              navigate(
-                `/schedules/${encodeURIComponent(initialSchedule.id)}`,
-                { replace: true },
-              )
-            } else {
-              addSchedule(schedule)
+  setError('')
 
-              navigate(
-                params.get('from') === 'operations'
-                  ? '/operations'
-                  : `/?date=${schedule.date}`,
-                { replace: true },
-              )
-            }
-          } catch {
-            setError(
-              '일정을 저장하지 못했어요. 브라우저 저장 공간을 확인하고 다시 시도해주세요.',
-            )
-          }
-        }}
+  try {
+    if (initialSchedule) {
+      const saved = await scheduleActions.save(
+        initialSchedule,
+        schedule,
+        draft.category?.label,
+      )
+
+      if (!saved) return
+
+      navigate(
+        `/schedules/${encodeURIComponent(initialSchedule.id)}`,
+        { replace: true },
+      )
+
+      return
+    }
+
+    const scheduleId = await serverSchedule.save(
+      schedule,
+      draft.category?.label,
+    )
+
+    if (!scheduleId) return
+
+    navigate(
+      `/?date=${schedule.date}`,
+      { replace: true },
+    )
+  } catch (caught) {
+    if (isAxiosError<{ message?: unknown }>(caught)) {
+      const message = caught.response?.data?.message
+
+      setError(
+        typeof message === 'string' && message.trim()
+          ? message
+          : caught.response
+            ? '일정을 저장하지 못했어요.'
+            : '서버에 연결하지 못했어요.',
+      )
+    } else {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : '일정을 저장하지 못했어요.',
+      )
+    }
+  }
+}}
       >
         <S.Field>
           <S.Label htmlFor="schedule-title">
@@ -188,6 +219,13 @@ export default function ScheduleCreatePage({
                   !draft.createOperationSpace,
                 )
               }
+              disabled={
+  busy ||
+  (
+    !!initialSchedule &&
+    initialSchedule.operationMenuCount !== undefined
+  )
+}
             />
           </S.ToggleRow>
 
@@ -201,6 +239,7 @@ export default function ScheduleCreatePage({
         {initialSchedule && (
           <S.DeleteButton
             type="button"
+            disabled={busy}
             onClick={() => setDeleteOpen(true)}
           >
             일정 삭제하기
@@ -216,34 +255,46 @@ export default function ScheduleCreatePage({
 
       <S.ActionBar>
         <S.SubmitButton
-          type="submit"
-          form="schedule-create-form"
-          disabled={!canSubmit}
-        >
-          {initialSchedule ? '수정하기' : '일정 등록하기'}
-        </S.SubmitButton>
+  type="submit"
+  form="schedule-create-form"
+  disabled={!canSubmit || busy}
+>
+  {busy
+    ? '저장 중…'
+    : initialSchedule
+      ? '수정하기'
+      : '일정 등록하기'}
+</S.SubmitButton>
       </S.ActionBar>
 
       <ConfirmDialog
-        open={deleteOpen}
-        title="일정을 삭제할까요?"
-        description="삭제한 일정은 복구할 수 없어요."
-        confirmText="삭제하기"
-        onCancel={() => setDeleteOpen(false)}
-        onConfirm={() => {
-          if (!initialSchedule) return
+  open={deleteOpen}
+  title="일정을 삭제할까요?"
+  description="일정과 연결된 운영 데이터, 이 일정에서 만든 회의록도 함께 삭제돼요."
+  confirmText="삭제하기"
+  onCancel={() => {
+    if (!busy) setDeleteOpen(false)
+  }}
+  onConfirm={async () => {
+    if (!initialSchedule || busy) return
 
-          deleteSchedule(initialSchedule.id)
-          navigate('/', { replace: true })
-        }}
-      />
+    const deleted = await scheduleActions.remove(
+      initialSchedule.id,
+    )
+
+    if (!deleted) return
+
+    navigate('/', { replace: true })
+  }}
+/>
 
       {categoryOpen && (
         <CategorySheet
-          selectedId={draft.category?.id}
-          onSelect={category => update('category', category)}
-          onClose={() => setCategoryOpen(false)}
-        />
+  selectedId={draft.category?.id}
+  selectedName={draft.category?.label}
+  onSelect={category => update('category', category)}
+  onClose={() => setCategoryOpen(false)}
+/>
       )}
     </S.Page>
   )
