@@ -328,7 +328,7 @@ const returnTo = (
   return (
     <S.Page>
       <Header
-        title="회의 만들기"
+        title="회의"
         onBack={() => {
           if (!pending) navigate(backPath)
         }}
