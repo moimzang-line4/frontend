@@ -166,7 +166,7 @@ export default function GroupInvitePage() {
       <S.Content>
         <S.GroupInfo>
           <h2>함께 운영할 멤버를 초대해요</h2>
-          <p>지금 초대하지 않아도 나중에 추가할 수 있어요</p>
+          <p>초대 링크는 나중에 설정에서 확인할 수 있어요.</p>
         </S.GroupInfo>
 
         <M.InviteCard aria-label="운영진 초대 링크">

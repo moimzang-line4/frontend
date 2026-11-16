@@ -68,6 +68,26 @@ export const Option = styled.button<{ $selected: boolean }>`
   cursor: pointer;
   img { flex-shrink: 0; }
 `
+// 선택 버튼 + 수정(연필) 버튼 한 줄. 선택 배경은 줄 전체에
+export const OptionRow = styled.div<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  background: ${({ $selected }) => $selected ? '#e6f4f0' : 'transparent'};
+  > button:first-child { flex: 1; min-width: 0; background: transparent; }
+`
+export const EditButton = styled.button`
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #78918c;
+  cursor: pointer;
+  &:active { background: rgb(0 0 0 / 4%); }
+`
 export const AddButton = styled.button`
   display: flex;
   width: 100%;
@@ -115,4 +135,31 @@ export const EmptyState = styled.div`
   line-height: 1.4;
   strong { color: #8c8c8c; font-size: 14px; font-weight: 700; }
   p { color: #b3b3b3; font-size: 12px; font-weight: 500; }
+`
+
+// 카테고리 이름 수정 줄: 일반 줄과 같은 높이·여백, 테두리는 안쪽에 그려서 잘리지 않게
+export const EditRow = styled.form`
+  display: flex;
+  min-height: 63px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 0 14px;
+  border: 1px solid #d8e6e0;
+  border-radius: 12px;
+  background: white;
+  &:focus-within { border-color: var(--color-primary-strong); }
+  input {
+    min-width: 0;
+    flex: 1;
+    height: 44px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    color: #253f3b;
+  }
+  button { padding: 10px 8px; font-size: 14px; font-weight: 500; color: var(--color-primary-strong); cursor: pointer; }
+  button[type='button'] { color: #78918c; }
 `

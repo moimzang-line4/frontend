@@ -93,13 +93,11 @@ export default function HomePage() {
         <MonthCalendar
           {...calendar}
           onMonthChange={calendar.changeMonth}
-          onSelectDate={date => {
+          // 날짜·일정 뱃지 모두 해당 날짜의 '오늘의 일정' 시트만 열기 (상세 이동은 시트에서)
+          onSelectDate={(date) => {
             calendar.setSelectedDate(date)
             setDateSheetOpen(true)
           }}
-          onSelectEvent={event =>
-            navigate(`/schedules/${encodeURIComponent(event.id)}`)
-          }
         />
 
         <S.Heading>다가오는 운영 일정</S.Heading>

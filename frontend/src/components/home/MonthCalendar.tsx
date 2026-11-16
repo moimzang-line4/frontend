@@ -12,10 +12,9 @@ type Props = {
   schedules: HomeSchedule[]
   onMonthChange: (offset: number) => void
   onSelectDate: (date: string) => void
-  onSelectEvent: (event: HomeSchedule) => void
 }
 
-export default function MonthCalendar({ year, monthIndex, days, selectedDate, today, schedules, onMonthChange, onSelectDate, onSelectEvent }: Props) {
+export default function MonthCalendar({ year, monthIndex, days, selectedDate, today, schedules, onMonthChange, onSelectDate }: Props) {
   return (
     <S.Calendar aria-label="월간 일정 캘린더">
       <S.MonthNavigation>
@@ -36,7 +35,7 @@ export default function MonthCalendar({ year, monthIndex, days, selectedDate, to
                 {cell.day}
               </S.DayButton>
               {schedules.filter(event => isScheduleOnDate(event, cell.date)).map(event => (
-                <S.EventBadge type="button" key={event.id} $category={event.category} $color={event.color} aria-label={`${cell.date} ${event.title} 일정 보기`} title={event.title} onClick={() => onSelectEvent(event)}>{event.title}</S.EventBadge>
+                <S.EventBadge type="button" key={event.id} $category={event.category} $color={event.color} aria-label={`${cell.date} ${event.title} 일정이 있는 날짜 보기`} title={event.title} onClick={() => onSelectDate(cell.date)}>{event.title}</S.EventBadge>
               ))}
             </>}
           </S.DayCell>

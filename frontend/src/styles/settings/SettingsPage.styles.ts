@@ -68,6 +68,11 @@ export const MenuButton = styled.button<{ $danger?: boolean }>`
     outline-offset: -3px;
   }
 `
+export const MenuArrow = styled.svg`
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #78918c;
+`
 export const AccountSection = styled.section`
   padding-top: 40px;
   margin-top: auto;
