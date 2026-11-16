@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import MainLayout from '../../layouts/MainLayout'
 import Button from '../../components/Button'
 import SegmentTabs from '../../components/SegmentTabs'
 import MemberSearchBar from '../../components/members/MemberSearchBar'
-import useReceipts from '../../hooks/payments/useReceipts'
-import useSettlement from '../../hooks/payments/useSettlement'
+import { useRoundCandidates, useSettlementHome, useSettlementTargetActions } from '../../hooks/payments/useSettlementApi'
+import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import { paymentsPath } from '../../constants/payments/receipt'
-import { getReceiptRounds, personIdentity } from '../../utils/payments'
+import { personIdentity } from '../../utils/payments'
 import { EmptyText } from '../../styles/members/MemberDetailPage.styles'
 import * as S from '../../styles/payments/RoundEditPage.styles'
 
@@ -18,6 +19,8 @@ const PersonIcon = (
   </svg>
 )
 
+const sameIds = (a: string[], b: string[]) => a.length === b.length && a.every(id => b.includes(id))
+
 // 피그마: 정산 명단 · 참여자 편집 및 저장 / 참여자 검색 결과
 export default function RoundEditPage() {
   const navigate = useNavigate()
@@ -25,22 +28,34 @@ export default function RoundEditPage() {
   const { scheduleId = '' } = useParams<{ scheduleId: string }>()
   const basePath = paymentsPath(scheduleId)
 
-  const { receipts } = useReceipts(scheduleId)
-  const { settlement, saveRounds } = useSettlement(scheduleId)
+  // 영수증이 등록된 차수만 정산 대상
+  const { home, loading: homeLoading, error: homeError } = useSettlementHome(Number(scheduleId))
+  const rounds = (home?.receipts ?? []).map(receipt => ({ id: receipt.id, label: receipt.round }))
 
-  // 영수증에 있는 차수 + 이미 저장된 차수
-  const [draft, setDraft] = useState<Record<string, string[]>>(() => {
-    const rounds = getReceiptRounds(receipts)
-    return { ...Object.fromEntries(rounds.map(round => [round, [] as string[]])), ...settlement.rounds }
-  })
-  const roundNames = getReceiptRounds(receipts).filter(round => draft[round])
-  const [active, setActive] = useState(() => {
-    const requested = searchParams.get('round')
-    return requested && draft[requested] ? requested : roundNames[0] ?? ''
-  })
+  const [selected, setSelected] = useState(() => searchParams.get('round') ?? '')
+  const active = rounds.some(round => round.id === selected) ? selected : rounds[0]?.id ?? ''
+  const activeLabel = rounds.find(round => round.id === active)?.label ?? ''
+
+  const { data, loading, error } = useRoundCandidates(Number(active))
+  const { saveTargets } = useSettlementTargetActions(Number(scheduleId))
+
+  // 차수별 편집 중인 명단 / 서버에 저장된 명단 / 이름 정보
+  const [draft, setDraft] = useState<Record<string, string[]>>({})
+  const [saved, setSaved] = useState<Record<string, string[]>>({})
+  const [people, setPeople] = useState<Record<string, { id: string; name: string; department: string; phone: string }>>({})
   const [search, setSearch] = useState('')
-  // '+추가': 전체 명단에서 골라 넣기
+  // '+추가': 차수 참가자 전체에서 골라 넣기
   const [adding, setAdding] = useState(false)
+  const [pending, setPending] = useState(false)
+  const pendingRef = useRef(false)
+
+  // 차수를 처음 열면 서버 명단(없으면 출석한 사람)으로 시작
+  useEffect(() => {
+    if (!data || !active) return
+    setDraft(prev => (prev[active] ? prev : { ...prev, [active]: data.initial }))
+    setSaved(prev => (prev[active] ? prev : { ...prev, [active]: data.saved }))
+    setPeople(prev => ({ ...prev, ...Object.fromEntries(data.people.map(person => [person.id, person])) }))
+  }, [data, active])
 
   const members = draft[active] ?? []
   const keyword = search.trim().toLowerCase()
@@ -54,24 +69,43 @@ export default function RoundEditPage() {
   }
 
   const list = adding
-    ? settlement.people.filter(person => matches(person.name))
-    : settlement.people.filter(person => members.includes(person.id) && matches(person.name))
+    ? (data?.people ?? []).filter(person => matches(person.name))
+    : members.map(id => people[id]).filter(person => person && matches(person.name))
 
-  const handleSave = () => {
-    saveRounds(draft)
-    navigate(`${basePath}/members`, { replace: true })
+  // 바뀐 차수만 저장 (처음 불러온 차수는 기본 명단으로 저장)
+  const handleSave = async () => {
+    if (pendingRef.current) return
+    pendingRef.current = true
+    setPending(true)
+    try {
+      for (const [roundId, ids] of Object.entries(draft)) {
+        const before = saved[roundId] ?? []
+        if (before.length > 0 ? sameIds(before, ids) : ids.length === 0) continue
+        await saveTargets(Number(roundId), ids)
+      }
+      navigate(`${basePath}/members`, { replace: true })
+    } catch (caught) {
+      showAlert(getApiErrorMessage(caught, '정산 명단을 저장하지 못했어요.'))
+    } finally {
+      pendingRef.current = false
+      setPending(false)
+    }
   }
 
+  const statusText = homeLoading || loading
+    ? '명단을 불러오는 중이에요.'
+    : homeError || error || (rounds.length === 0 ? '먼저 영수증을 등록해주세요.' : '')
+
   return (
-    <MainLayout title={active ? `${active} 명단` : '정산 명단'} showFooter={false}>
+    <MainLayout title={activeLabel ? `${activeLabel} 명단` : '정산 명단'} showFooter={false}>
       <S.Container>
         <S.Section>
           <S.Title>정산 차수</S.Title>
           <SegmentTabs
             label="정산 차수"
-            tabs={roundNames.map(round => ({ id: round, label: round }))}
+            tabs={rounds}
             value={active}
-            onChange={next => { setActive(next); setAdding(false); setSearch('') }}
+            onChange={next => { setSelected(next); setAdding(false); setSearch('') }}
             extra={{ label: '+ 차수 추가', onClick: () => navigate(`${basePath}/receipts/manual`) }}
           />
         </S.Section>
@@ -83,12 +117,19 @@ export default function RoundEditPage() {
           </S.AddButton>
         </S.SearchRow>
 
-        {list.length > 0 ? (
+        {statusText ? (
+          <EmptyText>{statusText}</EmptyText>
+        ) : list.length > 0 ? (
           <S.List>
             {list.map(person => {
               const included = members.includes(person.id)
               return (
-                <S.PersonCard key={person.id}>
+                <S.PersonCard
+                  key={person.id}
+                  // 추가 모드에서는 카드 어디를 눌러도 체크
+                  onClick={adding ? () => toggle(person.id) : undefined}
+                  style={adding ? { cursor: 'pointer' } : undefined}
+                >
                   <S.Avatar>{PersonIcon}</S.Avatar>
                   <S.PersonText>
                     <strong>{person.name}</strong>
@@ -99,9 +140,10 @@ export default function RoundEditPage() {
                       type="button"
                       role="checkbox"
                       aria-checked={included}
-                      aria-label={`${person.name} ${active} 포함`}
+                      aria-label={`${person.name} ${activeLabel} 포함`}
                       $checked={included}
-                      onClick={() => toggle(person.id)}
+                      // 카드 클릭과 겹쳐서 두 번 토글되지 않도록
+                      onClick={event => { event.stopPropagation(); toggle(person.id) }}
                     />
                   ) : (
                     <S.RemoveButton type="button" aria-label={`${person.name} 빼기`} onClick={() => toggle(person.id)}>
@@ -115,10 +157,12 @@ export default function RoundEditPage() {
             })}
           </S.List>
         ) : (
-          <EmptyText>{keyword ? '검색 결과가 없어요.' : adding ? '불러온 명단이 없어요.' : '아직 정산 인원이 없어요. +추가로 넣어주세요.'}</EmptyText>
+          <EmptyText>{keyword ? '검색 결과가 없어요.' : adding ? '이 차수의 참가자가 없어요.' : '아직 정산 인원이 없어요. +추가로 넣어주세요.'}</EmptyText>
         )}
 
-        <Button onClick={handleSave}>정산 명단 저장하기</Button>
+        <Button onClick={() => void handleSave()} disabled={pending || Boolean(statusText)}>
+          {pending ? '저장 중…' : '정산 명단 저장하기'}
+        </Button>
       </S.Container>
     </MainLayout>
   )

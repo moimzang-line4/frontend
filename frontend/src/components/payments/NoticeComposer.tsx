@@ -1,15 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 import Button from '../Button'
 import { showAlert } from '../../hooks/useAlert'
+import { useNoticeActions } from '../../hooks/payments/useSettlementApi'
+import type { SettlementAccount } from '../../hooks/payments/useSettlementApi'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import { SETTLEMENT_TEXT } from '../../constants/payments/settlement'
-import { buildNotice, won } from '../../utils/payments'
-import type { RoundSummary } from '../../types/payments/settlement'
+import { parseAmount, won } from '../../utils/payments'
+import type { Receipt } from '../../types/payments/receipt'
 import * as S from '../../styles/payments/NoticeComposer.styles'
+import * as F from '../../styles/payments/ReceiptForm.styles'
 
 type Props = {
-  title: string
-  summaries: RoundSummary[]
+  scheduleId: number
+  // 영수증이 등록된 차수
+  receipts: Receipt[]
+  // 서버에 저장된 대표 계좌 (처음 입력칸에 채워 둠)
+  account?: Partial<SettlementAccount> | null
 }
+
+const ACCOUNT_FIELDS: readonly { key: keyof SettlementAccount; label: string; placeholder: string }[] = [
+  { key: 'bankName', label: '은행', placeholder: '예) 카카오뱅크' },
+  { key: 'accountNumber', label: '계좌번호', placeholder: '예) 3333-12-4378239' },
+  { key: 'accountHolder', label: '예금주', placeholder: '예) 김동김' },
+]
 
 const SparkleIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -19,26 +32,54 @@ const SparkleIcon = (
 )
 
 // 피그마: 정산 공지 · 포함할 차수 선택 / 생성 결과 미리보기
-export default function NoticeComposer({ title, summaries }: Props) {
-  const [selected, setSelected] = useState<string[]>(() => summaries.slice(0, 1).map(summary => summary.round))
+export default function NoticeComposer({ scheduleId, receipts, account }: Props) {
+  const { generate } = useNoticeActions(scheduleId)
+  const [selected, setSelected] = useState<string[]>(() => receipts.slice(0, 1).map(receipt => receipt.id))
+  const [form, setForm] = useState<SettlementAccount>(() => ({
+    bankName: account?.bankName ?? '',
+    accountNumber: account?.accountNumber ?? '',
+    accountHolder: account?.accountHolder ?? '',
+  }))
   const [notice, setNotice] = useState('')
   const [copied, setCopied] = useState(false)
+  const [pending, setPending] = useState(false)
   const timer = useRef<number | undefined>(undefined)
 
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
-  const toggle = (round: string) => {
-    setSelected(prev => (prev.includes(round) ? prev.filter(item => item !== round) : [...prev, round]))
+  const toggle = (id: string) => {
+    setSelected(prev => (prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]))
   }
 
-  const generate = () => {
-    const included = summaries.filter(summary => selected.includes(summary.round))
-    if (included.length === 0) {
+  const handleGenerate = async () => {
+    if (pending) return
+    const roundIds = receipts.filter(receipt => selected.includes(receipt.id)).map(receipt => Number(receipt.id))
+    if (roundIds.length === 0) {
       showAlert('공지에 포함할 차수를 선택해주세요.')
       return
     }
-    setNotice(buildNotice(title, included))
-    setCopied(false)
+
+    // 계좌는 셋 다 입력했을 때만 저장 (모두 비우면 계좌 없이 생성)
+    const trimmed = {
+      bankName: form.bankName.trim(),
+      accountNumber: form.accountNumber.trim(),
+      accountHolder: form.accountHolder.trim(),
+    }
+    const filled = Object.values(trimmed).filter(Boolean).length
+    if (filled > 0 && filled < 3) {
+      showAlert('입금 계좌의 은행·계좌번호·예금주를 모두 입력해주세요.')
+      return
+    }
+
+    setPending(true)
+    try {
+      setNotice(await generate(roundIds, filled === 3 ? trimmed : undefined))
+      setCopied(false)
+    } catch (caught) {
+      showAlert(getApiErrorMessage(caught, '공지를 생성하지 못했어요.'))
+    } finally {
+      setPending(false)
+    }
   }
 
   const copy = async () => {
@@ -61,19 +102,41 @@ export default function NoticeComposer({ title, summaries }: Props) {
         </S.Heading>
 
         <S.Rounds>
-          {summaries.map(summary => (
-            <S.RoundOption key={summary.round}>
+          {receipts.map(receipt => (
+            <S.RoundOption key={receipt.id}>
               <S.Checkbox
                 type="checkbox"
-                checked={selected.includes(summary.round)}
-                onChange={() => toggle(summary.round)}
+                checked={selected.includes(receipt.id)}
+                onChange={() => toggle(receipt.id)}
               />
               <span>
-                {summary.round} <strong>{won(summary.cost)}</strong>
+                {receipt.round} <strong>{won(parseAmount(receipt.amount))}</strong>
               </span>
             </S.RoundOption>
           ))}
         </S.Rounds>
+      </S.Section>
+
+      <S.Section>
+        <S.Heading>
+          <S.Title>{SETTLEMENT_TEXT.noticeAccountTitle}</S.Title>
+          <S.Description>{SETTLEMENT_TEXT.noticeAccountDescription}</S.Description>
+        </S.Heading>
+
+        <F.Card>
+          {ACCOUNT_FIELDS.map(field => (
+            <F.Row key={field.key}>
+              <F.Label htmlFor={`notice-${field.key}`}>{field.label}</F.Label>
+              <F.Input
+                id={`notice-${field.key}`}
+                value={form[field.key]}
+                maxLength={50}
+                placeholder={field.placeholder}
+                onChange={event => setForm(prev => ({ ...prev, [field.key]: event.target.value }))}
+              />
+            </F.Row>
+          ))}
+        </F.Card>
       </S.Section>
 
       {notice && (
@@ -102,8 +165,8 @@ export default function NoticeComposer({ title, summaries }: Props) {
         </S.Section>
       )}
 
-      <Button onClick={generate}>
-        <S.ButtonContent>{SparkleIcon}공지 생성하기</S.ButtonContent>
+      <Button onClick={() => void handleGenerate()} disabled={pending}>
+        <S.ButtonContent>{SparkleIcon}{pending ? '공지 생성 중…' : '공지 생성하기'}</S.ButtonContent>
       </Button>
     </S.Wrapper>
   )

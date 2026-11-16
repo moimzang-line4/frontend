@@ -7,14 +7,11 @@ import RouteTabs from '../../components/RouteTabs'
 import ReceiptCard from '../../components/payments/ReceiptCard'
 import NoticeComposer from '../../components/payments/NoticeComposer'
 import useScheduleDetail from '../../hooks/schedules/useScheduleDetail'
-import usePaymentSummary from '../../hooks/payments/usePaymentSummary'
-import useReceipts from '../../hooks/payments/useReceipts'
-import useSettlement from '../../hooks/payments/useSettlement'
+import { useSettlementHome, useTargetCounts } from '../../hooks/payments/useSettlementApi'
 import { showAlert } from '../../hooks/useAlert'
 import { PAYMENTS_TABS, RECEIPT_TEXT, paymentsPath } from '../../constants/payments/receipt'
 import { SETTLEMENT_TEXT } from '../../constants/payments/settlement'
-import { getReceiptRounds, getRoundSummaries } from '../../utils/payments'
-import type { PaymentsTab, ReceiptStatus } from '../../types/payments/receipt'
+import type { PaymentsTab } from '../../types/payments/receipt'
 import type { Schedule } from '../../types/schedules/schedule'
 import { OutlineButton } from '../../styles/OutlineButton.styles'
 import * as S from '../../styles/payments/PaymentsPage.styles'
@@ -59,31 +56,36 @@ export default function PaymentsPage({ tab }: Props) {
 
 function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
   const navigate = useNavigate()
-  const { receipts } = useReceipts(schedule.id)
-  const { settlement, loadRoster } = useSettlement(schedule.id)
-  const { paid, total } = usePaymentSummary(schedule.id, settlement)
+  const { home, loading, error, reload } = useSettlementHome(Number(schedule.id))
+  const receipts = home?.receipts ?? []
+  // 차수별 정산 인원 (한 차수라도 명단이 있으면 '명단·금액' 목록 표시)
+  const targetCounts = useTargetCounts(Number(schedule.id), receipts.map(receipt => receipt.roundId ?? 0).filter(Boolean))
+  const rosterLoaded = Object.values(targetCounts.counts).some(count => count > 0)
   const basePath = paymentsPath(schedule.id)
 
   const tabs = <RouteTabs label="정산 메뉴" tabs={PAYMENTS_TABS.map(item => ({ label: item.label, to: `${basePath}${item.path}` }))} />
-  const summaries = getRoundSummaries(receipts, settlement)
   const addReceipt = () => navigate(`${basePath}/receipts/camera`)
-
-  // 차수 참여자가 모두 입금했으면 '정산 완료'
-  const roundStatus = (round: string): ReceiptStatus => {
-    const ids = settlement.rounds[round] ?? []
-    return ids.length > 0 && ids.every(id => settlement.paid.includes(id)) ? 'done' : 'ongoing'
-  }
 
   const handleLoadRoster = () => {
     if (receipts.length === 0) {
       showAlert(SETTLEMENT_TEXT.rosterNeedsReceipt, { description: SETTLEMENT_TEXT.rosterNeedsReceiptDescription })
       return
     }
-    loadRoster(getReceiptRounds(receipts))
     navigate(`${basePath}/rounds/edit`)
   }
 
   const renderBody = () => {
+    const busy = loading || (tab === 'members' && targetCounts.loading)
+    const failed = error || (tab === 'members' ? targetCounts.error : '')
+    if (busy || failed) {
+      return (
+        <S.Notice>
+          <p>{busy ? '정산 정보를 불러오는 중이에요.' : failed}</p>
+          {error && <button type="button" onClick={() => void reload()}>다시 불러오기</button>}
+        </S.Notice>
+      )
+    }
+
     // 영수증 탭: 목록 (피그마: 정산 · 영수증 목록)
     if (tab === 'receipts' && receipts.length > 0) {
       return (
@@ -94,7 +96,6 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
               <ReceiptCard
                 key={receipt.id}
                 receipt={receipt}
-                status={settlement.loaded ? roundStatus(receipt.round) : undefined}
                 onClick={() => navigate(`${basePath}/receipts/${receipt.id}`)}
               />
             ))}
@@ -105,7 +106,7 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
     }
 
     // 명단·금액 탭: 차수별 명단 및 금액
-    if (tab === 'members' && settlement.loaded && receipts.length > 0) {
+    if (tab === 'members' && rosterLoaded && receipts.length > 0) {
       return (
         <S.ListBody>
           <S.List>
@@ -114,10 +115,9 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
               <ReceiptCard
                 key={receipt.id}
                 receipt={receipt}
-                status={roundStatus(receipt.round)}
-                detail={`${settlement.rounds[receipt.round]?.length ?? 0}명`}
+                detail={`${targetCounts.counts[receipt.roundId ?? 0] ?? 0}명`}
                 showDate={false}
-                onClick={() => navigate(`${basePath}/rounds/${encodeURIComponent(receipt.round)}`)}
+                onClick={() => navigate(`${basePath}/rounds/${receipt.id}`)}
               />
             ))}
           </S.List>
@@ -127,11 +127,11 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
     }
 
     // 공지 복사 탭: 포함할 차수 선택 → 공지 생성
-    if (tab === 'notice' && summaries.length > 0) {
+    if (tab === 'notice' && receipts.length > 0) {
       return (
         <S.List>
           {tabs}
-          <NoticeComposer title={schedule.title} summaries={summaries} />
+          <NoticeComposer scheduleId={Number(schedule.id)} receipts={receipts} account={home?.account} />
         </S.List>
       )
     }
@@ -172,8 +172,8 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
         title={schedule.title}
         status="정산 준비중"
         doneStatus="정산 완료"
-        done={paid}
-        total={total}
+        done={home?.paid ?? 0}
+        total={home?.total ?? 0}
         ariaLabel={`${schedule.title} 정산 현황`}
       />
       {renderBody()}

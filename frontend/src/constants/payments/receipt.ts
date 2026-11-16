@@ -20,6 +20,9 @@ export const RECEIPT_FIELDS: readonly ReceiptField[] = [
 
 export const ROUND_OPTIONS = ['1차', '2차', '3차', '4차'] as const
 
+// 영수증 등록 시 서버에 새 차수를 만드는 선택지
+export const NEW_ROUND_OPTION = '+ 새 차수'
+
 export const EMPTY_RECEIPT_FORM: ReceiptForm = {
   storeName: '',
   paidAt: '',
@@ -34,6 +37,11 @@ export const RECEIPT_TEXT = {
   cameraHint: '영수증을 화면 안에 맞춰 촬영해주세요',
   resultTitle: '영수증을 인식했어요!',
   resultDescription: '아래 내용을 확인하고 등록해주세요',
+  recognizingTitle: '영수증을 읽고 있어요',
+  recognizingDescription: '잠시만 기다려주세요',
+  recognizeFailed: '자동 인식에 실패했어요. 직접 입력해주세요',
+  recognizeFailedTitle: '영수증을 인식하지 못했어요',
+  locked: '입금 완료한 인원이 있어 수정·삭제할 수 없어요.',
   deleteTitle: '영수증을 삭제할까요?',
   deleteDescription: '해당 차수와 정산 명단이 함께 삭제돼요.\n이미 반영된 장부 내역과 잔액은 유지돼요.',
 } as const

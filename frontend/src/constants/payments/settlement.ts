@@ -26,5 +26,7 @@ export const SETTLEMENT_TEXT = {
   noticeRoundTitle: '포함할 차수',
   noticeRoundDescription: '공지에 포함할 차수를 선택해주세요',
   noticePreviewTitle: '공지 미리보기',
+  noticeAccountTitle: '입금 계좌',
+  noticeAccountDescription: '선택한 차수에 저장되고 공지에 함께 들어가요',
   removeTitle: '정산 명단에서 뺄까요?',
 } as const
