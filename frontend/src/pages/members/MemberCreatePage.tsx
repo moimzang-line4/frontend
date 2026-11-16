@@ -14,7 +14,7 @@ interface Props {
     groupId?: number;
     initialValues?: CreateMemberGroup;
     submitText?: string;
-    onSubmit: (data: CreateMemberGroup) => void;
+    onSubmit: (data: CreateMemberGroup) => void | Promise<void>;
 }
 
 const initialFields: MemberField[] = [
@@ -47,6 +47,8 @@ export default function MemberCreatePage({
     );
 
     const dateInputRef = useRef<HTMLInputElement>(null);
+    // 서버 저장 중 중복 제출 방지
+    const submitting = useRef(false);
 
     const formatDate = (date: string) => {
         if (!date) return "등록 마감일을 선택해주세요.";
@@ -66,7 +68,9 @@ export default function MemberCreatePage({
         );
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        if (submitting.current) return;
+
         if (!name.trim()) {
             showAlert("명단방 이름을 입력해주세요.");
             return;
@@ -77,11 +81,16 @@ export default function MemberCreatePage({
             return;
         }
 
-        onSubmit({
-            name: name.trim(),
-            deadline,
-            fields,
-        });
+        submitting.current = true;
+        try {
+            await onSubmit({
+                name: name.trim(),
+                deadline,
+                fields,
+            });
+        } finally {
+            submitting.current = false;
+        }
     };
 
     return (

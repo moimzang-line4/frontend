@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import { lazy, Suspense } from 'react'
-import type { ReactNode } from 'react'
-import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router'
 
 import MainLayout from './layouts/MainLayout'
 
@@ -26,22 +25,21 @@ import ReceiptResultPage from './pages/payments/ReceiptResultPage'
 import RoundRosterPage from './pages/payments/RoundRosterPage'
 import RoundEditPage from './pages/payments/RoundEditPage'
 
-import MemberListPage from './pages/members/MemberListPage'
-import MemberCreatePage from './pages/members/MemberCreatePage'
-import MemberLinkPage from './pages/members/MemberLinkPage'
 import MemberRegisterPage from './pages/members/MemberRegisterPage'
-import MemberDetailPage from './pages/members/MemberDetailPage'
-import MemberAddPage from './pages/members/MemberAddPage'
-import MemberEditPage from './pages/members/MemberEditPage'
+import {
+  MemberAddRoute,
+  MemberCreateRoute,
+  MemberDetailRoute,
+  MemberEditRoute,
+  MemberLinkRoute,
+  MemberListRoute,
+  MemberSettingsRoute,
+} from './pages/members/MemberRoutes'
 
-import useMemberGroups from './hooks/members/useMemberGroups'
-import useMembers from './hooks/members/useMembers'
 
 import hasServerGroup from './utils/groups/hasServerGroup'
 
-import type { MemberGroup, CreateMemberGroup } from './types/members/member'
 import AlertModal from './components/AlertModal'
-import { showAlert } from './hooks/useAlert'
 
 const LedgerEntryPage = lazy(() => import('./pages/documents/LedgerEntryPage'))
 const LedgerSourcePage = lazy(() => import('./pages/documents/LedgerSourcePage'))
@@ -63,75 +61,6 @@ const OperationNoteFormPage = lazy(() => import('./pages/notes/OperationNoteForm
 const OnboardingPage = lazy(() => import('./pages/onboarding/OnboardingPage'))
 const GroupCreatePage = lazy(() => import('./pages/onboarding/GroupCreatePage'))
 const GroupInvitePage = lazy(() => import('./pages/onboarding/GroupInvitePage'))
-
-// 부원 명단 목록 라우트
-function MemberListRoute({
-  groups,
-}: {
-  groups: MemberGroup[]
-}) {
-  const navigate = useNavigate()
-
-  return (
-    <MemberListPage
-      groups={groups}
-      onCreate={() => navigate('/members/new')}
-      onSelect={(id) => navigate(`/members/${id}`)}
-    />
-  )
-}
-
-// 새 명단방 생성 라우트
-function MemberCreateRoute({
-  createGroup,
-}: {
-  createGroup: (data: CreateMemberGroup) => MemberGroup
-}) {
-  const navigate = useNavigate()
-
-  return (
-    <MemberCreatePage
-      onSubmit={(data) => {
-        const newGroup = createGroup(data)
-        navigate(`/members/${newGroup.id}/link`, { replace: true })
-      }}
-    />
-  )
-}
-
-// 명단방(:id) 하위 화면 공통 레이아웃: URL의 id로 명단방을 찾아 화면에 넘겨줌
-function MemberGroupRoute({
-  groups,
-  title,
-  showFooter = true,
-  children,
-}: {
-  groups: MemberGroup[]
-  title?: string
-  showFooter?: boolean
-  children: (group: MemberGroup) => ReactNode
-}) {
-  const { id } = useParams<{ id: string }>()
-  const group = groups.find((item) => item.id === Number(id))
-
-  if (!group) {
-    return (
-      <MainLayout title="명단방을 찾을 수 없어요">
-        <Placeholder>삭제되었거나 존재하지 않는 명단방이에요.</Placeholder>
-      </MainLayout>
-    )
-  }
-
-  return (
-    <MainLayout
-      title={title ?? group.name}
-      showBack
-      showFooter={showFooter}
-    >
-      {children(group)}
-    </MainLayout>
-  )
-}
 
 function OperationsRoute() {
   const [params] = useSearchParams()
@@ -174,28 +103,6 @@ function ReceiptEditRoute() {
 }
 
 export default function App() {
-  const { groups: savedGroups, createGroup, updateGroup, deleteGroup } = useMemberGroups()
-  const {
-    getMembersByGroup,
-    countByGroup,
-    getMember,
-    addMember,
-    editMember,
-    deleteMember,
-    deleteMembersByGroup,
-  } = useMembers()
-
-  // 등록 인원은 실제 부원 데이터 기준으로 계산
-  const groups = savedGroups.map((group) => ({
-    ...group,
-    memberCount: countByGroup(group.id),
-  }))
-
-  const handleDeleteGroup = (id: number) => {
-    deleteMembersByGroup(id)
-    deleteGroup(id)
-  }
-
   return (
     <>
     <Routes>
@@ -357,7 +264,7 @@ export default function App() {
         <Route
           path="/members"
           element={
-            <MemberListRoute groups={groups} />
+            <MemberListRoute />
           }
         />
       </Route>
@@ -375,95 +282,45 @@ export default function App() {
         <Route
           path="/members/new"
           element={
-            <MemberCreateRoute createGroup={createGroup} />
+            <MemberCreateRoute />
           }
         />
       </Route>
 
       {/* 부원 등록 폼 */}
       <Route
-        path="/members/register/:id"
-        element={<MemberRegisterPage groups={groups} onAdd={addMember} />}
+        path="/members/register/:token"
+        element={<MemberRegisterPage />}
       />
 
       {/* 탭 1. 명단 조회 */}
       <Route
         path="/members/:id"
-        element={
-          <MemberGroupRoute groups={groups}>
-            {(group) => (
-              <MemberDetailPage
-                group={group}
-                members={getMembersByGroup(group.id)}
-                onDeleteGroup={handleDeleteGroup}
-              />
-            )}
-          </MemberGroupRoute>
-        }
+        element={<MemberDetailRoute />}
       />
 
       {/* 탭 2. 링크 관리 */}
       <Route
         path="/members/:id/link"
-        element={
-          <MemberGroupRoute groups={groups} title="등록 링크 관리">
-            {(group) => <MemberLinkPage group={group} />}
-          </MemberGroupRoute>
-        }
+        element={<MemberLinkRoute />}
       />
 
       {/* 탭 3. 명단방 수정 */}
       <Route
         path="/members/:id/settings"
-        element={
-          <MemberGroupRoute groups={groups} title="명단방 수정" showFooter={false}>
-            {(group) => (
-              <MemberCreatePage
-                key={group.id}
-                groupId={group.id}
-                initialValues={{
-                  name: group.name,
-                  deadline: group.deadline ?? '',
-                  fields: group.fields ?? [],
-                }}
-                submitText="저장하기"
-                onSubmit={(data) => {
-                  updateGroup(group.id, data)
-                  showAlert('명단방 정보가 저장되었어요.')
-                }}
-              />
-            )}
-          </MemberGroupRoute>
-        }
+        element={<MemberSettingsRoute />}
       />
 
       {/* 부원 추가 */}
       <Route
         path="/members/:id/add"
-        element={
-          <MemberGroupRoute groups={groups} title="부원 추가" showFooter={false}>
-            {(group) => (
-              <MemberAddPage group={group} onAdd={addMember} />
-            )}
-          </MemberGroupRoute>
-        }
+        element={<MemberAddRoute />}
       />
 
       {/* 부원 정보 수정 */}
       <Route
         path="/members/:id/edit/:memberId"
-        element={
-          <MemberGroupRoute groups={groups} title="부원 정보 수정" showFooter={false}>
-            {(group) => (
-              <MemberEditPage
-                group={group}
-                getMember={getMember}
-                onEdit={editMember}
-                onDelete={deleteMember}
-              />
-            )}
-          </MemberGroupRoute>
-        }
+        element={<MemberEditRoute />}
       />
 
       {/* 404 페이지 */}

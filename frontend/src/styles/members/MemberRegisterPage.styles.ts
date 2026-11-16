@@ -191,3 +191,14 @@ export const GroupName = styled.strong`
   font-weight: 700;
   color: #17231c;
 `
+
+// 미리보기 안내 (링크 관리 → 부원 등록 폼 미리보기)
+export const PreviewNotice = styled.p`
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #e6f4f0;
+  font-size: 13px;
+  line-height: 140%;
+  color: #367d70;
+`

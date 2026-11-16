@@ -21,11 +21,13 @@ export default function MemberLinkPage({ group }: Props) {
 
     useEffect(() => () => window.clearTimeout(timerRef.current), [])
 
-    const registerPath = `/members/register/${group.id}`
-    const registerLink = `${window.location.origin}${registerPath}`
+    // 서버가 발급한 등록 토큰으로 링크 생성
+    const registerPath = group.joinToken ? `/members/register/${group.joinToken}` : ''
+    const registerLink = registerPath ? `${window.location.origin}${registerPath}` : ''
     const displayLink = registerLink.replace(/^https?:\/\//, '')
 
     const handleCopy = async () => {
+        if (!registerLink) return
         try {
             await navigator.clipboard.writeText(registerLink)
 
@@ -56,10 +58,10 @@ export default function MemberLinkPage({ group }: Props) {
                 <S.CardTitle>부원 등록 링크</S.CardTitle>
 
                 <S.LinkBox title={registerLink}>
-                    <S.LinkText>{displayLink}</S.LinkText>
+                    <S.LinkText>{displayLink || '등록 링크를 불러오지 못했어요.'}</S.LinkText>
                 </S.LinkBox>
 
-                <S.CopyButton type="button" onClick={handleCopy}>
+                <S.CopyButton type="button" onClick={handleCopy} disabled={!registerLink}>
                     {copied ? '복사 완료!' : '링크 복사하기'}
                 </S.CopyButton>
 
@@ -73,7 +75,8 @@ export default function MemberLinkPage({ group }: Props) {
 
                 <S.PreviewButton
                     type="button"
-                    onClick={() => navigate(registerPath)}
+                    onClick={() => registerPath && navigate(`${registerPath}?preview=1`)}
+                    disabled={!registerPath}
                 >
                     부원 등록 폼 미리보기
                 </S.PreviewButton>
