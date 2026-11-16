@@ -76,3 +76,10 @@ export const Chevron = styled.svg`
   margin-right: -4px;
   color: #78918c;
 `
+
+// 수정 화면: 차수 옆 회색 안내
+export const Hint = styled.span`
+  margin-left: auto;
+  font-size: 12px;
+  color: #9aaba7;
+`
