@@ -13,7 +13,8 @@ import * as S from "../../styles/members/MemberDetailPage.styles";
 interface Props {
     group: MemberGroup;
     members: MemberInfo[];
-    onDeleteGroup: (id: number) => void;
+    // 삭제에 성공하면 true (실패 시 목록으로 이동하지 않음)
+    onDeleteGroup: (id: number) => boolean | void | Promise<boolean | void>;
 }
 
 const normalize = (value: string) => value.replace(/-/g, "").toLowerCase();
@@ -62,8 +63,12 @@ export default function MemberDetailPage({
         }
     };
 
-    const handleDeleteGroup = () => {
-        onDeleteGroup(group.id);
+    const handleDeleteGroup = async () => {
+        const deleted = await onDeleteGroup(group.id);
+        if (deleted === false) {
+            setShowDeleteModal(false);
+            return;
+        }
         navigate("/members", { replace: true });
     };
 

@@ -13,6 +13,8 @@ export interface MemberGroup {
     status: MemberGroupStatus;
     deadline?: string;
     fields?: MemberField[];
+    // 공유 등록 링크 토큰 (명단방 상세에서만 내려옴)
+    joinToken?: string;
 }
 
 export interface CreateMemberGroup {

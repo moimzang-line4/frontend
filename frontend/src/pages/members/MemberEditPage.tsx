@@ -7,12 +7,14 @@ import type {
     MemberInfo,
     MemberFormValues,
 } from "../../types/members/memberInfo";
+import { showAlert } from "../../hooks/useAlert";
+import { getApiErrorMessage } from "../../utils/members/mapper";
 
 interface Props {
     group: MemberGroup;
     getMember: (memberId: number) => MemberInfo | undefined;
-    onEdit: (memberId: number, data: MemberFormValues) => void;
-    onDelete: (memberId: number) => void;
+    onEdit: (memberId: number, data: MemberFormValues) => void | Promise<void>;
+    onDelete: (memberId: number) => void | Promise<void>;
 }
 
 export default function MemberEditPage({
@@ -52,9 +54,13 @@ export default function MemberEditPage({
             <MemberForm
                 groupFields={group.fields}
                 initialValues={initialValues}
-                onSubmit={(data) => {
-                    onEdit(targetId, data);
-                    goToList();
+                onSubmit={async (data) => {
+                    try {
+                        await onEdit(targetId, data);
+                        goToList();
+                    } catch (caught) {
+                        showAlert(getApiErrorMessage(caught, "부원 정보를 저장하지 못했어요."));
+                    }
                 }}
                 onDelete={() => setShowDeleteModal(true)}
             />
@@ -65,9 +71,14 @@ export default function MemberEditPage({
                     description={`${member.name} 님의 정보가 명단에서 삭제되며,\n삭제한 정보는 복구할 수 없어요.`}
                     confirmText="부원 삭제"
                     onCancel={() => setShowDeleteModal(false)}
-                    onConfirm={() => {
-                        onDelete(targetId);
-                        goToList();
+                    onConfirm={async () => {
+                        try {
+                            await onDelete(targetId);
+                            goToList();
+                        } catch (caught) {
+                            setShowDeleteModal(false);
+                            showAlert(getApiErrorMessage(caught, "부원을 삭제하지 못했어요."));
+                        }
                     }}
                 />
             )}
