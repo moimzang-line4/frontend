@@ -11,9 +11,11 @@ type Props = {
   initial?: LedgerInput
   onSave: (input: LedgerInput) => Promise<void>
   onDelete?: () => void
+  // 정산에서 자동 기록된 내역은 보기만 가능
+  readOnly?: boolean
 }
 
-export default function LedgerEntryForm({ initial, onSave, onDelete }: Props) {
+export default function LedgerEntryForm({ initial, onSave, onDelete, readOnly = false }: Props) {
   const [type, setType] = useState<LedgerInput['type']>(
     initial?.type ?? 'expense',
   )
@@ -25,7 +27,8 @@ export default function LedgerEntryForm({ initial, onSave, onDelete }: Props) {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
   const [error, setError] = useState('')
-  const [pending, setPending] = useState(false)
+  const [submitting, setPending] = useState(false)
+  const pending = submitting || readOnly
   const busy = useRef(false)
 
   return (
@@ -91,7 +94,7 @@ export default function LedgerEntryForm({ initial, onSave, onDelete }: Props) {
           <input
             id="entry-title"
             value={title}
-            maxLength={150}
+            maxLength={100}
             required
             disabled={pending}
             placeholder="항목명을 입력해주세요"
@@ -137,14 +140,20 @@ export default function LedgerEntryForm({ initial, onSave, onDelete }: Props) {
         </S.Field>
       </S.Fields>
       {error && <ErrorText role="alert">{error}</ErrorText>}
-      <S.Submit type="submit" disabled={pending}>
-        {pending ? '저장 중…' : initial ? '수정하기' : '등록하기'}
-      </S.Submit>
+      {readOnly ? (
+        <p style={{ fontSize: 13, textAlign: 'center', color: 'var(--color-muted)' }}>
+          정산에서 자동 기록된 내역은 수정할 수 없어요.
+        </p>
+      ) : (
+        <S.Submit type="submit" disabled={pending}>
+          {submitting ? '저장 중…' : initial ? '변경사항 저장' : '등록하기'}
+        </S.Submit>
+      )}
       {onDelete && (
         <OutlineButton
           type="button"
           $tone="danger"
-          disabled={pending}
+          disabled={submitting}
           onClick={onDelete}
         >
           삭제하기
