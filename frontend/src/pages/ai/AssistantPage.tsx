@@ -1,12 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import MainLayout from '../../layouts/MainLayout'
-import UnpaidResultCard from '../../components/ai/UnpaidResultCard'
-import NoticeResultCard from '../../components/ai/NoticeResultCard'
-import ScheduleResultCard from '../../components/ai/ScheduleResultCard'
+import AssistantResultCard from '../../components/ai/AssistantResultCard'
 import useAssistant from '../../hooks/ai/useAssistant'
-import { ASSISTANT_SUGGESTIONS, ASSISTANT_TEXT } from '../../constants/ai/assistant'
-import type { AssistantReply } from '../../types/ai/assistant'
-import type { Schedule } from '../../types/schedules/schedule'
+import { ASSISTANT_MAX_LENGTH, ASSISTANT_SUGGESTIONS, ASSISTANT_TEXT } from '../../constants/ai/assistant'
 import * as S from '../../styles/ai/AssistantPage.styles'
 
 const ArrowIcon = (
@@ -21,21 +17,9 @@ const SendIcon = (
   </svg>
 )
 
-function ReplyResult({ reply, schedules }: { reply: AssistantReply; schedules: Schedule[] }) {
-  if (reply.kind === 'unpaid') return <UnpaidResultCard scheduleId={reply.scheduleId} scheduleTitle={reply.scheduleTitle} />
-  if (reply.kind === 'notice') return <NoticeResultCard scheduleId={reply.scheduleId} scheduleTitle={reply.scheduleTitle} />
-  if (reply.kind === 'schedules') {
-    const items = reply.scheduleIds
-      .map(id => schedules.find(schedule => schedule.id === id))
-      .filter((schedule): schedule is Schedule => Boolean(schedule))
-    return <ScheduleResultCard schedules={items} />
-  }
-  return null
-}
-
 // 피그마: AI 운영 비서 · 업무 요청 시작 / 미입금자 조회 결과
 export default function AssistantPage() {
-  const { messages, pending, send, schedules } = useAssistant()
+  const { messages, pending, send } = useAssistant()
   const [input, setInput] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -77,9 +61,9 @@ export default function AssistantPage() {
                 <S.AssistantMessage key={message.id}>
                   <S.AssistantRow>
                     <S.Avatar aria-hidden="true">AI</S.Avatar>
-                    <S.AssistantBubble>{message.reply.text}</S.AssistantBubble>
+                    <S.AssistantBubble role={message.error ? 'alert' : undefined}>{message.text}</S.AssistantBubble>
                   </S.AssistantRow>
-                  <ReplyResult reply={message.reply} schedules={schedules} />
+                  <AssistantResultCard cardType={message.cardType} card={message.card} navigation={message.navigation} />
                 </S.AssistantMessage>
               ),
             )}
@@ -110,6 +94,7 @@ export default function AssistantPage() {
           placeholder={ASSISTANT_TEXT.placeholder}
           aria-label={ASSISTANT_TEXT.placeholder}
           enterKeyHint="send"
+          maxLength={ASSISTANT_MAX_LENGTH}
         />
         <S.SendButton type="submit" aria-label="요청 보내기" disabled={!input.trim() || pending}>
           {SendIcon}
