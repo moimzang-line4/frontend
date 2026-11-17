@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
@@ -5,6 +6,7 @@ import Header from '../../layouts/Header'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import AgendaAccordion from '../../components/meetings/AgendaAccordion'
 import {
+  deleteAgenda,
   generateSummary,
   updateSummary,
   useGetMeetingDetail,
@@ -43,9 +45,12 @@ function Review({
   const [draft, setDraft] = useState(meeting.summaryContent ?? '')
   const [saved, setSaved] = useState(meeting.summaryContent ?? '')
   const [originalOpen, setOriginalOpen] = useState(false)
-  const [pending, setPending] = useState<'generate' | 'save' | null>(null)
+  const [pending, setPending] = useState<'generate' | 'save' | 'delete' | null>(
+    null,
+  )
   const [error, setError] = useState('')
   const [regenerateOpen, setRegenerateOpen] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
   const [leaveOpen, setLeaveOpen] = useState(false)
   const busy = useRef(false)
   const summaryRef = useRef<HTMLTextAreaElement>(null)
@@ -125,6 +130,81 @@ function Review({
     } catch (caught) {
       setError(meetingError(caught))
       if (inDialog) throw new Error(meetingError(caught))
+    } finally {
+      busy.current = false
+      setPending(null)
+    }
+  }
+
+  async function removeAgenda() {
+    if (busy.current || deleteId === null) return
+    if (meeting.agendas.length <= 1)
+      throw new Error('안건은 최소 1개 남아 있어야 해요.')
+    busy.current = true
+    setPending('delete')
+    try {
+      const response = await deleteAgenda(deleteId, { timeout: 15000 })
+      if (response.data.success !== true) {
+        throw new Error(response.data.message || '안건을 삭제하지 못했어요.')
+      }
+      // Only update the UI after server confirmation. Existing AI summary stays intact.
+      client.setQueryData<Awaited<ReturnType<typeof getMeetingDetail>>>(
+        queryKey,
+        current => {
+          if (!current?.data.data) return current
+          const agendas = current.data.data.agendas?.filter(
+            item => item.agendaId !== deleteId,
+          )
+          const doneCount =
+            agendas?.filter(item => item.status === 'COMPLETED').length ?? 0
+          const totalCount = agendas?.length ?? 0
+          return {
+            ...current,
+            data: {
+              ...current.data,
+              data: {
+                ...current.data.data,
+                agendas,
+                progress: {
+                  doneCount,
+                  totalCount,
+                  percentage: totalCount
+                    ? Math.round((doneCount / totalCount) * 100)
+                    : 0,
+                },
+              },
+            },
+          }
+        },
+      )
+      setExpanded(current => {
+        const next = new Set(current)
+        next.delete(deleteId)
+        return next
+      })
+      setDeleteId(null)
+      await client.invalidateQueries({
+        predicate: query => {
+          const first = query.queryKey[0]
+          return (
+            first === 'operation-records' ||
+            (typeof first === 'string' &&
+              /\/api\/(?:meetings\/|terms\/\d+\/(?:meetings|agendas\/linkable)|schedules\/\d+\/agenda-links)/.test(
+                first,
+              ))
+          )
+        },
+      })
+    } catch (caught) {
+      if (isAxiosError<{ code?: string }>(caught)) {
+        if (caught.response?.data.code === 'MEETING_409_ALREADY_ENDED') {
+          throw new Error('종료된 회의의 안건 삭제는 서버에서 제한하고 있어요.')
+        }
+        if (caught.response?.data.code === 'AGENDA_409_AT_LEAST_ONE_REQUIRED') {
+          throw new Error('안건은 최소 1개 남아 있어야 해요.')
+        }
+      }
+      throw new Error(meetingError(caught))
     } finally {
       busy.current = false
       setPending(null)
@@ -254,6 +334,10 @@ function Review({
                     completed: item.status === 'COMPLETED',
                   }}
                   index={index}
+                  onDelete={
+                    !editing ? () => setDeleteId(item.agendaId) : undefined
+                  }
+                  deleteDisabled={!!pending || meeting.agendas.length <= 1}
                   expanded={expanded.has(item.agendaId)}
                   onToggle={() =>
                     setExpanded(current => {
@@ -323,6 +407,20 @@ function Review({
           </S.Primary>
         )}
       </S.Content>
+      <ConfirmDialog
+        open={deleteId !== null}
+        title="안건을 삭제할까요?"
+        description={
+          hasSummary
+            ? '삭제한 안건은 복구할 수 없어요. 기존 AI 요약은 유지되며, 다시 요약하기로 갱신할 수 있어요.'
+            : '삭제한 안건은 복구할 수 없어요.'
+        }
+        confirmText="삭제하기"
+        onCancel={() => {
+          if (!pending) setDeleteId(null)
+        }}
+        onConfirm={removeAgenda}
+      />
       <ConfirmDialog
         open={regenerateOpen}
         title="다시 요약할까요?"

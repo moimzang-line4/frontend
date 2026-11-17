@@ -18,6 +18,8 @@ type Props = {
   selected?: boolean
   onSelect?: () => void
   onUnlink?: () => void
+  onDelete?: () => void
+  deleteDisabled?: boolean
   expanded?: boolean
   onToggle?: () => void
 }
@@ -61,6 +63,13 @@ const Preparation = styled(S.Preparation)`
   margin: 0 16px 12px;
 `
 
+const Delete = styled(S.Disconnect)`
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`
+
 const Field = styled(S.Field)`
   padding: 12px 16px;
   gap: 12px;
@@ -73,6 +82,8 @@ export default function AgendaAccordion({
   selected,
   onSelect,
   onUnlink,
+  onDelete,
+  deleteDisabled,
   expanded: controlledExpanded,
   onToggle,
 }: Props) {
@@ -180,6 +191,19 @@ export default function AgendaAccordion({
               />
             </Field>
           </Detail>
+          {onDelete && (
+            <Delete
+              type="button"
+              aria-label={`${label} 삭제하기`}
+              disabled={deleteDisabled}
+              title={
+                deleteDisabled ? '안건은 최소 1개 남아 있어야 해요.' : undefined
+              }
+              onClick={onDelete}
+            >
+              삭제하기
+            </Delete>
+          )}
         </S.Panel>
       )}
     </Card>
