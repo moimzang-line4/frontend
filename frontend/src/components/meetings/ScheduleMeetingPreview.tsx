@@ -1,3 +1,4 @@
+import useMeetingStarted from '../../hooks/meetings/useMeetingStarted'
 import { useLocation } from 'react-router'
 import styled from 'styled-components'
 
@@ -24,11 +25,9 @@ const Card = styled(Base.Card)`
 const Badge = styled(Base.Category)<{
   $done: boolean
 }>`
-  background: ${({ $done }) =>
-    $done ? '#dae1ff' : '#ffebde'};
+  background: ${({ $done }) => ($done ? '#dae1ff' : '#ffebde')};
 
-  color: ${({ $done }) =>
-    $done ? '#4f75f8' : '#a15b31'};
+  color: ${({ $done }) => ($done ? '#4f75f8' : '#a15b31')};
 `
 
 const Action = styled(Base.Action)`
@@ -38,15 +37,13 @@ const Action = styled(Base.Action)`
   font-weight: 500;
 `
 
-export default function ScheduleMeetingPreview({
-  meeting,
-}: Props) {
+export default function ScheduleMeetingPreview({ meeting }: Props) {
   const location = useLocation()
 
-  const path =
-    `/meetings/${encodeURIComponent(meeting.id)}`
+  const path = `/meetings/${encodeURIComponent(meeting.id)}`
 
   const done = meeting.status === 'completed'
+  const { started } = useMeetingStarted(Number(meeting.id), meeting.started)
 
   return (
     <Card>
@@ -57,21 +54,15 @@ export default function ScheduleMeetingPreview({
       >
         <Base.Top>
           <Base.Badges>
-            <Badge $done={done}>
-              {done ? '완료' : '진행 중'}
-            </Badge>
+            <Badge $done={done}>{done ? '완료' : '진행 중'}</Badge>
 
             {meeting.categoryName && (
-              <Base.Category>
-                {meeting.categoryName}
-              </Base.Category>
+              <Base.Category>{meeting.categoryName}</Base.Category>
             )}
           </Base.Badges>
 
           <time dateTime={meeting.createdAt}>
-            {meeting.createdAt
-              .slice(5, 10)
-              .replace('-', '.')}
+            {meeting.createdAt.slice(5, 10).replace('-', '.')}
           </time>
         </Base.Top>
 
@@ -83,27 +74,21 @@ export default function ScheduleMeetingPreview({
 
       <Base.Footer>
         <Base.Metadata>
-          <span>
-            안건 {meeting.agendas.length}개
-          </span>
+          <span>안건 {meeting.agendas.length}개</span>
 
           <span>
-            <img
-              src={calendarIcon}
-              alt="회의 날짜"
-              width={14}
-              height={14}
-            />
+            <img src={calendarIcon} alt="회의 날짜" width={14} height={14} />
 
             {meeting.date}
           </span>
         </Base.Metadata>
 
         <Action
-          to={`${path}/run`}
+          to={`${path}/${done ? 'review' : 'run'}`}
+          state={{ returnTo: location.pathname + location.search }}
           $filled={!done}
         >
-          {done ? '회의록 보기' : '회의 이어하기'}
+          {done ? '회의록 보기' : started ? '회의 이어하기' : '회의 시작하기'}
         </Action>
       </Base.Footer>
     </Card>

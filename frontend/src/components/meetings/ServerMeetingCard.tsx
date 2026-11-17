@@ -1,3 +1,5 @@
+import { useLocation } from 'react-router'
+import useMeetingStarted from '../../hooks/meetings/useMeetingStarted'
 import styled from 'styled-components'
 
 import type { MeetingSummaryResponse } from '../../api/models'
@@ -44,6 +46,12 @@ export default function ServerMeetingCard({
   failed,
   onRetry,
 }: Props) {
+  const location = useLocation()
+  const origin = { returnTo: location.pathname + location.search }
+  const { started, known } = useMeetingStarted(
+    Number(id),
+    meeting?.status === 'COMPLETED' ? true : undefined,
+  )
   const path = `/meetings/${encodeURIComponent(id)}`
   const completed = meeting?.status === 'COMPLETED'
   const count = (meeting?.attendees ?? '')
@@ -53,7 +61,11 @@ export default function ServerMeetingCard({
 
   return (
     <Card>
-      <Base.MainLink to={path} aria-label={`${title} 회의 정보 및 안건 수정`}>
+      <Base.MainLink
+        to={path}
+        state={origin}
+        aria-label={`${title} 회의 정보 및 안건 수정`}
+      >
         <Base.Top>
           <Base.Badges>
             {meeting && (
@@ -96,8 +108,18 @@ export default function ServerMeetingCard({
           </span>
         </Base.Metadata>
 
-        <Base.Action to={`${path}/run`} $filled={!!meeting && !completed}>
-          {completed ? '회의록 보기' : meeting ? '회의 이어하기' : '회의 열기'}
+        <Base.Action
+          to={`${path}/${completed ? 'review' : 'run'}`}
+          state={origin}
+          $filled={!!meeting && !completed}
+        >
+          {completed
+            ? '회의록 보기'
+            : started
+              ? '회의 이어하기'
+              : known
+                ? '회의 시작하기'
+                : '회의 열기'}
         </Base.Action>
       </Footer>
 

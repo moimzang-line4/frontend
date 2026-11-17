@@ -1,3 +1,4 @@
+import { hasServerProgress } from '../../utils/meetings/started'
 import { useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
@@ -32,7 +33,7 @@ export type AttachmentMeeting = Pick<
   | 'categoryName'
   | 'status'
   | 'agendas'
->
+> & { started: boolean }
 
 export type AgendaMeeting = Pick<
   Meeting,
@@ -275,6 +276,7 @@ export default function useScheduleMeetingAttachments(
               createdAt: summary.createdAt!,
               categoryName: summary.categoryName ?? '',
               status: status(item.status),
+              started: hasServerProgress(item.agendas),
 
               agendas: [...item.agendas]
                 .sort(
