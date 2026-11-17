@@ -2,18 +2,19 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
-import useFileScope from '../../hooks/files/useFileScope'
 import useLedger from '../../hooks/documents/useLedger'
-import type { Ledger } from '../../types/documents/ledger'
-import { updateLedger } from '../../utils/documents/ledgerStorage'
-import { ledgerIdentity } from '../../utils/documents/ledgerIdentity'
-import { ledgerTotals } from '../../utils/documents/ledgerMath'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import * as S from '../../styles/documents/Ledger.styles'
 import * as F from '../../styles/files/FilesPage.styles'
 
+const today = () => {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
+// 초기 금액은 서버에 '초기 금액' 수입 내역으로 저장 (0원이면 내역 삭제)
 export default function LedgerInitialBalancePage() {
-  const scope = useFileScope()
-  const { ledger, loading, error } = useLedger(scope.id)
+  const { initialBalance, loading, error, saveInitialBalance } = useLedger()
   const navigate = useNavigate()
   const back = () =>
     navigate('/files', { replace: true, state: { tab: '장부' } })
@@ -29,9 +30,8 @@ export default function LedgerInitialBalancePage() {
         </F.Content>
       ) : (
         <InitialBalanceForm
-          key={scope.id}
-          scopeId={scope.id}
-          ledger={ledger}
+          initial={initialBalance}
+          onSave={(amount) => saveInitialBalance(amount, today())}
           onSaved={back}
         />
       )}
@@ -40,17 +40,15 @@ export default function LedgerInitialBalancePage() {
 }
 
 function InitialBalanceForm({
-  scopeId,
-  ledger,
+  initial,
+  onSave,
   onSaved,
 }: {
-  scopeId: string
-  ledger: Ledger | null
+  initial: number
+  onSave: (amount: number) => Promise<void>
   onSaved: () => void
 }) {
-  const [amount, setAmount] = useState(
-    ledger ? String(ledger.initialBalance) : '',
-  )
+  const [amount, setAmount] = useState(initial ? String(initial) : '')
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const valid = /^\d+$/.test(amount) && Number.isSafeInteger(Number(amount))
@@ -62,37 +60,10 @@ function InitialBalanceForm({
     setError('')
 
     try {
-      await updateLedger(scopeId, (current) => {
-        if (
-          (current ? ledgerIdentity(current) : null) !==
-            (ledger ? ledgerIdentity(ledger) : null) ||
-          current?.initialBalance !== ledger?.initialBalance
-        ) {
-          throw new Error('장부가 변경되었어요. 현재 장부를 다시 확인해주세요.')
-        }
-        const next: Ledger = current
-          ? {
-              ...current,
-              initialBalance: Number(amount),
-              updatedAt: Date.now(),
-            }
-          : {
-              id: crypto.randomUUID(),
-              scopeId,
-              initialBalance: Number(amount),
-              entries: [],
-              updatedAt: Date.now(),
-            }
-        ledgerTotals(next)
-        return next
-      })
+      await onSave(Number(amount))
       onSaved()
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : '초기 금액을 저장하지 못했어요.',
-      )
+      setError(getApiErrorMessage(cause, '초기 금액을 저장하지 못했어요.'))
     } finally {
       setPending(false)
     }
@@ -110,7 +81,8 @@ function InitialBalanceForm({
             inputMode="numeric"
             required
             value={amount}
-            onChange={(event) => setAmount(event.target.value)}
+            disabled={pending}
+            onChange={(event) => setAmount(event.target.value.replaceAll(',', ''))}
             placeholder="금액 입력"
           />
           <small>원</small>

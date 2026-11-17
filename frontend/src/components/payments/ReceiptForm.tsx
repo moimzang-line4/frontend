@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import OptionSheet from '../OptionSheet'
 import type { ReceiptField, ReceiptFieldKey, ReceiptForm as ReceiptFormValues } from '../../types/payments/receipt'
-import { ROUND_OPTIONS } from '../../constants/payments/receipt'
 import * as S from '../../styles/payments/ReceiptForm.styles'
 
 type Props = {
   fields: readonly ReceiptField[]
   values: ReceiptFormValues
   onChange: (key: ReceiptFieldKey, value: string) => void
+  // 차수 선택지 (서버 차수 + 새 차수)
+  roundOptions: readonly string[]
+  // 수정 화면에서는 차수를 바꿀 수 없음
+  roundDisabled?: boolean
 }
 
 // 피그마: 영수증 인식 결과 / 직접 등록의 입력 카드 (라벨 | 값 한 줄씩)
-export default function ReceiptForm({ fields, values, onChange }: Props) {
+export default function ReceiptForm({ fields, values, onChange, roundOptions, roundDisabled = false }: Props) {
   const [roundOpen, setRoundOpen] = useState(false)
 
   return (
@@ -31,12 +34,14 @@ export default function ReceiptForm({ fields, values, onChange }: Props) {
                 type="button"
                 aria-haspopup="listbox"
                 $empty={!values.round}
+                disabled={roundDisabled}
                 onClick={() => setRoundOpen(true)}
               >
                 <span>{values.round || field.placeholder}</span>
-                <S.Chevron width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                {roundDisabled && <S.Hint>변경할 수 없어요</S.Hint>}
+                {!roundDisabled && <S.Chevron width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </S.Chevron>
+                </S.Chevron>}
               </S.SelectButton>
             ) : (
               <S.Input
@@ -58,8 +63,8 @@ export default function ReceiptForm({ fields, values, onChange }: Props) {
       {roundOpen && (
         <OptionSheet
           title="차수 선택"
-          options={ROUND_OPTIONS}
-          selected={values.round as (typeof ROUND_OPTIONS)[number] | ''}
+          options={roundOptions}
+          selected={values.round}
           onSelect={option => onChange('round', option)}
           onClose={() => setRoundOpen(false)}
         />

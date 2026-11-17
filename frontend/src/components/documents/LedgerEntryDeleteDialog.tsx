@@ -1,21 +1,18 @@
-import { ledgerIdentity } from '../../utils/documents/ledgerIdentity'
+import { useState } from 'react'
 import ConfirmDialog from '../common/ConfirmDialog'
-import type { Ledger, LedgerEntry } from '../../types/documents/ledger'
-import { deleteLedgerEntry } from '../../utils/documents/ledgerEntries'
+import { showAlert } from '../../hooks/useAlert'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 
 type Props = {
-  ledger: Ledger
-  entry: LedgerEntry
   onCancel: () => void
+  // 서버 삭제 (실패하면 알림)
+  onConfirm: () => Promise<void>
   onDeleted: () => void
 }
 
-export default function LedgerEntryDeleteDialog({
-  ledger,
-  entry,
-  onCancel,
-  onDeleted,
-}: Props) {
+export default function LedgerEntryDeleteDialog({ onCancel, onConfirm, onDeleted }: Props) {
+  const [pending, setPending] = useState(false)
+
   return (
     <ConfirmDialog
       open
@@ -27,15 +24,21 @@ export default function LedgerEntryDeleteDialog({
           원본 영수증과 정산 기록은 유지돼요.
         </>
       }
-      confirmText="삭제"
+      confirmText={pending ? '삭제 중…' : '삭제'}
       onCancel={onCancel}
       onConfirm={async () => {
-        await deleteLedgerEntry(
-          ledger.scopeId,
-          entry.id,
-          ledgerIdentity(ledger),
-        )
-        onDeleted()
+        if (pending) return
+        setPending(true)
+        try {
+          await onConfirm()
+          onDeleted()
+        } catch (caught) {
+          // 정산 일정이 남아 있는 자동 기록은 서버가 삭제를 막음(409)
+          showAlert(getApiErrorMessage(caught, '내역을 삭제하지 못했어요.'))
+          onCancel()
+        } finally {
+          setPending(false)
+        }
       }}
     />
   )

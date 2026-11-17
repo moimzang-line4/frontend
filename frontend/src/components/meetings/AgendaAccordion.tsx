@@ -18,6 +18,8 @@ type Props = {
   selected?: boolean
   onSelect?: () => void
   onUnlink?: () => void
+  expanded?: boolean
+  onToggle?: () => void
 }
 
 const Card = styled(S.Card)`
@@ -71,18 +73,18 @@ export default function AgendaAccordion({
   selected,
   onSelect,
   onUnlink,
+  expanded: controlledExpanded,
+  onToggle,
 }: Props) {
-  const [expanded, setExpanded] = useState(false)
+  const [localExpanded, setExpanded] = useState(false)
+  const expanded = controlledExpanded ?? localExpanded
   const id = useId()
 
   const title = agendaTitle(agenda)
 
-  const done =
-    agenda.completed ||
-    meeting.status === 'completed'
+  const done = agenda.completed
 
-  const label =
-    `${meeting.title} 안건 ${index + 1}: ${title}`
+  const label = `${meeting.title} 안건 ${index + 1}: ${title}`
 
   return (
     <Card aria-label={label}>
@@ -98,18 +100,12 @@ export default function AgendaAccordion({
         <S.Toggle
           id={`${id}-toggle`}
           type="button"
-          aria-label={
-            `${label} ${expanded ? '접기' : '펼치기'}`
-          }
+          aria-label={`${label} ${expanded ? '접기' : '펼치기'}`}
           aria-expanded={expanded}
           aria-controls={`${id}-panel`}
-          onClick={() =>
-            setExpanded(value => !value)
-          }
+          onClick={() => (onToggle ? onToggle() : setExpanded(value => !value))}
         >
-          <S.Status $done={done}>
-            {done ? '완료' : '진행 중'}
-          </S.Status>
+          <S.Status $done={done}>{done ? '완료' : '진행 중'}</S.Status>
 
           <S.HeaderText>
             <strong>
@@ -117,9 +113,7 @@ export default function AgendaAccordion({
             </strong>
 
             <small>
-              {agenda.decision.trim()
-                ? '결정 사항 입력됨'
-                : '결정 사항 미입력'}
+              {agenda.decision.trim() ? '결정 사항 입력됨' : '결정 사항 미입력'}
             </small>
           </S.HeaderText>
 
@@ -153,7 +147,6 @@ export default function AgendaAccordion({
             <Heading>
               <h4>
                 안건 {index + 1}
-
                 {index === 0 && (
                   <>
                     {' '}
@@ -164,18 +157,13 @@ export default function AgendaAccordion({
 
               <p>{title}</p>
 
-              <S.Status $done={done}>
-                {done ? '완료' : '진행 중'}
-              </S.Status>
+              <S.Status $done={done}>{done ? '완료' : '진행 중'}</S.Status>
             </Heading>
 
-            <Preparation>
-              {agenda.preparation}
-            </Preparation>
+            <Preparation>{agenda.preparation}</Preparation>
 
             <Field>
               논의 내용
-
               <textarea
                 aria-label={`${label} 논의 내용`}
                 readOnly
@@ -185,7 +173,6 @@ export default function AgendaAccordion({
 
             <Field>
               결정 사항
-
               <textarea
                 aria-label={`${label} 결정 사항`}
                 readOnly

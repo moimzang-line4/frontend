@@ -52,6 +52,7 @@ const FileUploadPage = lazy(() => import('./pages/files/FileUploadPage'))
 const ScheduleFilesPage = lazy(() => import('./pages/files/ScheduleFilesPage'))
 
 const MeetingFormPage = lazy(() => import('./pages/meetings/MeetingFormPage'))
+const MeetingReviewPage = lazy(() => import('./pages/meetings/MeetingReviewPage'))
 const MeetingRunPage = lazy(() => import('./pages/meetings/MeetingRunPage'))
 const MeetingLinkPage = lazy(() => import('./pages/meetings/MeetingLinkPage'))
 
@@ -121,6 +122,8 @@ export default function App() {
       <Route path="/schedules/:scheduleId/meetings/link" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingLinkPage /></Suspense>} />
       <Route path="/meetings/new" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
       <Route path="/meetings/:meetingId" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingFormPage /></Suspense>} />
+      <Route path="/meetings/:meetingId/review" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingReviewPage /></Suspense>} />
+      <Route path="/meetings/:meetingId/summary" element={<Suspense fallback={<Placeholder>요약을 불러오는 중이에요.</Placeholder>}><MeetingReviewPage editing /></Suspense>} />
       <Route path="/meetings/:meetingId/run" element={<Suspense fallback={<Placeholder>회의록을 불러오는 중이에요.</Placeholder>}><MeetingRunPage /></Suspense>} />
 
       {/* 일정 관리 */}

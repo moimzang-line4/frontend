@@ -13,7 +13,7 @@ export default function DocumentsPage() {
       listPath={scope.listPath}
       generationLabel={scope.generationLabel}
       ledgerContent={(search) => (
-        <LedgerPanel key={scope.id} scopeId={scope.id} search={search} />
+        <LedgerPanel key={scope.id} search={search} />
       )}
       documentView
     />

@@ -102,11 +102,11 @@ export default function HomePage() {
 
         <S.Heading>다가오는 운영 일정</S.Heading>
 
-        {calendar.upcoming.map((event, index) => (
+        {calendar.upcoming.map(event => (
           <UpcomingEventCard
             key={event.id}
             event={event}
-            featured={index === 0}
+            featured={event.date === calendar.today}
           />
         ))}
 

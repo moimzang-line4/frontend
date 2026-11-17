@@ -1,18 +1,15 @@
-import { ledgerIdentity } from '../../utils/documents/ledgerIdentity'
 import { Navigate, useMatch, useNavigate, useParams } from 'react-router'
 import Header from '../../layouts/Header'
 import LedgerEntryDeleteDialog from '../../components/documents/LedgerEntryDeleteDialog'
 import LedgerEntryForm from '../../components/documents/LedgerEntryForm'
-import useFileScope from '../../hooks/files/useFileScope'
 import useLedger from '../../hooks/documents/useLedger'
-import { saveLedgerEntry } from '../../utils/documents/ledgerEntries'
+import { getApiErrorMessage } from '../../utils/members/mapper'
 import * as S from '../../styles/files/FilesPage.styles'
 
 export default function LedgerEntryPage() {
   const { entryId } = useParams()
   const deleting = !!useMatch('/files/ledger/entries/:entryId/delete')
-  const scope = useFileScope()
-  const { ledger, loading, error } = useLedger(scope.id)
+  const { ledger, loading, error, saveEntry, removeEntry } = useLedger()
   const entry = ledger?.entries.find((item) => item.id === entryId)
   const navigate = useNavigate()
   const back = () => navigate('/files', { state: { tab: '장부' } })
@@ -36,8 +33,9 @@ export default function LedgerEntryPage() {
         </S.Content>
       ) : (
         <LedgerEntryForm
-          key={`${ledgerIdentity(ledger)}:${entryId ?? 'new'}`}
+          key={entryId ?? 'new'}
           initial={entry}
+          readOnly={entry?.source === 'payment'}
           onDelete={
             entry
               ? () =>
@@ -47,20 +45,18 @@ export default function LedgerEntryPage() {
               : undefined
           }
           onSave={async (input) => {
-            await saveLedgerEntry(
-              scope.id,
-              input,
-              ledgerIdentity(ledger),
-              entryId,
-            )
+            try {
+              await saveEntry(input, entryId)
+            } catch (caught) {
+              throw new Error(getApiErrorMessage(caught, '내역을 저장하지 못했어요.'))
+            }
             back()
           }}
         />
       )}
-      {deleting && ledger && entry && (
+      {deleting && entry && (
         <LedgerEntryDeleteDialog
-          ledger={ledger}
-          entry={entry}
+          onConfirm={() => removeEntry(entry.id)}
           onCancel={() =>
             navigate(`/files/ledger/entries/${encodeURIComponent(entry.id)}`, {
               replace: true,

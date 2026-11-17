@@ -6,9 +6,13 @@ export type ReceiptForm = Record<ReceiptFieldKey, string>
 export type ReceiptStatus = 'ongoing' | 'done'
 
 export type Receipt = ReceiptForm & {
+  // 서버는 차수 하나에 영수증 하나 → id는 차수 ID
   id: string
+  roundId?: number
+  // 입금 완료한 사람이 있으면 수정·삭제 불가
+  locked?: boolean
   status?: ReceiptStatus
-  // 촬영한 영수증 사진 (직접 등록이면 없음)
+  // 영수증 사진 주소 (직접 등록이면 없음)
   image?: string
   createdAt: number
 }
