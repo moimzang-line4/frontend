@@ -8,7 +8,7 @@ interface Props {
 export default function MemberStatusBadge({ status }: Props) {
     return (
         <S.Badge $status={status}>
-            {status === 'open' ? '등록 중' : '등록 완료'}
+            {status === 'open' ? '등록 중' : '등록 마감'}
         </S.Badge>
     )
 }

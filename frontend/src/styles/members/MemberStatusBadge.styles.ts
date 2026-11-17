@@ -16,6 +16,6 @@ export const Badge = styled.span<{
   font-weight: 700;
   white-space: nowrap;
 
-  color: ${({ $status }) => ($status === 'open' ? '#A15B31' : '#424242')};
-  background: ${({ $status }) => ($status === 'open' ? '#FFEBDE' : '#EEEEEE')};
+  color: ${({ $status }) => ($status === 'open' ? '#A15B31' : '#E45C55')};
+  background: ${({ $status }) => ($status === 'open' ? '#FFEBDE' : '#FFE9E8')};
 `
