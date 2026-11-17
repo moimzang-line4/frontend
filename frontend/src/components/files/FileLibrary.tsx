@@ -97,6 +97,8 @@ export default function FileLibrary({
         {documentView && (
   <GroupTermSelect aria-label="자료실 기수" />
 )}
+        {/* 장부 탭은 장부 안에 '항목 검색'이 따로 있음 */}
+        {!(documentView && category === '장부') && (
         <S.SearchRow>
           <S.Search>
             <img src={searchIcon} alt="" width={20} height={20} />
@@ -121,6 +123,7 @@ export default function FileLibrary({
             </S.Attach>
           )}
         </S.SearchRow>
+        )}
 
         <S.Tabs role="group" aria-label="자료 분류">
           {(documentView
