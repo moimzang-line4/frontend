@@ -11,7 +11,7 @@ export const Card = styled(Link)<{ $featured: boolean }>`
   border-radius: var(--radius-app-bar);
   background: ${({ $featured }) => $featured
     ? 'linear-gradient(161.66deg, rgb(67 139 126 / 70%) 10.714%, rgb(150 206 188 / 70%) 82.143%)'
-    : 'linear-gradient(161.66deg, #ffffff 10.714%, #f3faf7 82.143%)'};
+    : 'white'};
   filter: drop-shadow(0 7px 9px rgb(63 141 124 / 10%));
   color: ${({ $featured }) => $featured ? 'white' : 'var(--color-home-ink)'};
 `
