@@ -29,13 +29,6 @@ export type CandidateAgenda = {
   agenda: MeetingAgenda
 }
 
-export type CandidateMeeting = {
-  meeting: AgendaMeeting
-  categoryName: string
-  createdAt?: string
-  agendas: CandidateAgenda[]
-}
-
 function validId(value: unknown): value is number {
   return (
     typeof value === 'number' &&
@@ -155,7 +148,6 @@ export default function useAgendaLinkCandidates(
       if (!candidates.size) {
         return {
           agendas: [] as CandidateAgenda[],
-          meetings: [] as CandidateMeeting[],
         }
       }
 
@@ -266,48 +258,7 @@ export default function useAgendaLinkCandidates(
         }
       })
 
-      const groups = new Map<
-        string,
-        CandidateMeeting
-      >()
-
-      for (const item of agendas) {
-        let meeting = groups.get(item.meeting.id)
-
-        if (!meeting) {
-          const createdAt = summaries.get(
-            Number(item.meeting.id),
-          )?.createdAt
-
-          meeting = {
-            meeting: item.meeting,
-            categoryName: item.categoryName,
-
-            createdAt:
-              typeof createdAt === 'string' &&
-              Number.isFinite(Date.parse(createdAt))
-                ? createdAt
-                : undefined,
-
-            agendas: [],
-          }
-
-          groups.set(item.meeting.id, meeting)
-        }
-
-        meeting.agendas.push(item)
-      }
-
-      for (const meeting of groups.values()) {
-        meeting.agendas.sort(
-          (a, b) => a.index - b.index,
-        )
-      }
-
-      return {
-        agendas,
-        meetings: [...groups.values()],
-      }
+      return { agendas }
     },
   })
 
@@ -408,7 +359,6 @@ export default function useAgendaLinkCandidates(
 
   return {
     agendas: query.data?.agendas ?? [],
-    meetings: query.data?.meetings ?? [],
 
     loading: query.isLoading,
     refreshing: query.isFetching,
