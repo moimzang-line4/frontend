@@ -245,7 +245,10 @@ function MeetingRun({
   async function complete() {
     await persist(agenda, true)
 
-    if (nextAgenda) return
+if (nextAgenda) {
+  setActiveId(nextAgenda.agendaId)
+  return
+}
 
     const response = await endMutation
       .mutateAsync({
