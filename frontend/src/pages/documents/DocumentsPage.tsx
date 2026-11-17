@@ -12,9 +12,8 @@ export default function DocumentsPage() {
       scheduleTitle={scope.title}
       listPath={scope.listPath}
       generationLabel={scope.generationLabel}
-      ledgerContent={(search) => (
-        <LedgerPanel key={scope.id} search={search} />
-      )}
+      // 장부 탭은 자체 '항목 검색'을 씀 (피그마)
+      ledgerContent={<LedgerPanel key={scope.id} />}
       documentView
     />
   )

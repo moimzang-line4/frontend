@@ -4,57 +4,98 @@ import Button from '../../components/Button'
 export const Panel = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   padding-top: 6px;
 `
 
+// 검색 · 분류 · 내역 (피그마: gap 16)
+export const Tools = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`
+
+// +직접 입력 · 내역 카드 (피그마: gap 8)
+export const ListGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+// 피그마: 정산_명단 카드
 export const Balance = styled.div`
-  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 15px;
+  border: 1px solid #fff;
   border-radius: 16px;
-  background: white;
-  box-shadow: var(--shadow-app-bar);
+  background: #fff;
+  box-shadow:
+    0 1px 2px 0 rgba(255, 255, 255, 0.8) inset,
+    0 6px 18px 0 rgba(63, 141, 124, 0.09);
   color: #1b1e20;
+`
+
+// 현재 잔액 + 금액 (피그마: padding 12px 0, gap 8)
+export const BalanceTop = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
 `
 
 export const BalanceHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 14px;
+  gap: 10px;
 
+  > span {
+    font-size: 14px;
+    font-weight: 400;
+    color: #1b1e20;
+  }
   button {
-    min-height: 28px;
     color: #777;
     font-size: 11px;
+    font-weight: 400;
     cursor: pointer;
+  }
+  button:disabled {
+    cursor: wait;
   }
 `
 
 export const Total = styled.p`
-  padding: 4px 0 8px;
-  border-bottom: 1px solid #ededed;
   font-size: 24px;
   font-weight: 700;
+  color: #1b1e20;
   overflow-wrap: anywhere;
 `
 
-export const Totals = styled.div`
+export const Totals = styled.dl`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding-top: 9px;
+  gap: 10px;
+  margin: 0;
 
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
   dt {
     color: #888;
     font-size: 11px;
+    font-weight: 400;
   }
   dd {
-    overflow-wrap: anywhere;
     margin: 0;
-    padding-top: 5px;
+    overflow-wrap: anywhere;
     font-size: 14px;
     font-weight: 700;
+    color: #1b1e20;
   }
   > div:first-child dd {
     color: #08a23a;
@@ -79,21 +120,29 @@ export const Filter = styled.button<{ $active: boolean }>`
 `
 
 export const Manual = styled.button`
-  align-self: flex-end;
-  min-height: 28px;
-  margin-top: -10px;
-  color: var(--color-primary-strong);
+  align-self: stretch;
+  text-align: right;
+  color: #3f8275;
   font-size: 12px;
   font-weight: 700;
+  line-height: 140%;
   cursor: pointer;
 `
 
+// 피그마: 내역 카드 (높이 336, 안에서 스크롤)
 export const Entries = styled.div`
-  min-height: 336px;
-  padding: 20px 14px;
+  height: 336px;
+  overflow-y: auto;
+  padding: 20px 20px 20px 14px;
   border-radius: 16px;
-  background: white;
-  box-shadow: var(--shadow-app-bar);
+  background: #fff;
+  box-shadow: 0 7px 18px 0 rgba(63, 141, 124, 0.1);
+`
+
+export const EntryList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `
 
 export const InitialEmpty = styled.div`
@@ -118,21 +167,17 @@ export const InitialEmpty = styled.div`
 
 const entryColumns = css`
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 112px 44px;
+  grid-template-columns: minmax(0, 1fr) 96px 28px;
   align-items: center;
-  gap: 14px;
-
-  @media (max-width: 360px) {
-    grid-template-columns: minmax(0, 1fr) 96px 44px;
-  }
+  gap: 12px;
 `
 
 export const EntryHeading = styled.div`
   ${entryColumns}
-  padding-bottom: 12px;
   color: #367d70;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 20px;
   span:nth-child(2),
   span:last-child {
     text-align: center;
@@ -142,9 +187,6 @@ export const EntryHeading = styled.div`
 export const Entry = styled.button<{ $income: boolean }>`
   ${entryColumns}
   width: 100%;
-  min-height: 54px;
-  padding: 8px 0;
-  border-bottom: 1px solid #edf1ee;
   text-align: left;
   cursor: pointer;
 
@@ -160,9 +202,10 @@ export const Entry = styled.button<{ $income: boolean }>`
     white-space: nowrap;
     font-size: 12px;
     font-weight: 400;
+    color: #222;
   }
   small {
-    color: #888;
+    color: #999;
     font-size: 10px;
   }
   > span:nth-child(2) {
@@ -170,13 +213,12 @@ export const Entry = styled.button<{ $income: boolean }>`
     text-align: center;
     overflow-wrap: anywhere;
     font-size: 13px;
-    color: ${({ $income }) => ($income ? '#08a23a' : '#1b1e20')};
+    font-weight: ${({ $income }) => ($income ? 700 : 400)};
+    color: ${({ $income }) => ($income ? '#06a23a' : '#202020')};
   }
   > span:last-child {
     display: grid;
     place-items: center;
-    color: #78918c;
-    font-size: 24px;
   }
 `
 
@@ -332,5 +374,157 @@ export const DateControl = styled.div`
     height: 100%;
     opacity: 0;
     cursor: pointer;
+  }
+`
+
+// ───── 피그마: 장부 상세 (시작 잔액) ─────
+
+// 기록이 없을 때 시작 잔액 카드
+export const StartCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #ddece7;
+  border-radius: 16px;
+  background: #fff;
+`
+
+export const StartHeading = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`
+
+export const StartTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 21px;
+  color: #19251f;
+`
+
+export const StartDescription = styled.p`
+  font-size: 12px;
+  line-height: 19px;
+  color: #78918c;
+`
+
+export const StartForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`
+
+// 금액 입력칸: 오른쪽에 '원' (+ 수정 중이면 '저장' 버튼)
+export const AmountBox = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #b3b3b3;
+  border-radius: 10px;
+  background: #fff;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    font-size: 16px;
+    line-height: 19px;
+    color: #647269;
+  }
+  input::placeholder {
+    color: #647269;
+  }
+  > span {
+    font-size: 16px;
+    line-height: 19px;
+    color: #647269;
+  }
+`
+
+export const StartSubmit = styled.button`
+  height: 48px;
+  border-radius: 10px;
+  background: #438b7e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+`
+
+// 현재 잔액 카드 안 '시작 잔액 50,000,000원 [수정]' 줄
+export const StartRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #b3b3b3;
+  border-radius: 10px;
+  background: #f2f2f2;
+
+  strong {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 19px;
+    color: #000;
+  }
+  span {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 19px;
+    color: #000;
+  }
+`
+
+export const Pill = styled.button`
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 41px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid #5aa997;
+  border-radius: 999px;
+  background: transparent;
+  color: #3f8275;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 19px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+`
+
+// 장부 목록 아래 '장부 내역 엑셀 다운로드'
+export const Download = styled.button`
+  height: 48px;
+  padding: 0 13px;
+  border: 1px solid #ddece7;
+  border-radius: 12px;
+  background: #fff;
+  color: #367d70;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: wait;
   }
 `
