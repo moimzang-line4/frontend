@@ -81,3 +81,12 @@ export const Notice = styled.div`
   }
 `
 
+
+// 명단이 비었을 때: 안내 문구 + 불러오기 버튼
+export const EmptyImport = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+`

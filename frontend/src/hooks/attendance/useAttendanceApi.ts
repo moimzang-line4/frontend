@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { isAxiosError } from 'axios'
+import axios, { isAxiosError } from 'axios'
 import {
   addOnSiteAttendee,
   checkInAttendee,
@@ -12,6 +12,13 @@ import type { RoundAttendeeResponse } from '../../api/models/roundAttendeeRespon
 import type { NewParticipant, Participant } from '../../types/attendance/attendance'
 
 const REQUEST = { timeout: 15000 }
+const API_ORIGIN = 'https://api.chungs.store'
+
+// TODO: Swagger에 반영되면 Orval 재생성 후 generated의 함수로 교체
+// POST /api/rounds/{roundId}/attendees/import — 명단방 부원을 이 차수에 미출석으로 추가
+type ImportAttendeesResponse = { success?: boolean; message?: string; data?: { addedCount?: number; skippedCount?: number } }
+const importAttendees = (roundId: number, memberListId: number) =>
+  axios.post<ImportAttendeesResponse>(`${API_ORIGIN}/api/rounds/${roundId}/attendees/import`, { memberListId }, REQUEST)
 const PAGE_SIZE = 100
 const MAX_PAGES = 50
 
@@ -127,6 +134,17 @@ export default function useAttendanceApi(roundId: number) {
     }
   }
 
+  // 명단방에서 불러오기: 이미 있는 부원은 서버가 건너뜀
+  const importFromMemberList = async (memberListId: number) => {
+    try {
+      const response = await importAttendees(roundId, memberListId)
+      const data = unwrap(response.data, '명단을 불러오지 못했어요.')
+      return { added: data.addedCount ?? 0, skipped: data.skippedCount ?? 0 }
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: key })
+    }
+  }
+
   return {
     participants,
     attendedCount: participants.filter(item => item.attendedAt !== null).length,
@@ -136,5 +154,6 @@ export default function useAttendanceApi(roundId: number) {
     setAttended,
     removeParticipant,
     addParticipant,
+    importFromMemberList,
   }
 }

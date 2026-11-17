@@ -14,6 +14,7 @@ import type { Schedule } from '../../types/schedules/schedule'
 import type { AttendanceExtraField, AttendanceFilter, Participant } from '../../types/attendance/attendance'
 import { AddButton, EmptyText, MemberCount, TopRow } from '../../styles/members/MemberDetailPage.styles'
 import * as S from '../../styles/attendance/AttendancePage.styles'
+import { OutlineButton } from '../../styles/OutlineButton.styles'
 import { showAlert } from '../../hooks/useAlert'
 import { getApiErrorMessage } from '../../utils/members/mapper'
 
@@ -106,7 +107,7 @@ function AttendanceScreen({ schedule }: Props) {
 }
 
 function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
-  const { participants, attendedCount, loading, error, reload, setAttended, removeParticipant, addParticipant } = useAttendanceApi(roundId)
+  const { participants, attendedCount, loading, error, reload, setAttended, removeParticipant, addParticipant, importFromMemberList } = useAttendanceApi(roundId)
 
   const [filter, setFilter] = useState<AttendanceFilter>('absent')
   const [search, setSearch] = useState('')
@@ -114,6 +115,7 @@ function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Participant | null>(null)
   const [showAddSheet, setShowAddSheet] = useState(false)
+  const [importFirst, setImportFirst] = useState(false)
   const [toast, setToast] = useState<{ title: string; description: string } | null>(null)
 
   const closeToast = useCallback(() => setToast(null), [])
@@ -180,7 +182,7 @@ function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
       <S.ListSection>
         <TopRow>
           <MemberCount>{countLabel} {filtered.length}명</MemberCount>
-          <AddButton type="button" onClick={() => setShowAddSheet(true)}>+ 인원 추가</AddButton>
+          <AddButton type="button" onClick={() => { setImportFirst(false); setShowAddSheet(true) }}>+ 인원 추가</AddButton>
         </TopRow>
 
         {visible.length > 0 ? (
@@ -201,6 +203,14 @@ function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
               />
             ))}
           </S.List>
+        ) : participants.length === 0 && !keyword ? (
+          // 처음 들어와 명단이 비어 있으면 불러오기 버튼을 바로 보여줌
+          <S.EmptyImport>
+            <EmptyText>출석 명단이 비어 있어요.</EmptyText>
+            <OutlineButton type="button" onClick={() => { setImportFirst(true); setShowAddSheet(true) }}>
+              명단방에서 불러오기
+            </OutlineButton>
+          </S.EmptyImport>
         ) : (
           <EmptyText>
             {keyword
@@ -209,7 +219,7 @@ function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
                 ? '모든 인원이 출석했어요.'
                 : filter === 'attended'
                   ? '아직 출석한 인원이 없어요.'
-                  : '출석 명단이 비어 있어요. + 인원 추가로 참가자를 넣어 주세요.'}
+                  : '출석 명단이 비어 있어요. + 인원 추가에서 명단방을 불러오거나 현장 인원을 추가해 주세요.'}
           </EmptyText>
         )}
       </S.ListSection>
@@ -224,7 +234,25 @@ function AttendanceRoster({ schedule, roundId }: Props & { roundId: number }) {
         <AttendanceAddSheet
           participants={participants}
           extraField={PHONE_FIELD}
+          initialStep={importFirst ? 'import' : 'choose'}
           onClose={() => setShowAddSheet(false)}
+          onImport={async (memberListId, listName) => {
+            let result: { added: number; skipped: number }
+            try {
+              result = await importFromMemberList(memberListId)
+            } catch (caught) {
+              showAlert(getApiErrorMessage(caught, '명단을 불러오지 못했어요.'))
+              return false
+            }
+            setShowAddSheet(false)
+            changeFilter('absent')
+            setSearch('')
+            setToast({
+              title: result.added > 0 ? `${result.added}명을 불러왔어요` : '새로 추가된 인원이 없어요',
+              description: `${listName}${result.skipped > 0 ? ` · 이미 있는 ${result.skipped}명 제외` : ''}`,
+            })
+            return true
+          }}
           onAdd={async (input, allowSameName) => {
             let result: 'added' | 'duplicate'
             try {
