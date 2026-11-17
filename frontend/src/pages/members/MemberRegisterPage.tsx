@@ -1,8 +1,11 @@
 import { useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 
 import Button from '../../components/Button'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 import useMemberRegister from '../../hooks/members/useMemberRegister'
 
@@ -42,13 +45,24 @@ export default function MemberRegisterPage() {
 
     if (query.isLoading) return <S.Container><p>등록 폼을 불러오는 중이에요.</p></S.Container>
     if (!token || query.error || !query.data) {
-        return <S.Container><p>{query.error ? getApiErrorMessage(query.error, '존재하지 않는 등록 링크예요.') : '존재하지 않는 등록 링크예요.'}</p></S.Container>
+        const status = isAxiosError(query.error) ? query.error.response?.status : undefined
+        // 없는 링크(404) / 마감·닫힌 링크(그 외 4xx) / 그 밖의 오류
+        if (!token || status === 404) {
+            return <RegisterNotice title="존재하지 않는 링크예요" description={<>링크 주소를 다시 확인하거나<br />운영진에게 문의해 주세요.</>} />
+        }
+        if (status && status >= 400 && status < 500) return <RegisterNotice title="등록이 마감됐어요" description={CLOSED_DESCRIPTION} />
+        return (
+            <RegisterNotice
+                title="등록 폼을 불러오지 못했어요"
+                description={getApiErrorMessage(query.error, '잠시 후 다시 시도해 주세요.')}
+            />
+        )
     }
 
     const form = query.data
     const deadline = form.registerDeadline ? new Date(form.registerDeadline).getTime() : Infinity
     if (deadline < now) {
-        return <S.Container><p>등록이 마감된 명단방이에요.</p></S.Container>
+        return <RegisterNotice groupName={form.memberListName} title="등록이 마감됐어요" description={CLOSED_DESCRIPTION} />
     }
 
     const group: JoinGroup = {
@@ -60,9 +74,36 @@ export default function MemberRegisterPage() {
 
 const trimmed = (value: string) => (value.trim() ? value.trim() : undefined)
 
+const CLOSED_DESCRIPTION = <>추가 등록이 필요하다면<br />운영진에게 문의해 주세요.</>
+
+// 피그마: 부원 등록 · 등록 완료(마감된 링크로 접속) 안내 화면
+function RegisterNotice({ groupName, title, description }: { groupName?: string; title: string; description: ReactNode }) {
+    return (
+        <S.Container>
+            {groupName && (
+                <S.Header>
+                    <S.HeaderTitle>{groupName}</S.HeaderTitle>
+                </S.Header>
+            )}
+            <S.NoticeContent role="status">
+                <S.CompleteIcon width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                    <circle cx="16" cy="13" r="6" fill="#96CEBC" />
+                    <path d="M5 33c.8-6.4 5.2-10 11-10 3.4 0 6.2 1.2 8.2 3.4V33H5Z" fill="#96CEBC" />
+                    <rect x="25" y="25" width="11" height="9" rx="2" fill="#96CEBC" />
+                    <path d="M27.5 25v-2.5a3 3 0 0 1 6 0V25" stroke="#96CEBC" strokeWidth="2" />
+                </S.CompleteIcon>
+                <S.CompleteTitle>{title}</S.CompleteTitle>
+                <S.CompleteDescription>{description}</S.CompleteDescription>
+            </S.NoticeContent>
+        </S.Container>
+    )
+}
+
 function RegistrationForm({ token, group, preview, onRegisterAgain }: { token: string; group: JoinGroup; preview: boolean; onRegisterAgain: () => void }) {
     const navigate = useNavigate()
     const [registered, setRegistered] = useState(false)
+    // 같은 명단에 이름·전화번호가 같은 부원이 이미 있으면 서버가 409로 막음
+    const [duplicate, setDuplicate] = useState(false)
     const submitting = useRef(false)
     // 서버 기준: 명단방에서 받는 항목은 모두 필수
     const fields: MemberRegisterField[] = getVisibleFormFields(group.fields).map(field => ({ ...field, enabled: true, required: true }))
@@ -84,6 +125,10 @@ function RegistrationForm({ token, group, preview, onRegisterAgain }: { token: s
             unwrap(response.data, '등록하지 못했어요.')
             setRegistered(true)
         } catch (caught) {
+            if (isAxiosError(caught) && caught.response?.status === 409) {
+                setDuplicate(true)
+                return
+            }
             showAlert(getApiErrorMessage(caught, '등록하지 못했어요. 잠시 후 다시 시도해주세요.'))
         } finally {
             submitting.current = false
@@ -206,6 +251,13 @@ function RegistrationForm({ token, group, preview, onRegisterAgain }: { token: s
                     </Button>
                 )}
             </S.BottomAction>
+            <ConfirmDialog
+                open={duplicate}
+                title="이미 등록을 완료했어요!"
+                description="해당 명단에 이미 등록되어 있어요."
+                onCancel={() => setDuplicate(false)}
+                onConfirm={() => setDuplicate(false)}
+            />
         </S.Container>
     )
 }

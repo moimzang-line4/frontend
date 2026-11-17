@@ -25,9 +25,11 @@ export default function MemberLinkPage({ group }: Props) {
     const registerPath = group.joinToken ? `/members/register/${group.joinToken}` : ''
     const registerLink = registerPath ? `${window.location.origin}${registerPath}` : ''
     const displayLink = registerLink.replace(/^https?:\/\//, '')
+    // 마감된 명단방은 링크 복사 대신 '등록이 마감되었어요' (피그마)
+    const closed = group.status === 'closed'
 
     const handleCopy = async () => {
-        if (!registerLink) return
+        if (closed || !registerLink) return
         try {
             await navigator.clipboard.writeText(registerLink)
 
@@ -61,13 +63,23 @@ export default function MemberLinkPage({ group }: Props) {
                     <S.LinkText>{displayLink || '등록 링크를 불러오지 못했어요.'}</S.LinkText>
                 </S.LinkBox>
 
-                <S.CopyButton type="button" onClick={handleCopy} disabled={!registerLink}>
-                    {copied ? '복사 완료!' : '링크 복사하기'}
+                <S.CopyButton type="button" onClick={handleCopy} disabled={closed || !registerLink}>
+                    {closed ? (
+                        <>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+                                <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" strokeWidth="1.4" />
+                            </svg>
+                            등록이 마감되었어요
+                        </>
+                    ) : copied ? '복사 완료!' : '링크 복사하기'}
                 </S.CopyButton>
 
-                <S.CardDescription>
-                    복사한 링크를 부원에게 보내 등록을 받아보세요.
-                </S.CardDescription>
+                {!closed && (
+                    <S.CardDescription>
+                        복사한 링크를 부원에게 보내 등록을 받아보세요.
+                    </S.CardDescription>
+                )}
             </S.LinkCard>
 
             <S.PreviewSection>

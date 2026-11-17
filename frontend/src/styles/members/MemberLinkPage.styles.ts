@@ -88,6 +88,7 @@ export const CopyButton = styled.button`
   height: 48px;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border-radius: 10px;
   background: #438b7e;
   font-size: 14px;
@@ -98,6 +99,13 @@ export const CopyButton = styled.button`
 
   &:active {
     filter: brightness(0.95);
+  }
+
+  /* 마감된 명단방: 회색 비활성 */
+  &:disabled {
+    background: #c8cdcb;
+    cursor: default;
+    filter: none;
   }
 `
 

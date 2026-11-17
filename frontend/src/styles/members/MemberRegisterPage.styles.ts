@@ -202,3 +202,14 @@ export const PreviewNotice = styled.p`
   line-height: 140%;
   color: #367d70;
 `
+
+// 마감·없는 링크 안내: 화면 가운데에 아이콘 + 제목 + 설명
+export const NoticeContent = styled.main`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 120px;
+  text-align: center;
+`
