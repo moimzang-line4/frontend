@@ -49,7 +49,12 @@ export default function useScheduleForm(initialSchedule?: Schedule, selectedDate
   const start = `${draft.date}T${draft.allDay ? '00:00' : draft.startTime}`
   const end = `${draft.endDate}T${draft.allDay ? '23:59' : draft.endTime}`
   const invalidRange = datesFilled && timesFilled && end < start
-  const canSubmit = Boolean(draft.title.trim() && datesFilled && timesFilled && !invalidRange)
+  const canSubmit = Boolean(
+    draft.title.trim() &&
+    draft.category?.label.trim() &&
+    scheduleColors.some(color => color.value === draft.color) &&
+    datesFilled && timesFilled && !invalidRange
+  )
   function toSchedule(): NewSchedule | null {
     if (!canSubmit) return null
     return {

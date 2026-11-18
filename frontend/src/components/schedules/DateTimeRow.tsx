@@ -14,7 +14,7 @@ type Props = {
 export default function DateTimeRow({ label, date, time, allDay, onDateChange, onTimeChange }: Props) {
   return (
     <S.DateRow>
-      <span>{label}</span>
+      <span>{label} <S.Required aria-hidden="true">*</S.Required></span>
       <S.Picker>
         <S.PickerText $filled={Boolean(date)}>
           <img src={calendarIcon} alt="" width={18} height={18} />
