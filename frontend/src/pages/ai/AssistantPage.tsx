@@ -1,7 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import MainLayout from '../../layouts/MainLayout'
 import AssistantResultCard from '../../components/ai/AssistantResultCard'
+import AssistantText from '../../components/ai/AssistantText'
 import useAssistant from '../../hooks/ai/useAssistant'
+import useScheduleLinks from '../../hooks/ai/useScheduleLinks'
+import type { ScheduleLink } from '../../hooks/ai/useScheduleLinks'
+import { guessNavigation } from '../../utils/ai/guessNavigation'
+import type { ChatNavigationResponse } from '../../api/models/chatNavigationResponse'
 import { ASSISTANT_MAX_LENGTH, ASSISTANT_SUGGESTIONS, ASSISTANT_TEXT } from '../../constants/ai/assistant'
 import * as S from '../../styles/ai/AssistantPage.styles'
 
@@ -22,6 +27,30 @@ export default function AssistantPage() {
   const { messages, pending, send } = useAssistant()
   const [input, setInput] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
+  const schedules = useScheduleLinks()
+
+  // 서버가 navigation을 안 주면 질문·답변에 나온 일정으로 이동 버튼을 임시로 붙임
+  const navigations = useMemo(() => {
+    const result: Record<string, ChatNavigationResponse | null> = {}
+    let question = ''
+    let previous: ScheduleLink | undefined
+    for (const message of messages) {
+      if (message.role === 'user') {
+        question = message.text
+        continue
+      }
+      if (message.error) continue
+      if (message.navigation?.type) {
+        result[message.id] = message.navigation
+        previous = schedules.find(schedule => schedule.id === message.navigation?.targetId) ?? previous
+        continue
+      }
+      const guess = guessNavigation(question, message.text, schedules, previous)
+      result[message.id] = guess?.navigation ?? null
+      if (guess?.schedule) previous = guess.schedule
+    }
+    return result
+  }, [messages, schedules])
 
   // 새 메시지가 오면 맨 아래로
   useEffect(() => {
@@ -61,9 +90,11 @@ export default function AssistantPage() {
                 <S.AssistantMessage key={message.id}>
                   <S.AssistantRow>
                     <S.Avatar aria-hidden="true">AI</S.Avatar>
-                    <S.AssistantBubble role={message.error ? 'alert' : undefined}>{message.text}</S.AssistantBubble>
+                    <S.AssistantBubble role={message.error ? 'alert' : undefined}>
+                      <AssistantText text={message.text} />
+                    </S.AssistantBubble>
                   </S.AssistantRow>
-                  <AssistantResultCard cardType={message.cardType} card={message.card} navigation={message.navigation} />
+                  <AssistantResultCard cardType={message.cardType} card={message.card} navigation={navigations[message.id] ?? null} />
                 </S.AssistantMessage>
               ),
             )}
