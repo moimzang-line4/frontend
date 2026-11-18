@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { isAxiosError } from 'axios'
 import useCreateServerSchedule from '../../hooks/schedules/useCreateServerSchedule'
 
@@ -21,6 +21,7 @@ export default function ScheduleCreatePage({
   initialSchedule?: Schedule
 }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const serverSchedule = useCreateServerSchedule()
 
   const {
@@ -29,7 +30,7 @@ export default function ScheduleCreatePage({
     canSubmit,
     invalidRange,
     toSchedule,
-  } = useScheduleForm(initialSchedule)
+  } = useScheduleForm(initialSchedule, params.get('date'))
   
   const scheduleActions = useServerScheduleActions()
 
