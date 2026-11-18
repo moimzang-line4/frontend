@@ -136,12 +136,12 @@ const busy =
           type="button"
           aria-haspopup="dialog"
           aria-expanded={categoryOpen}
-          aria-label={`카테고리: ${
+          aria-label={`카테고리 (필수): ${
             draft.category?.label ?? '선택해 주세요'
           }`}
           onClick={() => setCategoryOpen(true)}
         >
-          <span>카테고리</span>
+          <span>카테고리 <S.Required aria-hidden="true">*</S.Required></span>
 
           <S.CategoryValue $chosen={Boolean(draft.category)}>
             {draft.category?.label ?? '선택해 주세요'} ▾
