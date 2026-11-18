@@ -1,3 +1,4 @@
+import { scheduleCreateDefaults } from '../../utils/schedules/createDefaults'
 import { useState } from 'react'
 import useScheduleCategoriesApi from './useScheduleCategoriesApi'
 import { scheduleColors } from '../../constants/schedules/options'
@@ -16,7 +17,7 @@ type Draft = {
   createOperationSpace: boolean
 }
 
-export default function useScheduleForm(initialSchedule?: Schedule) {
+export default function useScheduleForm(initialSchedule?: Schedule, selectedDate?: string | null) {
   const { categories } = useScheduleCategoriesApi()
   const [draft, setDraft] = useState<Draft>(() => initialSchedule ? {
     title: initialSchedule.title,
@@ -38,7 +39,7 @@ export default function useScheduleForm(initialSchedule?: Schedule) {
     venue: initialSchedule.venue ?? '', createOperationSpace: initialSchedule.operationMenuCount !== undefined,
   } : {
     title: '', color: scheduleColors[0].value, category: null, allDay: false,
-    date: '', endDate: '', startTime: '', endTime: '', venue: '', createOperationSpace: true,
+    ...scheduleCreateDefaults(selectedDate), venue: '', createOperationSpace: true,
   })
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft(current => ({ ...current, [key]: value }))

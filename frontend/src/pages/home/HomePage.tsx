@@ -148,7 +148,7 @@ export default function HomePage() {
           date={calendar.selectedDate}
           schedules={calendar.schedules}
           onClose={() => setDateSheetOpen(false)}
-          onAdd={() => navigate('/schedules/new')}
+          onAdd={() => navigate(`/schedules/new?date=${encodeURIComponent(calendar.selectedDate)}`)}
           onSelectEvent={event =>
             navigate(`/schedules/${encodeURIComponent(event.id)}`)
           }
