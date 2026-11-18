@@ -142,7 +142,7 @@ const busy =
           }`}
           onClick={() => setCategoryOpen(true)}
         >
-          <span>카테고리 <S.Required aria-hidden="true">*</S.Required></span>
+          <span>카테고리<S.Required aria-hidden="true">*</S.Required></span>
 
           <S.CategoryValue $chosen={Boolean(draft.category)}>
             {draft.category?.label ?? '선택해 주세요'} ▾

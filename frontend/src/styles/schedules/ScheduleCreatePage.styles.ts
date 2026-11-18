@@ -28,7 +28,7 @@ export const Label = styled.label`
   font-weight: 700;
 `
 export const Required = styled.span`
-  margin-left: 4px;
+  margin-left: 0;
   color: #367d70;
   font-weight: 400;
 `
@@ -142,10 +142,10 @@ export const Divider = styled.hr`
 `
 export const DateRow = styled.div`
   display: grid;
-  grid-template-columns: 28px minmax(0, 17fr) minmax(0, 11fr);
+  grid-template-columns: max-content minmax(0, 17fr) minmax(0, 11fr);
   gap: 8px;
   align-items: center;
-  > span { font-size: 14px; font-weight: 500; }
+  > span { font-size: 14px; font-weight: 500; white-space: nowrap; }
 `
 export const Picker = styled.label<{ $disabled?: boolean }>`
   position: relative;
