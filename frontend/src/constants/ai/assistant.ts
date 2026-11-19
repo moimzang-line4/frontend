@@ -2,11 +2,8 @@ import type { ChatNavigationResponseType } from '../../api/models/chatNavigation
 
 // 피그마: AI 운영 비서 · 업무 요청 시작 (추천 요청)
 export const ASSISTANT_SUGGESTIONS = [
-  '가을 정기공연 미입금자 알려줘',
-  '신입생 공연 미입금자 알려줘',
-  // 서버 AI가 공지 작성을 지원하지 않아 조회 질문으로 바꿈 (지원되면 '가을 공연 공지 작성해 줘'로 복구)
-  '가을 정기공연 참석 현황 알려줘',
-  '등록된 공연 일정 알려줘',
+  '이번 달 등록된 일정 알려줘',
+  '최근 작성된 회의록 찾아줘',
 ] as const
 
 export const ASSISTANT_TEXT = {
