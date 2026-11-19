@@ -11,8 +11,9 @@ export const ASSISTANT_SUGGESTIONS = [
 
 export const ASSISTANT_TEXT = {
   title: 'AI 운영 비서',
-  question: '어떤 업무를 도와드릴까요?',
-  placeholder: 'AI에게 업무 요청하기',
+  question: '어떤 정보를 찾고 계신가요?',
+  description: '필요한 운영 정보를 찾아보고, 관련 페이지로 빠르게 이동해 보세요.',
+  placeholder: '찾고 싶은 정보를 입력해 주세요',
   noTerm: '선택한 기수 정보가 없어요. 그룹을 다시 선택해 주세요.',
   failed: '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.',
   offline: '서버에 연결하지 못했어요. 네트워크 상태를 확인해 주세요.',

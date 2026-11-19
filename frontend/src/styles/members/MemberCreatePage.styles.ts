@@ -149,10 +149,28 @@ export const ArrowIcon = styled.span`
   flex-shrink: 0;
 `;
 
+/* 칸 전체를 덮는 투명 입력 (폰에서 탭하면 기본 날짜 선택창이 뜸) */
 export const HiddenDateInput = styled.input`
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   opacity: 0;
-  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px; /* iOS 확대 방지 */
+  cursor: pointer;
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
 `;

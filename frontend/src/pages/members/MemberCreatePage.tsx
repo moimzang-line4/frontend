@@ -113,9 +113,8 @@ export default function MemberCreatePage({
                 <S.FormGroup>
                     <S.Label htmlFor="deadline">등록 마감일</S.Label>
 
-                    <S.DateWrapper
-                        onClick={() => dateInputRef.current?.showPicker()}
-                    >
+                    {/* 투명한 날짜 입력이 칸 전체를 덮어서 폰에서도 직접 탭됨 */}
+                    <S.DateWrapper>
                         <S.CalendarIcon>
                             <svg
                                 width="20"
@@ -157,6 +156,14 @@ export default function MemberCreatePage({
                             type="date"
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
+                            onClick={() => {
+                                // PC 크롬은 글자 부분을 눌러도 달력이 뜨도록 (미지원 브라우저는 기본 동작)
+                                try {
+                                    dateInputRef.current?.showPicker();
+                                } catch {
+                                    /* 무시 */
+                                }
+                            }}
                         />
                     </S.DateWrapper>
                 </S.FormGroup>
