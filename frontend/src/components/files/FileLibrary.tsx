@@ -80,6 +80,29 @@ export default function FileLibrary({
       return b.createdAt - a.createdAt
     })
 
+  const attachControl = (
+    <S.Attach
+      type="button"
+      disabled={loading || !!error}
+      onClick={() => navigate(`${listPath}/new`, { state: { category } })}
+    >
+      ＋ 파일 첨부
+    </S.Attach>
+  )
+  const sortControl = (
+    <DropdownSelect
+      variant="inline"
+      aria-label="자료 정렬"
+      value={sort}
+      onChange={event => setSort(event.target.value)}
+      options={[
+        { value: 'newest', label: '최신순' },
+        { value: 'oldest', label: '오래된순' },
+        { value: 'name', label: '이름순' },
+      ]}
+    />
+  )
+
   return (
     <S.Page>
       <Header
@@ -111,17 +134,7 @@ export default function FileLibrary({
             />
           </S.Search>
 
-          {!(documentView && category === '장부') && (
-            <S.Attach
-              type="button"
-              disabled={loading || !!error}
-              onClick={() =>
-                navigate(`${listPath}/new`, { state: { category } })
-              }
-            >
-              ＋ 파일 첨부
-            </S.Attach>
-          )}
+          {documentView ? attachControl : sortControl}
         </S.SearchRow>
         )}
 
@@ -150,17 +163,7 @@ export default function FileLibrary({
           <>
             <S.Summary>
               <strong aria-live="polite">총 {visible.length}개</strong>
-              <DropdownSelect
-                variant="inline"
-                aria-label="자료 정렬"
-                value={sort}
-                onChange={(event) => setSort(event.target.value)}
-                options={[
-                  { value: 'newest', label: '최신순' },
-                  { value: 'oldest', label: '오래된순' },
-                  { value: 'name', label: '이름순' },
-                ]}
-              />
+              {documentView ? sortControl : attachControl}
             </S.Summary>
 
             <S.ViewToolbar>
