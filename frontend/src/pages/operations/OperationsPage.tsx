@@ -83,22 +83,23 @@ export default function OperationsPage() {
             />
           </S.Search>
 
-          <S.Sort
+          <S.CreateAction
             type="button"
-            aria-label={`기록 정렬: ${sortLabels[data.sort]}`}
-            aria-haspopup="dialog"
-            aria-expanded={modal === 'sort'}
-            onClick={() => setModal('sort')}
+            aria-haspopup={
+              data.filter === 'minute'
+                ? undefined
+                : 'dialog'
+            }
+            onClick={() =>
+              data.filter === 'minute'
+                ? navigate('/meetings/new')
+                : setModal('create')
+            }
           >
-            {sortLabels[data.sort]}
-
-            <img
-              src={caretIcon}
-              alt=""
-              width={12}
-              height={12}
-            />
-          </S.Sort>
+            {data.filter === 'minute'
+              ? '＋ 새 메모'
+              : '＋ 만들기'}
+          </S.CreateAction>
         </S.SearchRow>
 
         <S.Filters aria-label="운영 기록 유형">
@@ -131,23 +132,22 @@ export default function OperationsPage() {
             {data.totalCount}
           </h2>
 
-          <button
+          <S.Sort
             type="button"
-            aria-haspopup={
-              data.filter === 'minute'
-                ? undefined
-                : 'dialog'
-            }
-            onClick={() =>
-              data.filter === 'minute'
-                ? navigate('/meetings/new')
-                : setModal('create')
-            }
+            aria-label={`기록 정렬: ${sortLabels[data.sort]}`}
+            aria-haspopup="dialog"
+            aria-expanded={modal === 'sort'}
+            onClick={() => setModal('sort')}
           >
-            {data.filter === 'minute'
-              ? '＋ 새 메모'
-              : '＋ 만들기'}
-          </button>
+            {sortLabels[data.sort]}
+
+            <img
+              src={caretIcon}
+              alt=""
+              width={12}
+              height={12}
+            />
+          </S.Sort>
         </S.Heading>
 
         {data.errorMessage && (
