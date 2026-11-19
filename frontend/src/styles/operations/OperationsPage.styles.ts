@@ -93,13 +93,6 @@ export const Heading = styled.div`
     font-weight: 700;
     color: #253f3b;
   }
-  button {
-    min-height: 32px;
-    color: #3f8275;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-  }
 `
 export const Records = styled.ul`
   display: flex;
@@ -223,4 +216,10 @@ export const Textarea = styled.textarea`
   border-radius: var(--radius-control);
   resize: vertical;
   font-size: 14px;
+`
+
+export const CreateAction = styled(Sort)`
+  color: #3f8275;
+  font-weight: 700;
+  white-space: nowrap;
 `
