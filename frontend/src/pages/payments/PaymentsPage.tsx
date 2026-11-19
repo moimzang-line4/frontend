@@ -65,6 +65,7 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
 
   const tabs = <RouteTabs label="정산 메뉴" tabs={PAYMENTS_TABS.map(item => ({ label: item.label, to: `${basePath}${item.path}` }))} />
   const addReceipt = () => navigate(`${basePath}/receipts/camera`)
+  const addManual = () => navigate(`${basePath}/receipts/manual`)
 
   const handleLoadRoster = () => {
     if (receipts.length === 0) {
@@ -100,7 +101,13 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
               />
             ))}
           </S.List>
-          <Button onClick={addReceipt}>＋ 영수증 추가</Button>
+          {/* 영수증이 있어도 직접 등록은 계속 가능 */}
+          <S.Actions>
+            <Button onClick={addReceipt}>＋ 영수증 추가</Button>
+            <OutlineButton type="button" $size="large" onClick={addManual}>
+              직접 등록하기
+            </OutlineButton>
+          </S.Actions>
         </S.ListBody>
       )
     }
@@ -154,7 +161,7 @@ function PaymentsContent({ schedule, tab }: Props & { schedule: Schedule }) {
           {tab === 'receipts' && (
             <>
               <Button onClick={addReceipt}>＋ 영수증 추가</Button>
-              <OutlineButton type="button" $size="large" onClick={() => navigate(`${basePath}/receipts/manual`)}>
+              <OutlineButton type="button" $size="large" onClick={addManual}>
                 직접 등록하기
               </OutlineButton>
             </>
