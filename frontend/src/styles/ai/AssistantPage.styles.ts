@@ -20,6 +20,20 @@ export const Question = styled.h2`
   color: #19251f;
 `
 
+// 질문 + 부제 (둘 사이는 붙여서)
+export const Heading = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`
+
+export const Description = styled.p`
+  font-size: 13px;
+  line-height: 140%;
+  font-weight: 400;
+  color: #7a7a7d;
+`
+
 export const Suggestions = styled.ul`
   display: flex;
   flex-direction: column;

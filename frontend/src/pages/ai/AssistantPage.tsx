@@ -66,7 +66,10 @@ export default function AssistantPage() {
   return (
     <MainLayout title={ASSISTANT_TEXT.title} showBack={false} headerAlign="left">
       <S.Container>
-        <S.Question>{ASSISTANT_TEXT.question}</S.Question>
+        <S.Heading>
+          <S.Question>{ASSISTANT_TEXT.question}</S.Question>
+          <S.Description>{ASSISTANT_TEXT.description}</S.Description>
+        </S.Heading>
 
         {messages.length === 0 ? (
           <S.Suggestions aria-label="추천 요청">
