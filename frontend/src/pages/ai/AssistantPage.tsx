@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import MainLayout from '../../layouts/MainLayout'
-import AssistantResultCard from '../../components/ai/AssistantResultCard'
+import AssistantResultCard, { AssistantActionButton, hasResultCard, summarizeCard } from '../../components/ai/AssistantResultCard'
 import AssistantText from '../../components/ai/AssistantText'
 import useAssistant from '../../hooks/ai/useAssistant'
 import useScheduleLinks from '../../hooks/ai/useScheduleLinks'
@@ -90,8 +90,15 @@ export default function AssistantPage() {
                 <S.AssistantMessage key={message.id}>
                   <S.AssistantRow>
                     <S.Avatar aria-hidden="true">AI</S.Avatar>
-                    <S.AssistantBubble role={message.error ? 'alert' : undefined}>
-                      <AssistantText text={message.text} />
+                    <S.AssistantBubble as="div" role={message.error ? 'alert' : undefined}>
+                      {/* 피그마: 결과 카드가 있으면 말풍선은 한 줄 요약 */}
+                      <AssistantText text={hasResultCard(message.card) ? summarizeCard(message.cardType, message.card, message.text) : message.text} />
+                      {/* 결과 카드가 없으면 이동 버튼을 답변 박스 안에 */}
+                      {!hasResultCard(message.card) && navigations[message.id] && (
+                        <S.BubbleAction>
+                          <AssistantActionButton navigation={navigations[message.id]} />
+                        </S.BubbleAction>
+                      )}
                     </S.AssistantBubble>
                   </S.AssistantRow>
                   <AssistantResultCard cardType={message.cardType} card={message.card} navigation={navigations[message.id] ?? null} />

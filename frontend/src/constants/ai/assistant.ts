@@ -4,7 +4,8 @@ import type { ChatNavigationResponseType } from '../../api/models/chatNavigation
 export const ASSISTANT_SUGGESTIONS = [
   '가을 정기공연 미입금자 알려줘',
   '신입생 공연 미입금자 알려줘',
-  '가을 공연 공지 작성해 줘',
+  // 서버 AI가 공지 작성을 지원하지 않아 조회 질문으로 바꿈 (지원되면 '가을 공연 공지 작성해 줘'로 복구)
+  '가을 정기공연 참석 현황 알려줘',
   '등록된 공연 일정 알려줘',
 ] as const
 

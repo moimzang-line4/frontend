@@ -127,6 +127,16 @@ export const AssistantBubble = styled.p`
   white-space: pre-wrap;
 `
 
+// 말풍선 안 이동 버튼 (결과 카드가 없을 때)
+export const BubbleAction = styled.div`
+  margin-top: 12px;
+  white-space: normal;
+
+  > button {
+    width: 100%;
+  }
+`
+
 export const Typing = styled.span`
   display: inline-flex;
   gap: 4px;

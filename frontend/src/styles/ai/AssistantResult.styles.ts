@@ -18,7 +18,7 @@ export const Summary = styled.div`
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e9eceb;
+  border-bottom: 1px solid #dddddd;
 `
 
 export const SummaryText = styled.div`
@@ -37,9 +37,8 @@ export const Label = styled.p`
 `
 
 export const SubLabel = styled.p`
-  margin-top: -4px;
   font-size: 12px;
-  line-height: 140%;
+  font-weight: 500;
   color: #7f7e7e;
 `
 
@@ -52,14 +51,13 @@ export const Amount = styled.p`
 
 export const CountBadge = styled.span`
   display: flex;
-  height: 20px;
   flex-shrink: 0;
   align-items: center;
-  margin-top: 20px;
   align-self: flex-start;
-  padding: 0 8px;
+  margin-top: 20px;
+  padding: 4px 8px;
   border-radius: 999px;
-  background: #fdecec;
+  background: rgba(255, 159, 154, 0.23);
   font-size: 9px;
   line-height: normal;
   font-weight: 700;
@@ -72,12 +70,14 @@ export const List = styled.ul`
   gap: 8px;
 `
 
+// 피그마: padding 8px 12px, 테두리 #DDECE7
 export const Row = styled.li`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e9eceb;
+  padding: 8px 12px;
+  border: 1px solid #ddece7;
   border-radius: 12px;
   background: #ffffff;
 `
@@ -105,11 +105,11 @@ export const Info = styled.div`
   min-width: 0;
   flex: 1 0 0;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 
   strong {
     font-size: 13px;
-    line-height: 140%;
+    line-height: 19px;
     font-weight: 700;
     color: #253f3b;
   }
@@ -120,25 +120,25 @@ export const Meta = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 10px;
-  line-height: 140%;
+  line-height: 15px;
   color: #78918c;
 `
 
 export const Total = styled.span`
-  font-size: 11px;
-  line-height: 140%;
+  font-size: 12px;
+  line-height: 17px;
   color: #253f3b;
 `
 
 const pill = `
   display: flex;
-  height: 26px;
+  width: 84px;
+  height: 28px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 0 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 10px;
   line-height: normal;
   font-weight: 500;
@@ -152,6 +152,10 @@ export const ConfirmButton = styled.button`
 
   &:active {
     filter: brightness(0.95);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
   }
 `
 
@@ -179,9 +183,14 @@ export const Empty = styled.p`
 `
 
 // 피그마: height 48, radius 12, 14 / 700
+// 피그마: 높이 48, 모서리 12, 16px 700, 초록 그라데이션
 export const ActionButton = styled(Button)`
   height: 48px;
+  gap: 4px;
+  padding: 10px 12px;
   border-radius: 12px;
-  font-size: 14px;
-  line-height: 140%;
+  background: linear-gradient(127deg, #5aa997 10.71%, #438b7e 82.14%);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
 `
