@@ -1,3 +1,4 @@
+import GroupSwitcher from '../../components/groups/GroupSwitcher'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
@@ -20,9 +21,6 @@ export default function HomePage() {
 
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
 
-  // 조회 전에는 기존 이름을 표시하고,
-  // 조회에 성공하면 서버에서 받은 이름으로 표시해요.
-  const groupName = currentGroup.group?.name ?? calendar.groupName
 
   return (
     <MainLayout
@@ -78,9 +76,10 @@ export default function HomePage() {
         )}
 
         <S.SectionHeading>
-          <S.Heading>
-            {groupName} 일정 캘린더
-          </S.Heading>
+          <S.CalendarTitle role="heading" aria-level={2}>
+            <GroupSwitcher />
+            <span>일정 캘린더</span>
+          </S.CalendarTitle>
 
           <S.AddButton
             type="button"
