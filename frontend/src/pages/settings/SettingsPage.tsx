@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
 import Header from '../../layouts/Header'
-import ConfirmDialog from '../../components/common/ConfirmDialog'
+import { showAlert } from '../../hooks/useAlert'
 import useSettingsBack from '../../hooks/settings/useSettingsBack'
 import useDemoGroup from '../../hooks/groups/useDemoGroup'
 
@@ -14,15 +13,16 @@ const menuArrow = (
   </S.MenuArrow>
 )
 
-type Modal = 'leave' | null
-
 export default function SettingsPage() {
   const navigate = useNavigate()
   const backToHome = useSettingsBack('/')
 
-  const { group, isMember, isOwner, leaveGroup } = useDemoGroup()
+  const { group, isMember } = useDemoGroup()
 
-  const [modal, setModal] = useState<Modal>(null)
+  const comingSoon = () =>
+    showAlert('추후 제공될 기능이에요.', {
+      description: '조금만 기다려주세요.',
+    })
 
   if (!isMember) {
     return <Navigate to="/groups" replace />
@@ -69,11 +69,7 @@ export default function SettingsPage() {
 
             <S.MenuButton
               type="button"
-              onClick={() =>
-                navigate('/settings/invite', {
-                  state: { settingsParent: '/settings' },
-                })
-              }
+              onClick={comingSoon}
             >
               초대 링크 관리
               {menuArrow}
@@ -86,7 +82,7 @@ export default function SettingsPage() {
             <S.MenuButton
               type="button"
               $danger
-              onClick={() => setModal('leave')}
+              onClick={comingSoon}
             >
               그룹 나가기
             </S.MenuButton>
@@ -94,22 +90,6 @@ export default function SettingsPage() {
         </S.AccountSection>
       </S.Content>
 
-      <ConfirmDialog
-        open={modal === 'leave'}
-        title="그룹에서 나가시겠어요?"
-        description={
-          isOwner
-            ? '모임장이 그룹에서 나가면\n다른 운영진 1명에게 모임장 권한이 자동으로 이전됩니다.'
-            : '그룹에서 나가면 그룹의 운영 정보에 더 이상 접근할 수 없어요.'
-        }
-        confirmText="그룹 나가기"
-        onCancel={() => setModal(null)}
-        onConfirm={() => {
-          leaveGroup()
-          setModal(null)
-          navigate('/groups', { replace: true })
-        }}
-      />
     </S.Page>
   )
 }
