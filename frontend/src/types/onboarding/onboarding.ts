@@ -11,5 +11,6 @@ export type GroupDraft = {
 export type OnboardingState = {
   completed: boolean
   draft?: GroupDraft
+  groups?: DemoGroup[]
   group?: DemoGroup
 }

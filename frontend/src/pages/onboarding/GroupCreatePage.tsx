@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router'
 import Header from '../../layouts/Header'
 import Button from '../../components/Button'
 import useOnboarding from '../../hooks/onboarding/useOnboarding'
+import useCreateGroupDirect from '../../hooks/groups/useCreateGroupDirect'
 
 import * as S from '../../styles/settings/SettingsPage.styles'
 import * as M from '../../styles/settings/ManagementPage.styles'
@@ -17,44 +18,21 @@ export default function GroupCreatePage() {
   const [generation, setGeneration] = useState(
     onboarding.draft?.generation ?? '',
   )
-  const [error, setError] = useState('')
+  const creation = useCreateGroupDirect()
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    if (!name.trim() || !generation.trim()) return
-
-    try {
-      onboarding.update({
-        completed: true,
-        draft: {
-          id: onboarding.draft?.id ?? crypto.randomUUID(),
-          name: name.trim(),
-          generation: generation.trim(),
-        },
-      })
-
-      navigate('/groups/new/invite')
-    } catch (caught) {
-      setError(
-        caught instanceof Error
-          ? caught.message
-          : '그룹 정보를 저장하지 못했어요.',
-      )
-    }
+    if (await creation.save(name, generation)) navigate('/', { replace: true })
   }
 
   return (
     <S.Page>
       <Header
         title="그룹 만들기"
-        onBack={() =>
-          navigate(
-            onboarding.group
-              ? '/groups'
-              : '/onboarding?replay=1&step=3',
-          )
-        }
+        onBack={() => {
+          if (!creation.pending)
+            navigate(onboarding.group ? '/' : '/onboarding?replay=1&step=3')
+        }}
       />
 
       <S.Content>
@@ -72,6 +50,7 @@ export default function GroupCreatePage() {
             <input
               aria-label="그룹명"
               required
+              disabled={creation.pending || creation.createdOnServer}
               maxLength={40}
               placeholder="예) 음샘 중앙밴드"
               value={name}
@@ -87,6 +66,7 @@ export default function GroupCreatePage() {
             <input
               aria-label="기수"
               required
+              disabled={creation.pending || creation.createdOnServer}
               maxLength={40}
               placeholder="예) 12기 (기수 구분이 없는 경우 연도를 입력해 주세요.)"
               value={generation}
@@ -95,16 +75,16 @@ export default function GroupCreatePage() {
           </label>
         </M.EditForm>
 
-        {error && <p role="alert">{error}</p>}
+        {creation.error && <p role="alert">{creation.error}</p>}
       </S.Content>
 
       <S.ActionBar>
         <Button
           type="submit"
           form="create-group"
-          disabled={!name.trim() || !generation.trim()}
+          disabled={creation.pending || !name.trim() || !generation.trim()}
         >
-          다음
+          {creation.pending ? '그룹 생성 중…' : '그룹 생성하기'}
         </Button>
       </S.ActionBar>
     </S.Page>

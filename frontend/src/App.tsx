@@ -104,9 +104,11 @@ function ReceiptEditRoute() {
 }
 
 export default function App() {
+  const { group } = useOnboarding()
+  const scopeKey = `${group?.groupId ?? ''}:${group?.termId ?? ''}`
   return (
     <>
-    <Routes>
+    <Routes key={scopeKey}>
       <Route path="/onboarding" element={<Suspense fallback={<Placeholder>시작 화면을 불러오는 중이에요.</Placeholder>}><OnboardingPage /></Suspense>} />
       <Route path="/groups/new" element={<Suspense fallback={<Placeholder>그룹 정보를 불러오는 중이에요.</Placeholder>}><GroupCreatePage /></Suspense>} />
       <Route path="/groups/new/invite" element={<Suspense fallback={<Placeholder>초대 링크를 불러오는 중이에요.</Placeholder>}><GroupInvitePage /></Suspense>} />
