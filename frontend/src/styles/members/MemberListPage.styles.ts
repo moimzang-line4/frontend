@@ -1,17 +1,21 @@
 import styled from 'styled-components'
 
-// 명단이 없으면 안내 ↔ 버튼 간격을 넓게 (피그마)
+// 명단이 없으면 안내 + 버튼을 한 덩어리로 화면 세로 가운데에
+// (헤더·하단 탭바·여백을 뺀 높이 기준)
 export const Container = styled.div<{ $empty?: boolean }>`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: ${({ $empty }) => ($empty ? '44px' : '18px')};
+  gap: ${({ $empty }) => ($empty ? '24px' : '18px')};
+  ${({ $empty }) =>
+    $empty &&
+    `
+    justify-content: center;
+    min-height: calc(100dvh - 240px);
+  `}
 `;
 
-// 빈 화면 안내: 헤더 아래로 조금 띄움
-export const Empty = styled.div`
-  padding-top: 48px;
-`
+export const Empty = styled.div``
 
 export const GroupList = styled.div`
   display: flex;

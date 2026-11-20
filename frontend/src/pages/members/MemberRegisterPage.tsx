@@ -26,8 +26,6 @@ interface JoinGroup {
 // 공유 링크(/members/register/:token)로 들어온 부원 등록 폼
 export default function MemberRegisterPage() {
     const [now] = useState(() => Date.now())
-    // 등록 완료 후 '다른 부원 등록하기'로 새 폼을 열 때 사용
-    const [round, setRound] = useState(0)
     const { token = '' } = useParams<{ token: string }>()
     // 링크 관리 화면의 '부원 등록 폼 미리보기'로 들어온 경우 (등록 불가)
     const [searchParams] = useSearchParams()
@@ -69,7 +67,7 @@ export default function MemberRegisterPage() {
         name: form.memberListName ?? '부원 등록',
         fields: fromFieldsResponse(form.fields),
     }
-    return <RegistrationForm key={round} token={token} group={group} preview={preview} onRegisterAgain={() => setRound(prev => prev + 1)} />
+    return <RegistrationForm token={token} group={group} preview={preview} />
 }
 
 const trimmed = (value: string) => (value.trim() ? value.trim() : undefined)
@@ -99,7 +97,7 @@ function RegisterNotice({ groupName, title, description }: { groupName?: string;
     )
 }
 
-function RegistrationForm({ token, group, preview, onRegisterAgain }: { token: string; group: JoinGroup; preview: boolean; onRegisterAgain: () => void }) {
+function RegistrationForm({ token, group, preview }: { token: string; group: JoinGroup; preview: boolean }) {
     const navigate = useNavigate()
     const [registered, setRegistered] = useState(false)
     // 같은 명단에 이름·전화번호가 같은 부원이 이미 있으면 서버가 409로 막음
@@ -181,12 +179,6 @@ function RegistrationForm({ token, group, preview, onRegisterAgain }: { token: s
                         </S.GroupText>
                     </S.GroupCard>
                 </S.CompleteContent>
-
-                <S.BottomAction>
-                    <Button onClick={onRegisterAgain}>
-                        다른 부원 등록하기
-                    </Button>
-                </S.BottomAction>
             </S.Container>
         )
     }
