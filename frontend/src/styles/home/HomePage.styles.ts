@@ -66,11 +66,9 @@ export const UpcomingEmpty = styled(EmptyMessage)`
 export const CalendarTitle = styled.div`
   display: flex;
   align-items: center;
-  flex: 1;
   min-width: 0;
-  gap: 4px;
+  min-height: 33px;
   font-size: 17px;
   line-height: 1.4;
   font-weight: 700;
-  > span { flex-shrink: 0; white-space: nowrap; }
 `

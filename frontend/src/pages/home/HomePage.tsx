@@ -75,11 +75,12 @@ export default function HomePage() {
           </div>
         )}
 
+        <S.CalendarTitle>
+          <GroupSwitcher />
+        </S.CalendarTitle>
+
         <S.SectionHeading>
-          <S.CalendarTitle role="heading" aria-level={2}>
-            <GroupSwitcher />
-            <span>일정 캘린더</span>
-          </S.CalendarTitle>
+          <S.Heading>일정 캘린더</S.Heading>
 
           <S.AddButton
             type="button"
