@@ -24,39 +24,6 @@ type Selection = {
   action: 'sheet' | 'remove' | 'transfer'
 }
 
-const mockOperators: Operator[] = [
-  {
-    id: 'mock-operator-1',
-    name: '노윤서',
-    profile: '컴퓨터공학과',
-  },
-  {
-    id: 'mock-operator-2',
-    name: '박영서',
-    profile: '인공지능공학부',
-  },
-  {
-    id: 'mock-operator-3',
-    name: '이윤서',
-    profile: '컴퓨터공학과',
-  },
-  {
-    id: 'mock-operator-4',
-    name: '이충환',
-    profile: '컴퓨터공학과',
-  },
-  {
-    id: 'mock-operator-5',
-    name: '정서현',
-    profile: '광고홍보학과',
-  },
-  {
-    id: 'mock-operator-6',
-    name: '최소윤',
-    profile: '전자공학과',
-  },
-]
-
 function initialOperators(group: DemoGroup): Operator[] {
   const self = group.members.find(
     member => member.id === 'me',
@@ -72,21 +39,14 @@ function initialOperators(group: DemoGroup): Operator[] {
         },
 
     ...group.members
-      .filter(member => member.id !== 'me')
+      .filter(
+        member =>
+          member.id !== 'me' &&
+          !/^mock-operator-/.test(member.id) &&
+          !/^operator-[123]$/.test(member.id),
+      )
       .map(member => ({ ...member })),
   ]
-
-  for (const mock of mockOperators) {
-    const exists = members.some(
-      member =>
-        member.id === mock.id ||
-        member.name === mock.name,
-    )
-
-    if (!exists) {
-      members.push({ ...mock })
-    }
-  }
 
   return members
 }
