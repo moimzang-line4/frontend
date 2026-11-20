@@ -188,7 +188,13 @@ function MemberListPicker({
   return (
     <BottomSheet
       title="명단방에서 불러오기"
-      description="선택한 명단방의 부원이 이 차수에 미출석으로 추가돼요. 이미 있는 부원은 건너뛰어요."
+      description={
+        <>
+          선택한 명단방의 부원이 이 차수에 미출석으로 추가돼요.
+          <br />
+          이미 있는 부원은 건너뛰어요.
+        </>
+      }
       onClose={onClose}
     >
       {loading ? (

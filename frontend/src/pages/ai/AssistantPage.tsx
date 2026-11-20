@@ -22,11 +22,14 @@ const SendIcon = (
   </svg>
 )
 
+// 자동 스크롤 시 상단 헤더 높이 + 여백
+const HEADER_OFFSET = 110
+
 // 피그마: AI 운영 비서 · 업무 요청 시작 / 미입금자 조회 결과
 export default function AssistantPage() {
   const { messages, pending, send } = useAssistant()
   const [input, setInput] = useState('')
-  const endRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLOListElement>(null)
   const schedules = useScheduleLinks()
 
   // 서버가 navigation을 안 주면 질문·답변에 나온 일정으로 이동 버튼을 임시로 붙임
@@ -52,9 +55,18 @@ export default function AssistantPage() {
     return result
   }, [messages, schedules])
 
-  // 새 메시지가 오면 맨 아래로
+  // 질문을 보내거나 답변이 오면 방금 보낸 질문이 화면 위쪽에 오도록 자동 스크롤
+  // (폰 키보드가 열려 있어도 질문과 답변 시작 부분이 보이게 위쪽 기준으로 맞춤)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const questions = messagesRef.current?.querySelectorAll<HTMLElement>('[data-role="user"]')
+    const last = questions?.[questions.length - 1]
+    if (!last) return
+    const frame = requestAnimationFrame(() => {
+      // 상단 헤더에 가리지 않게 여백을 둠
+      const top = last.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(frame)
   }, [messages.length, pending])
 
   const submit = (text: string) => {
@@ -83,10 +95,10 @@ export default function AssistantPage() {
             ))}
           </S.Suggestions>
         ) : (
-          <S.Messages aria-live="polite">
+          <S.Messages ref={messagesRef} aria-live="polite">
             {messages.map(message =>
               message.role === 'user' ? (
-                <S.UserMessage key={message.id}>
+                <S.UserMessage key={message.id} data-role="user">
                   <S.UserBubble>{message.text}</S.UserBubble>
                 </S.UserMessage>
               ) : (
@@ -120,7 +132,6 @@ export default function AssistantPage() {
             )}
           </S.Messages>
         )}
-        <div ref={endRef} />
       </S.Container>
 
       <S.Composer

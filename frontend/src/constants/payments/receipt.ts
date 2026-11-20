@@ -14,7 +14,8 @@ export const RECEIPT_FIELDS: readonly ReceiptField[] = [
   { key: 'storeName', label: '가게명', placeholder: '입력해 주세요' },
   { key: 'paidAt', label: '거래일시', placeholder: '0000-00-00 00:00' },
   { key: 'amount', label: '금액(합계)', placeholder: '입력해 주세요', required: true, inputMode: 'numeric' },
-  { key: 'support', label: '회비 지원금', placeholder: '입력해 주세요', inputMode: 'numeric', scanOnly: true },
+  // 직접 등록·수정 화면에도 표시 (서버에 clubSubsidyAmount로 저장)
+  { key: 'support', label: '회비 지원금', placeholder: '입력해 주세요', inputMode: 'numeric' },
   { key: 'round', label: '차수 선택', placeholder: '선택해 주세요', required: true },
 ]
 

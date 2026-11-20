@@ -175,7 +175,8 @@ export default function LedgerPanel() {
       </S.Manual>
 
       <S.Entries>
-        {ledger && !needsStart && (
+        {/* 시작 잔액 입력 전에도 빈 목록 안내를 보여줌 */}
+        {ledger && (
           <S.EntryList>
             <S.EntryHeading>
               <span>항목/날짜</span>
