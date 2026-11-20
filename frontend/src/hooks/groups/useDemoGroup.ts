@@ -5,7 +5,7 @@ import { getOnboarding, subscribeOnboarding, updateOnboarding } from '../../util
 
 const initialGroup: DemoGroup = {
   id: 'demo-eumsaem', name: '2026 2학기 음샘', shortName: '음샘', description: '중앙 밴드 동아리', generation: '27기',
-  ownerId: 'me', members: [{ id: 'me', name: '나', profile: '모임장' }, { id: 'operator-1', name: '강민준', profile: '광고홍보학과 1140' }, { id: 'operator-2', name: '정서현', profile: '광고홍보학과 1140' }, { id: 'operator-3', name: '김민서', profile: '광고홍보학과 1140' }],
+  ownerId: 'me', members: [{ id: 'me', name: '나', profile: '모임장' }],
 }
 let demoGroup: DemoGroup = { ...initialGroup, members: [...initialGroup.members] }
 const listeners = new Set<() => void>()
