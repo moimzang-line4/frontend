@@ -12,6 +12,8 @@ export default function ReceiptCameraPage() {
   const { scheduleId = '' } = useParams<{ scheduleId: string }>()
   const { videoRef, status, capture } = useReceiptCamera()
   const fileRef = useRef<HTMLInputElement>(null)
+  // 노트북처럼 촬영이 불편할 때 저장된 사진을 바로 고르는 용도 (capture 없이 열어 갤러리/파일 선택)
+  const galleryRef = useRef<HTMLInputElement>(null)
   const basePath = paymentsPath(scheduleId)
   // 영수증 수정 중 '다시 촬영하기'로 들어온 경우 그 영수증으로 돌아감
   const [searchParams] = useSearchParams()
@@ -75,6 +77,14 @@ export default function ReceiptCameraPage() {
       </S.Viewfinder>
 
       <S.BottomBar>
+        <S.GalleryButton type="button" aria-label="갤러리에서 사진 선택" onClick={() => galleryRef.current?.click()}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.6" />
+            <circle cx="9" cy="10" r="1.6" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M4 17l4.6-4.4a1.5 1.5 0 0 1 2 0L15 17M13.5 15.5l2-1.9a1.5 1.5 0 0 1 2 0L20 16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span>갤러리</span>
+        </S.GalleryButton>
         <S.Shutter
           type="button"
           aria-label={status === 'ready' ? '영수증 촬영' : '사진 선택'}
@@ -86,6 +96,16 @@ export default function ReceiptCameraPage() {
           type="file"
           accept="image/*"
           capture="environment"
+          hidden
+          onChange={event => {
+            void handleFile(event.target.files?.[0])
+            event.target.value = ''
+          }}
+        />
+        <input
+          ref={galleryRef}
+          type="file"
+          accept="image/*"
           hidden
           onChange={event => {
             void handleFile(event.target.files?.[0])

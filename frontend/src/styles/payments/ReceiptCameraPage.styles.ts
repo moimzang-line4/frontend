@@ -112,12 +112,42 @@ export const Hint = styled.p`
 `
 
 export const BottomBar = styled.div`
+  position: relative;
   display: flex;
   height: calc(112px + env(safe-area-inset-bottom, 0px));
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+`
+
+// 셔터 왼쪽: 갤러리에서 사진 선택 (폰 기본 카메라 앱 위치)
+export const GalleryButton = styled.button`
+  position: absolute;
+  top: calc((112px - 56px) / 2);
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  cursor: pointer;
+
+  span {
+    font-size: 10px;
+    line-height: 12px;
+    font-weight: 500;
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
 `
 
 export const Shutter = styled.button`
