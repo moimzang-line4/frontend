@@ -47,3 +47,18 @@ export const EmptyMessage = styled.p`
   color: var(--color-muted);
   padding-block: 12px;
 `
+
+export const UpcomingSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+`
+export const UpcomingEmpty = styled(EmptyMessage)`
+  display: flex;
+  min-height: 140px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 12px;
+`

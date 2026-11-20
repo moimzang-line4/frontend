@@ -183,6 +183,11 @@ const busy =
             onTimeChange={value => update('endTime', value)}
           />
 
+          <S.Description>
+            시간은 선택 사항이에요. 모두 비우면 종일 일정으로 등록돼요.
+            한쪽만 입력하면 빈 시작은 00:00, 빈 종료는 23:59로 저장돼요.
+          </S.Description>
+
           {invalidRange && (
             <S.Error role="alert">
               종료 일시는 시작 일시보다 빠를 수 없어요.
@@ -271,7 +276,7 @@ const busy =
       <ConfirmDialog
   open={deleteOpen}
   title="일정을 삭제할까요?"
-  description="일정과 연결된 운영 데이터, 이 일정에서 만든 회의록도 함께 삭제돼요."
+  description={<>일정과 연결된 운영 데이터,<br />이 일정에서 만든 회의록도 함께 삭제돼요.</>}
   confirmText="삭제하기"
   onCancel={() => {
     if (!busy) setDeleteOpen(false)

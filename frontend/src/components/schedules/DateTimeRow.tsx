@@ -28,7 +28,7 @@ export default function DateTimeRow({ label, date, time, allDay, onDateChange, o
       <S.Picker $disabled={allDay}>
         <S.PickerText $filled={!allDay && Boolean(time)}><span>{allDay ? '종일' : time || '시간 선택'}</span></S.PickerText>
         <img src={timeChevron} alt="" width={14} height={14} />
-        <S.NativePicker type="time" aria-label={`${label} 시간`} value={time} disabled={allDay} required={!allDay} onChange={event => onTimeChange(event.target.value)} onClick={event => {
+        <S.NativePicker type="time" aria-label={`${label} 시간`} value={time} disabled={allDay} required={false} onChange={event => onTimeChange(event.target.value)} onClick={event => {
           try { event.currentTarget.showPicker?.() } catch { /* Native keyboard input remains available. */ }
         }} />
       </S.Picker>

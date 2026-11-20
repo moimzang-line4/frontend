@@ -84,7 +84,10 @@ export const EditButton = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  color: #78918c;
+  color: #367d70;
+  font-size: 24px;
+  line-height: 1;
+  > span { display: block; }
   cursor: pointer;
   &:active { background: rgb(0 0 0 / 4%); }
 `
@@ -117,7 +120,7 @@ export const AddForm = styled.form`
     background: white;
     font-size: 14px;
   }
-  button { padding: 10px; font-size: 14px; color: var(--color-primary-strong); cursor: pointer; }
+  button { flex-shrink: 0; white-space: nowrap; padding: 10px; font-size: 14px; color: var(--color-primary-strong); cursor: pointer; }
 `
 export const Error = styled.p`
   margin-top: 8px;
@@ -160,6 +163,6 @@ export const EditRow = styled.form`
     line-height: 24px;
     color: #253f3b;
   }
-  button { padding: 10px 8px; font-size: 14px; font-weight: 500; color: var(--color-primary-strong); cursor: pointer; }
+  button { flex-shrink: 0; white-space: nowrap; padding: 10px 8px; font-size: 14px; font-weight: 500; color: var(--color-primary-strong); cursor: pointer; }
   button[type='button'] { color: #78918c; }
 `

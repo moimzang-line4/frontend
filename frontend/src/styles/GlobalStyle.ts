@@ -1,4 +1,12 @@
-import { createGlobalStyle } from 'styled-components'
+import { createGlobalStyle, css } from 'styled-components'
+
+// Safari auto-zooms small form text on focus. Keep pinch zoom available.
+const touchInputText = css`
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']):not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']),
+  textarea, select, [contenteditable='true'], [contenteditable='plaintext-only'] {
+    font-size: max(16px, 1em) !important;
+  }
+`
 
 export const GlobalStyle = createGlobalStyle`
 @font-face {
@@ -155,6 +163,12 @@ export const GlobalStyle = createGlobalStyle`
     font-weight: var(--font-weight-regular);
     color: var(--color-ink);
     background-color: var(--color-surface);
+  }
+  @supports (-webkit-touch-callout: none) {
+    ${touchInputText}
+  }
+  @media (hover: none) and (pointer: coarse) {
+    ${touchInputText}
   }
   button, a { -webkit-tap-highlight-color: transparent; }
   :focus-visible { outline: 2px solid var(--color-primary-strong); outline-offset: 3px; }

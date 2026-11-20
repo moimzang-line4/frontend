@@ -100,7 +100,8 @@ export default function HomePage() {
           }}
         />
 
-        <S.Heading>다가오는 운영 일정</S.Heading>
+        <S.UpcomingSection aria-labelledby="upcoming-schedules-title">
+        <S.Heading id="upcoming-schedules-title">다가오는 운영 일정</S.Heading>
 
         {calendar.upcoming.map(event => (
           <UpcomingEventCard
@@ -113,9 +114,9 @@ export default function HomePage() {
         {!calendar.loading &&
   !calendar.errorMessage &&
   calendar.upcoming.length === 0 && (
-          <S.EmptyMessage>
+          <S.UpcomingEmpty>
             예정된 운영 일정이 없어요.
-          </S.EmptyMessage>
+          </S.UpcomingEmpty>
         )}
 
         {calendar.loading && (
@@ -141,6 +142,7 @@ export default function HomePage() {
     )}
   </div>
 )}
+        </S.UpcomingSection>
       </S.Content>
 
       {dateSheetOpen && (
