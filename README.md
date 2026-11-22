@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/logo-mini.svg" width="96" alt="모임장 로고" />
+<img src="assets/moimzang.svg" width="320" alt="MOIMZANG 로고" />
 
 # 모임장 · MOIMZANG
 
