@@ -1,7 +1,7 @@
 
 <div align="center">
   <img
-    src="assets/fianl.gif"
+    src="assets/final.gif"
     width="100%"
     alt="MOIMZANG 서비스 소개"
   />
