@@ -1,11 +1,13 @@
 
 <div align="center">
   <img
-    src="assets/final.gif"
+    src="assets/fianl.gif"
     width="100%"
-    alt="MOIMZANG 소개 영상"
+    alt="MOIMZANG 서비스 소개"
   />
 </div>
+
+<br />
 
 ---
 
