@@ -1,6 +1,17 @@
+
+<div align="center">
+  <img
+    src="assets/final.gif"
+    width="100%"
+    alt="MOIMZANG 소개 영상"
+  />
 </div>
 
-[https://github.com/user-attachments/assets/영상-ID](https://github.com/moimzang-line4/frontend/blob/main/assets/final.mp4)
+---
+
+</div>
+
+https://github.com/user-attachments/assets/e1146c38-6b81-41ae-80b7-da7fe9ac6750
 
 <br />
 
